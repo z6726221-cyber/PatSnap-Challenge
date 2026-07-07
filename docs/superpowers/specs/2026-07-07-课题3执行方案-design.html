@@ -136,10 +136,12 @@ hr{border:none;border-top:1.5px dashed var(--soft);margin:24px 0}
 │   ├── web_search.py            # 网络检索支路
 │   └── eval_judge.py            # 三方对比 AI 裁判
 ├── raw/                         # parse_docs 输出的原始 Markdown（带缓存）
-├── patsnap-memory-skill/        # 产出①：知识库 Skill（可交付核心）
-│   ├── SKILL.md
+├── patsnap-memory-skill/        # 产出①：知识库 Skill（可交付核心，"一个 skill / 多 workflow"见 §1.2）
+│   ├── SKILL.md                 # 说明书：这个 skill 是谁、有哪些能力、怎么调用
+│   ├── SOUL.md                  # 人格：术语规范（独立一节，逐条核实）+ 风格规则
+│   ├── style-samples/           # 整篇官宣范文（体量大，整篇不切，当风格标尺）
 │   ├── wiki/{projects,papers,technologies,competitors,use-cases}/
-│   ├── glossary.md  style-guide.md  error-book.md  evaluation-card.md
+│   ├── error-book.md  evaluation-card.md
 │   └── workflows/{launch-copy.md,competitor-analysis.md,ai-roadmap.md}
 ├── outputs/                     # 产出②③：生成的宣传稿/对比/路线
 ├── eval/                        # 评估：三方对比样本与结果
@@ -198,6 +200,12 @@ hr{border:none;border-top:1.5px dashed var(--soft);margin:24px 0}
 
 <h3>1.2 知识组织 · 路线 B（Claude 策展）</h3>
 <p>写成给 Claude 的策展指令，不是生成脚本。</p>
+<p><b>为什么是一个 skill，不是三个</b>：三个任务（宣传稿/竞品/路线）共用<b>同一个知识库、同一套术语、同一套人格</b>，只有"怎么做"不同。知识与人格全共享、仅工作流不同——这正是"一个 skill、多个 workflow"的场景，也贴课题任务1"设计本地知识库 Skill"（单数）。拆成三个 skill 会把 wiki/术语/风格复制三份，是维护负担。叙事上也更强：不是三个工具，是<b>一个懂智慧芽的数字员工</b>，会写宣传稿、会做竞品分析、会判断技术路线。（跨企业规模化时才分"通用底座 skill + 专属配置"两层，那是商业计划书 §6.2 的故事，非本次交付。）</p>
+<p><b>skill 内部两层</b>：</p>
+<ul>
+  <li><b>人格 + 知识</b>（共享，恒定）：<code>SOUL.md</code>（术语+风格）、<code>style-samples/</code>（整篇范文）、<code>wiki/</code>（知识页面）。</li>
+  <li><b>能力</b>（按任务加载）：<code>workflows/</code> 三个工作流，各是一套操作手册，也是 SKILL.md 对外暴露的三个能力入口。</li>
+</ul>
 <p><b>Skill 目录</b>（即 <code>patsnap-memory-skill/</code>，见 §0.4）。<b>wiki 页面类型</b>：</p>
 <ul>
   <li><code>projects/</code> 每个开源项目一页</li>
@@ -243,37 +251,42 @@ updated: 2026-07-07
 <h3>1.3 三层注入（Claude 策展 + 运行时组装）</h3>
 <p>三层就是<b>三个由 Claude 撰写的 Markdown 文件</b>，内容是"规则/对照表"，不是数据。它们是 Claude 从素材提炼撰写的<b>产物</b>；运行时作为<b>恒定上下文</b>拼进每次生成的 prompt（每次都在，不检索）。下面给出每个文件的实际样例，未来的 Claude 照此格式撰写，不必猜。</p>
 
-<h4>术语层 <code>glossary.md</code>（一张核实过的对照表）</h4>
-<p><b>怎么做</b>：Claude 读语料时把出现的术语记下来 → 逐条对照 §0.3 的术语真值来源（官网/产品界面/论文）核实正确写法 → 填表。<b>核实不了的不填，扔进 error-book</b>（严禁凭印象编，术语举错会在专家评委前翻车）。</p>
+<p>术语层与风格层合并进一个 <b><code>SOUL.md</code></b>（企业的"语言人格"）。它俩体量都小、且都是恒定注入，合一个文件更简明、叙事更强（"注入企业之魂"）。但<b>术语在 SOUL.md 里保持独立一节</b>，好让"逐条核实"有清晰抓手——术语是客观对错（错了在专家评委前翻车），风格是主观贴合，两者对错性质不同，不能糊在一起。整篇范文因体量大，单独放 <code>style-samples/</code>。</p>
+
+<h4><code>SOUL.md</code>（术语规范 + 风格规则）</h4>
+<p><b>怎么做</b>：</p>
+<ul>
+  <li>术语节——读语料时记下出现的术语 → 逐条对照 §0.3 的术语真值来源（官网/产品界面/论文）核实 → 填表。<b>核实不了的不填，扔进 error-book</b>（严禁凭印象编）。</li>
+  <li>风格节——读 3-5 篇真实官宣 → 总结共同写法，写成<b>能照着改的动作</b>（不是抽象形容）。</li>
+</ul>
 <pre><code>---
-type: glossary
+type: soul
 updated: 2026-07-07
 ---
 
+# SOUL — 智慧芽的语言人格
+
+## 一、术语规范（客观，逐条核实过）
 | 标准叫法 | 常见误用 | 推荐英文 | 来源 |
 |---------|---------|---------|------|
 | 专利同族 | 专利家族 | patent family | 官网/产品界面（待核实） |
 | 智慧芽   | 智慧牙   | PatSnap        | 官网 |
-| …（10-20 条，每条都核实过，来源列写清出处） |</code></pre>
+| …（10-20 条，每条都核实过，来源列写清出处） |
 
-<h4>风格层 <code>style-guide.md</code>（可执行规则 + 整篇样本）</h4>
-<p><b>怎么做</b>：Claude 读 3-5 篇真实官宣 → 总结出它们共同的写法规律，写成<b>能照着改的动作</b>（不是抽象形容）→ 再把其中 2-3 篇<b>整篇</b>附在下面当"改写标尺"（整篇，不切片，因为风格藏在谋篇节奏里）。</p>
-<pre><code>---
-type: style-guide
----
-
-## 可执行风格规则（5-10 条）
+## 二、表达风格（主观，对照样本改写）
 1. 句式偏短，一句一个意思，避免从句套从句
 2. 避免营销腔：不用"业界领先""颠覆性"这类形容词
 3. 技术描述带具体数据：不用"大幅提升"，要用"提升 40%"
 4. 主语习惯用"帮助企业/团队…"
 5. …（每条都是可落地的改写动作）
+   整篇范文见 style-samples/（体量大，此处只放规则）</code></pre>
 
-## 风格样本（整篇，改写时对照口吻）
-### 样本1：某官网新闻稿全文
-（整篇贴入，不切片）
-### 样本2：某技术博客全文
-（整篇贴入）</code></pre>
+<h4><code>style-samples/</code>（整篇官宣范文，风格标尺）</h4>
+<p><b>怎么做</b>：把 2-3 篇<b>整篇</b>真实官宣（新闻稿/技术博客）原文存入，一篇一个文件。<b>整篇不切片</b>——风格藏在谋篇、过渡、节奏里，切碎就没了。写稿时 AI 整篇读它，模仿句式与节奏（范文比规则更能传语感）。</p>
+<pre><code>style-samples/
+├── 官网新闻稿-xxx发布.md
+├── 技术博客-xxx.md
+└── 海外开发者介绍-xxx.md</code></pre>
 
 <h4>工作流层 <code>workflows/*.md</code>（每个任务一套操作手册）</h4>
 <p><b>怎么做</b>：把 §1.4 的生成自检流程，针对每个任务写成一份可照做的分步指令。三个任务各一份（见 §2-4）。样例（<code>launch-copy.md</code>）：</p>
@@ -285,7 +298,7 @@ task: 开源项目宣传稿生成
 收到"给 X 项目写宣传稿"时，按此执行：
 1. 读 wiki/projects/X.md 及其相关链接页，全量作为素材（§1.5：点名直读）
 2. 联网查 X 项目的社区反响（§1.5：联网）
-3. 加载 glossary.md 和 style-guide.md
+3. 加载 SOUL.md（术语+风格）
 4. 生成初稿 → 术语自检 → 风格自检 → 事实自检 → 改写（§1.4）
 5. 按固定结构输出：主稿 + 来源列表 + 待核实</code></pre>
 
@@ -302,8 +315,8 @@ task: 开源项目宣传稿生成
 <h3>1.4 生成与自检回路（Claude 工作流）</h3>
 <p>写成 Claude 的执行流程，不是黑盒 API。生成后必须自我批改再输出：</p>
 <pre><code>生成初稿
-→ 术语自检：逐条对照 glossary，改正误用命名
-→ 风格自检：对照 style-guide 与样本，改写不符处
+→ 术语自检：逐条对照 SOUL.md 术语节，改正误用命名
+→ 风格自检：对照 SOUL.md 风格节与 style-samples/，改写不符处
 → 事实自检：每个关键事实点绑回 source_url；无来源支撑的标"待核实"
 → 改写终稿</code></pre>
 
@@ -383,7 +396,7 @@ if 需要外部信息（竞品资料 / AI 趋势）:        # 本地库根本没
 5. 输出固定结构（主稿+来源+待核实）</code></pre>
 <p><b>输入</b>：目标项目 README + 相关论文 + 3-5 篇整篇官宣样本（风格参考）+ 网络公开信息。</p>
 <p><b>输出</b>：官网新闻稿版 + 海外开发者介绍版（两版反差最强；先做透这两版，不贪多做四版）。</p>
-<p><b>验收</b>：现场输入项目名能真出结果；两版口吻明显不同且各自贴合受众；输出带来源列表；术语与 glossary 一致。</p>
+<p><b>验收</b>：现场输入项目名能真出结果；两版口吻明显不同且各自贴合受众；输出带来源列表；术语与 SOUL.md 一致。</p>
 
 <hr>
 
@@ -460,7 +473,7 @@ if 需要外部信息（竞品资料 / AI 趋势）:        # 本地库根本没
 <h3>8.1 Claude 施工时的命令清单（示意，实际以 plan 为准）</h3>
 <pre><code>python tools/parse_docs.py corpus/            # 解析全部语料 → raw/
 python tools/parse_code.py corpus/open-source/ # 代码提取
-# Claude 策展：切片打标 → 撰写 wiki/ → 撰写 glossary/style-guide/workflows
+# Claude 策展：切片打标 → 撰写 wiki/ → 撰写 SOUL.md/style-samples/workflows
 python tools/build_index.py chunks.json       # （语义查需要时）建向量索引
 python tools/eval_judge.py eval/samples.json  # 三方对比打分</code></pre>
 
