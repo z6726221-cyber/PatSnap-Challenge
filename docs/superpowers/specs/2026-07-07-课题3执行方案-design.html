@@ -223,7 +223,14 @@ hr{border:none;border-top:1.5px dashed var(--soft);margin:24px 0}
   "content": "……"
 }</code></pre>
 
-<p><b>验收</b>：给定一份 PDF/README，跑 <code>parse_docs.py</code> 得到 <code>raw/</code> 下干净 Markdown（二次调用命中缓存）；Claude 能据此产出带完整元数据的切片，风格样本另有整篇副本。</p>
+<p><b><code>corpus_manifest.json</code></b>（根目录，Claude 在切片打标后手动维护，非脚本自动生成——语料量小，人工登记比写解析脚本更划算）：</p>
+<pre><code>[
+  {"file": "corpus/open-source/eureka-readme.md", "type": "official", "project": "eureka", "usage": ["宣传稿", "知识库"]},
+  {"file": "corpus/papers/xxx-2024.pdf", "type": "paper", "project": "eureka", "usage": ["知识库", "路线判断"]}
+]</code></pre>
+<p>每条登记一份原始资料的来源类型、所属项目、用于哪个产出，供后续排查"这份资料到底进了哪些环节"。</p>
+
+<p><b>验收</b>：给定一份 PDF/README，跑 <code>parse_docs.py</code> 得到 <code>raw/</code> 下干净 Markdown（二次调用命中缓存）；Claude 能据此产出带完整元数据的切片，风格样本另有整篇副本；对应条目已登记进 <code>corpus_manifest.json</code>。</p>
 
 <h3>1.2 LLM Wiki — 企业理解层</h3>
 <p><b>定位</b>：把 Raw Sources 编译成结构化、互链、可溯源的 Markdown 页面。这是 Skill 的知识主体。<b>它是编译层，不是事实源</b>——事实源永远是 raw/。</p>
@@ -272,8 +279,8 @@ updated: 2026-07-07
 
 <p><b>两个特殊导航文件</b>（LLM Wiki 检索的关键，别遗漏）：</p>
 <ul>
-  <li><b><code>index.md</code></b> — 全局目录，面向内容。列出每页 + 一句话摘要 + 分类。检索第一步先读它定位相关页。这在中等规模（数百页内）下效果很好，无需依赖向量库。</li>
-  <li><b><code>graph.json</code></b> — 轻量关系图，由 <code>build_graph.py</code> 扫描所有页 frontmatter 的 <code>related</code> 字段 + 正文 <code>[[wikilink]]</code> 生成。节点=页面，边=关系。供"相关技术扩展"这类多路召回用。</li>
+  <li><b><code>index.md</code></b> — 全局目录，面向内容。结构：头部一个 <code>aliases</code> 表（简称/别名 → 标准页面路径，例如"知网"这类竞品简称 → <code>competitors/xxx.md</code>，人工维护，供精确查询做归一），下方按分类列出每页 + 一句话摘要。检索第一步先读它定位相关页。这在中等规模（数百页内）下效果很好，无需依赖向量库。</li>
+  <li><b><code>graph.json</code></b> — 轻量关系图，由 <code>build_graph.py</code> 扫描所有页 frontmatter 的 <code>related</code> 字段 + 正文 <code>[[wikilink]]</code> 生成。节点=页面，边=关系。供"相关技术扩展"这类多路召回用（结构示例见 §1.4）。</li>
 </ul>
 
 <p><b>为什么用 graph.json 而非 SAG/知识图谱</b>：SAG 那套（event/entity + SQL 动态多跳）是为"顺着因果链追根因"设计的（如"指标为什么降→追到供应商"）。课题三任务没有这种需求——宣传稿要单实体全貌、竞品对比横向填矩阵、路线做能力盘点。最多需要"从一个技术找到相关几个技术"的轻度扩展，graph.json 沿边走一两跳就够。不为用不到的能力上重型设施。</p>
@@ -309,9 +316,9 @@ updated: 2026-07-07
 ## 一、术语规范（客观，逐条核实过）
 | 标准叫法 | 常见误用 | 推荐英文 | 来源 |
 |---------|---------|---------|------|
-| 专利同族 | 专利家族 | patent family | 官网/产品界面（待核实） |
-| 智慧芽   | 智慧牙   | PatSnap        | 官网 |
-| …（10-20 条，每条都核实过，来源列写清出处） |
+| 专利同族 | 专利家族 | patent family | 官网 patsnap.com/products（2026-07-07 核对） |
+| 智慧芽   | 智慧牙   | PatSnap        | 官网首页 |
+| …（10-20 条，每条都核实过，来源列写清出处，不是"待核实"——核实不了的条目一律不进这张表，见下方 error-book 格式） |
 
 ## 二、表达风格（主观，对照样本改写）
 1. 句式偏短，一句一个意思，避免从句套从句
@@ -322,6 +329,22 @@ updated: 2026-07-07
    整篇范文见 style-samples/（体量大，此处只放规则）</code></pre>
 
 <p><b><code>style-samples/</code>（整篇官宣范文，风格标尺）</b>：把 2-3 篇<b>整篇</b>真实官宣原文存入，一篇一个文件。<b>整篇不切片</b>——风格藏在谋篇、过渡、节奏里，切碎就没了。写稿时 AI 整篇读它，模仿句式与节奏。</p>
+
+<p><b><code>error-book.md</code> 格式</b>（治理层核心文件，§1.2/§1.6 反复引用，格式统一定义于此）：</p>
+<pre><code>## [2026-07-07] 术语-待核实
+- 候选词："专利同族" vs "专利族"
+- 现状：语料中两种写法都出现，官网未找到明确说法
+- 状态：pending（待人工查证或征询用户）
+
+## [2026-07-07] 事实-冲突
+- 页面：wiki/projects/eureka.md
+- 冲突：README 说支持 3 种语言，官网文案说支持 5 种
+- 处理：暂以 README（更权威，§1.6 代码/官网优先）为准，两处来源均记录，标 confidence: medium
+
+## [2026-07-07] 修正记录
+- 页面：wiki/technologies/知识图谱.md
+- 原文："支持千万级节点" → 改为："支持百万级节点"（用户纠正，来源：xxx）</code></pre>
+<p>三类条目：<b>术语-待核实</b>（未通过核实的术语候选）、<b>事实-冲突</b>（多源不一致）、<b>修正记录</b>（人工纠正后的变更留痕）。每条含日期、状态，冲突类注明处理依据。Lint（§1.6）扫这个文件生成待办。</p>
 
 <h3>1.4 Retrieval — 混合检索层</h3>
 <p><b>核心思想：检索只负责定位"读哪几页"，不负责产出答案素材。命中后加载整页 Wiki（非碎片）。</b> 这就是 Wiki-Compiled RAG，也是它和普通 RAG 的根本区别。</p>
@@ -334,24 +357,45 @@ updated: 2026-07-07
 </ul>
 
 <p><b>检索按意图路由</b>（不要用一种方式套所有任务）：</p>
-<pre><code>意图识别
-├─ 精确查询：用户点名实体（项目名/论文名）
+<pre><code>意图识别（Claude 判断，规则如下）
+├─ 精确查询：用户输入包含与 index.md 里某页 title 高度匹配的实体名
+│    （项目名/论文名，含常见简称——简称对照表见 index.md 头部的 aliases 段）
 │    → 读 index.md 定位 → 直接加载该页整页 + related 页
 │    → 不走向量库（已知道要哪页，直接取更准、不漏段）  ← 主 Demo 宣传稿走这条
 │
-├─ 关系查询：实体名 + 方向/关联词（相关技术、对标竞品）
-│    → 沿 graph.json 边遍历（一两跳）→ 加载相关页整页  ← 竞品对比的"相关技术扩展"
+│    fallback（点名了但 index.md 里找不到精确匹配，如打错字/未收录）：
+│    → 退化为模糊查询处理该词，并在输出的"待核实清单"里注明
+│       "未在知识库中精确定位到《X》，以下是最相关的召回结果"
 │
-└─ 模糊查询：关键词/概念/问句（"智慧芽做过图数据库吗"）
+├─ 关系查询：实体名 + 方向/关联词（相关技术、对标竞品、"和…有关的"）
+│    → 先按精确查询定位主实体页，沿 graph.json 边遍历（一两跳）→ 加载相关页整页
+│    ← 竞品对比的"相关技术扩展"
+│
+└─ 模糊查询：无法归入以上两类的关键词/概念/问句（"智慧芽做过图数据库吗"）
      → 先读 index.md 把范围收窄到 2-3 类
      → 混合检索：BM25（精确术语）+ 向量（语义相近），RRF 融合，粗筛出候选页
-     → 加载候选页整页 → 分层呈现（先结论后证据）  ← 语义问答、竞品本地取证走这条</code></pre>
+     → 加载候选页整页 → 分层呈现（先结论后证据，见 §1.5 排序规则）
+     ← 语义问答、竞品本地取证走这条</code></pre>
 
 <p><b>向量库的定位（回应"数据量"）</b>：</p>
 <ul>
   <li>本次比赛语料不大时，<code>index.md</code> + grep 已经够用；但<b>向量库照建</b>——(1) 数据会随企业场景增长，向量库是规模化的必需件；(2) 三方评估里"普通 RAG"对照组本来就需要一个向量检索系统；(3) 模糊查询这条线本就依赖它。</li>
+  <li><b>embedding 模型</b>：中英双语（如 BGE-M3 类，1024 维；实际维度以选定模型为准，落地时在 §0.4 输入清单中确认）。离线批量跑，不常驻 GPU。</li>
   <li><code>build_index.py</code> 把切片<b>逐块</b>灌入向量库（每条记录 = 一个切片）。但注意：<b>向量库返回的是"命中哪些页"的信号，最终仍加载整页</b>，不是把碎片直接喂模型。</li>
 </ul>
+
+<p><b><code>graph.json</code> 结构</b>（<code>build_graph.py</code> 产出，供关系查询遍历）：</p>
+<pre><code>{
+  "nodes": [
+    {"id": "projects/eureka", "type": "project", "title": "Eureka"},
+    {"id": "technologies/知识图谱", "type": "technology", "title": "知识图谱"}
+  ],
+  "edges": [
+    {"from": "projects/eureka", "to": "technologies/知识图谱", "source": "frontmatter.related"},
+    {"from": "projects/eureka", "to": "papers/xxx-2024", "source": "wikilink"}
+  ]
+}</code></pre>
+<p><code>id</code> = 页面相对路径（去掉 <code>.md</code>）；边不分方向类型（不需要 SAG 那种 <code>has_upstream</code>/<code>computed_by</code> 语义边，见上文"为什么不用 SAG"）；<code>source</code> 记录这条边是从 frontmatter 的 <code>related</code> 字段还是正文 <code>[[wikilink]]</code> 扫出来的，便于调试断链。</p>
 
 <p><b>网络检索（线：Web）</b> — 竞品对比、技术路线（课题②③④明写"结合网络数据"，硬要求）：</p>
 <ul>
@@ -369,6 +413,14 @@ updated: 2026-07-07
 + [整页素材]  §1.4 加载的完整 Wiki 页（每条事实带 source_url）
 + [用户任务]  具体要生成什么</code></pre>
 <p>检索到的整页是"料"，SOUL 是"手艺"。</p>
+
+<p><b>多页时的"分层呈现"排序</b>（§1.4 模糊/关系查询命中多页时，按此顺序拼入 [整页素材]）：</p>
+<ol>
+  <li>精确/关系查询定位到的<b>主实体页</b>排最前（如宣传稿的目标项目页）。</li>
+  <li>模糊查询召回的候选页，按检索分数从高到低排。</li>
+  <li>通过 graph.json 扩展出的<b>关联页</b>排最后，且在该页内容前加一行 <code>(关联页，用于补充上下文)</code>，避免和主实体页信息混淆。</li>
+</ol>
+<p>简言之：<b>该任务最直接相关的页面在前，扩展类补充信息在后</b>，让模型先抓主干、再看补充证据。</p>
 
 <p><b>自检回路</b>：</p>
 <pre><code>生成初稿
@@ -410,10 +462,60 @@ updated: 2026-07-07
 <p><b>实现规格</b>：</p>
 <ul>
   <li>完成 §1.1 → §1.6（数据接入 → Wiki 编译 → SOUL → 检索 → 生成自检 → 治理）。</li>
-  <li><code>SKILL.md</code> 写清：这个 Skill 是什么、包含哪些页面/能力、如何调用（三个 workflow 入口）、如何溯源。</li>
   <li>三个 workflow 就是被调用的能力入口。</li>
 </ul>
-<p><b>验收</b>：Skill 目录结构完整；SKILL.md 可读；任取一个 workflow，Claude 能据此产出带溯源的结果；index.md/graph.json 齐备。</p>
+
+<p><b><code>SKILL.md</code> 内容规格</b>（Skill 入口，未来 Claude/评委打开第一个看的文件）：</p>
+<pre><code>---
+name: patsnap-memory
+description: 智慧芽企业记忆 Skill——基于本地论文/开源项目/官宣资料，生成宣传材料、竞品分析、技术路线判断
+---
+
+# PatSnap Memory Skill
+
+## 这是什么
+把智慧芽的论文、开源项目、官宣资料编译成的企业记忆 Wiki + 语言人格（SOUL），
+让 AI 能像懂智慧芽的员工一样生成内容和做判断。
+
+## 有哪些能力（调用入口）
+| 能力 | 触发词示例 | 对应 workflow |
+|---|---|---|
+| 生成开源项目宣传稿 | "给 X 项目写宣传稿" | workflows/launch-copy.md |
+| 竞品技术对比 | "对比智慧芽和 X" | workflows/competitor-analysis.md |
+| AI 技术路线判断 | "智慧芽的 AI 突破方向" | workflows/ai-roadmap.md |
+
+## 知识在哪
+- wiki/ ：企业理解层，先读 wiki/index.md 定位
+- SOUL.md ：术语与风格，每次生成恒定加载
+- raw/ ：原始证据，Wiki 结论的最终溯源点
+
+## 怎么溯源
+每次输出都带"事实来源列表"，格式见 §1.5；有疑问直接查 raw/ 对应文件。</code></pre>
+
+<p><b><code>evaluation-card.md</code> 内容规格</b>（一页纸记录本 Skill 的自评状态，供答辩/交接时快速看质量）：</p>
+<pre><code># 评估卡
+
+## Wiki 覆盖
+- 页面总数：__ （目标 15-25）
+- confirmed / draft 比例：__
+- 断链数（最近一次 lint）：__
+
+## 术语与风格
+- SOUL.md 术语条数：__，全部核实：是/否
+- 风格样本篇数：__
+
+## 三方评估结果（见 §5）
+| 指标 | 通用大模型 | 普通RAG | 本方案 |
+|---|---|---|---|
+| 事实准确性 | | | |
+| 术语一致性 | | | |
+| 风格贴合度 | | | |
+| 改动量 | | | |
+
+## 已知缺口
+- （如实记录，如"竞品页仅覆盖1家""路线判断未做网络核实"）</code></pre>
+
+<p><b>验收</b>：Skill 目录结构完整；SKILL.md 可读且含能力表；evaluation-card.md 已填数；任取一个 workflow，Claude 能据此产出带溯源的结果；index.md/graph.json 齐备。</p>
 
 <hr>
 
@@ -469,7 +571,8 @@ updated: 2026-07-07
   <li>Wiki-Compiled RAG + Skill（完整方案）</li>
 </ol>
 <p><b>四项指标</b>：事实准确性、术语一致性、风格贴合度、改动量（反向）。</p>
-<p><b>方法</b>：<code>tools/eval_judge.py</code> 用另一个大模型当裁判（除"改动量"需人工），5-8 组样本。</p>
+<p><b>方法</b>：<code>tools/eval_judge.py</code> 用另一个大模型当裁判打前三项（1-5分），5-8 组样本。</p>
+<p><b>改动量测量法</b>：人工把每份 AI 输出改到"可直接发布"所需的最少编辑，记录<b>改动的句子数 / 总句子数</b>的比例（不算标点/空格级小改）。比例越低说明越接近可用成稿。三方各自跑一遍此流程，同一批样本、同一人改，保证可比。</p>
 <p><b>关键设计</b>：对照组"普通 RAG"= 完整方案<b>关掉三样开关</b>（整页加载→退回碎片、SOUL 注入→关、自检→关）。同一套底层、只关开关，对比最干净，且证明"多出的分正是编译+注入+自检带来的"。这也让向量库有了明确用武之地（对照组的检索系统）。</p>
 <p><b>验收</b>：产出真实分数的对比表（非示意值）；能说清每项 5 分与 4 分差在哪。</p>
 
