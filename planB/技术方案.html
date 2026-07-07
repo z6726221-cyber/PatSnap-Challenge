@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>课题3 · 完整技术方案</title>
+<style>
+:root{
+  --bg:#f6f2ea; --ink:#14130f; --muted:#6b655c; --paper:#fffdf8;
+  --line:#14130f; --soft:rgba(20,19,15,.12); --hair:rgba(20,19,15,.07);
+  --coral:#ff6258; --cyan:#2bbdd0; --violet:#7b66ff; --green:#21b67c;
+  --lime:#b8ea55; --gold:#ffc23d; --blue:#316bff; --pink:#f36baa;
+  --shadow:6px 6px 0 var(--ink); --shadow-sm:3px 3px 0 var(--ink);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;color:var(--ink);
+  background:
+    radial-gradient(circle at 8% 4%,rgba(43,189,208,.14),transparent 26%),
+    radial-gradient(circle at 92% 2%,rgba(123,102,255,.14),transparent 24%),
+    radial-gradient(circle at 70% 60%,rgba(184,234,85,.08),transparent 40%),
+    linear-gradient(150deg,#fffaf1 0%,#f4f0e8 52%,#eef6f0 100%);
+  background-attachment:fixed;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",Arial,sans-serif;
+  line-height:1.6;-webkit-font-smoothing:antialiased;
+}
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.5;
+  background-image:linear-gradient(var(--hair) 1px,transparent 1px),linear-gradient(90deg,var(--hair) 1px,transparent 1px);
+  background-size:34px 34px;mask-image:linear-gradient(180deg,#000 0%,transparent 70%);
+}
+a{color:inherit;text-decoration:none}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em;padding:1px 5px;border:1px solid var(--soft);border-radius:5px;background:#fbf8f1}
+.page{position:relative;z-index:1;width:min(1080px,calc(100% - 32px));margin:0 auto;padding:20px 0 72px}
+.nav{position:sticky;top:12px;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:14px;
+  min-height:58px;padding:10px 12px 10px 16px;border:1.5px solid var(--line);border-radius:12px;
+  background:rgba(255,253,248,.85);backdrop-filter:blur(16px);box-shadow:0 14px 34px rgba(25,21,16,.1);flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:11px;font-weight:900;font-size:15px;letter-spacing:-.01em}
+.mark{width:34px;height:34px;display:grid;place-items:center;border:2px solid var(--line);border-radius:11px;background:var(--cyan);box-shadow:var(--shadow-sm);font-weight:900;color:#fff}
+.nav-links{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}
+.pill{display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:5px 11px;border:1.5px solid var(--line);border-radius:999px;background:#fff;font-weight:800;font-size:12px;box-shadow:var(--shadow-sm);transition:transform .15s,box-shadow .15s}
+.pill:hover{transform:translate(-2px,-2px);box-shadow:var(--shadow)}
+.pill .dot{width:9px;height:9px;border-radius:50%;border:1.5px solid var(--line)}
+.hero{border:1.5px solid var(--line);border-radius:16px;background:var(--paper);box-shadow:var(--shadow);
+  margin:22px 0 16px;padding:36px 40px;
+  background:linear-gradient(135deg,rgba(255,253,248,.96),rgba(232,250,252,.9)),repeating-linear-gradient(135deg,rgba(20,19,15,.035) 0 1px,transparent 1px 18px)}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;width:fit-content;min-height:30px;margin-bottom:16px;padding:5px 13px;border:1.5px solid var(--line);border-radius:999px;background:var(--cyan);color:#fff;font-size:12.5px;font-weight:900;letter-spacing:.02em}
+h1,h2,h3,h4,p{margin-top:0}
+h1{margin-bottom:14px;font-size:clamp(26px,4vw,40px);line-height:1.1;letter-spacing:-.02em;font-weight:900}
+h1 .hl{background:linear-gradient(180deg,transparent 62%,var(--lime) 62%);padding:0 .06em}
+.hero p{max-width:800px;margin-bottom:0;color:var(--muted);font-size:15.5px}
+.section{margin-top:44px;scroll-margin-top:84px}
+.section-label{display:flex;align-items:baseline;gap:14px;margin-bottom:6px;flex-wrap:wrap}
+.section-label h2{font-size:24px;letter-spacing:-.01em}
+.section-label span{color:var(--muted);font-size:13px;font-weight:600}
+.lead{color:var(--muted);font-size:15px;max-width:880px;margin:8px 0 4px}
+.box{padding:15px 17px;border:1.5px solid var(--soft);border-radius:12px;background:rgba(255,255,255,.9)}
+.box.best{border-color:var(--violet);border-width:2px;background:linear-gradient(135deg,rgba(123,102,255,.09),rgba(255,194,61,.07))}
+.box.best h4{color:var(--violet)}
+.box.best h4::before{background:var(--violet)}
+.box h4{display:flex;align-items:center;gap:8px;font-size:14px;margin-bottom:9px;letter-spacing:-.01em}
+.box h4::before{content:"";width:11px;height:11px;border-radius:4px;border:1.5px solid var(--line);background:var(--accent,var(--cyan));flex-shrink:0}
+.box p{margin:0;color:var(--muted);font-size:13.4px}
+.box p+p{margin-top:8px}
+.box ul{display:grid;gap:6px;margin:0;padding:0;list-style:none}
+.box li{position:relative;padding:7px 11px 7px 28px;border:1.5px solid var(--soft);border-radius:9px;background:#fff;color:var(--muted);font-size:13px}
+.box li::before{content:"";position:absolute;left:11px;top:12px;width:7px;height:7px;border:1.5px solid var(--line);border-radius:50%;background:var(--accent,var(--cyan))}
+.box li b{color:var(--ink)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:14px}
+@media (max-width:820px){.grid2,.grid3{grid-template-columns:1fr}}
+.stack{display:grid;gap:10px;margin-top:14px}
+.slayer{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start;padding:14px 16px;border:1.5px solid var(--line);border-radius:12px;background:var(--paper);box-shadow:var(--shadow-sm)}
+.slayer .lnum{display:flex;align-items:center;justify-content:center;width:30px;height:30px;border:1.5px solid var(--line);border-radius:9px;background:var(--accent);color:#fff;font-weight:900;font-size:13px;flex-shrink:0}
+.slayer h4{font-size:14.4px;margin-bottom:5px}
+.slayer p{margin:0;color:var(--muted);font-size:13.3px}
+.slayer p+p{margin-top:7px}
+.mono{display:block;margin-top:10px;padding:11px 13px;border:1.5px dashed var(--soft);border-radius:9px;background:#fbf8f1;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;color:#3a352c;white-space:pre-wrap;line-height:1.5}
+.callout{margin-top:14px;padding:14px 17px;border-left:5px solid var(--cyan);border-radius:8px;background:rgba(43,189,208,.08);font-size:13.5px}
+.callout b{font-weight:900}
+.callout.warn{border-left-color:var(--coral);background:rgba(255,98,88,.07)}
+.callout.good{border-left-color:var(--green);background:rgba(33,182,124,.08)}
+.evtable{width:100%;border-collapse:collapse;margin-top:14px;font-size:13.2px}
+.evtable th{background:var(--ink);color:#fff;text-align:left;padding:10px 12px;font-size:11.6px;font-weight:800}
+.evtable td{padding:10px 12px;border-top:1.5px solid var(--soft);vertical-align:top;color:var(--muted)}
+.evtable tr:nth-child(odd) td{background:rgba(255,255,255,.5)}
+.evtable td b{color:var(--ink)}
+.evwrap{border:1.5px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:var(--shadow-sm);margin-top:14px}
+.flow{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:14px;padding:14px 16px;border:1.5px solid var(--soft);border-radius:12px;background:#fff}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border:1.5px solid var(--line);border-radius:999px;background:var(--accent,#fff);font-size:12px;font-weight:800;white-space:nowrap}
+.arrow{font-weight:900;color:var(--muted)}
+.wowintro{margin-top:14px;padding:18px 22px;border:2px solid var(--line);border-radius:16px;background:linear-gradient(135deg,rgba(20,19,15,.94),rgba(50,43,32,.9));color:#fff;box-shadow:var(--shadow)}
+.wowintro h3{color:#fff;font-size:16px;margin-bottom:8px}
+.wowintro p{margin:0;color:rgba(255,255,255,.82);font-size:13.6px}
+.wowintro .hl{background:linear-gradient(180deg,transparent 60%,var(--lime) 60%);color:var(--ink);padding:0 .1em;font-weight:800}
+.route{margin-top:14px;border:1.5px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:var(--shadow-sm)}
+.route-head{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1.5px solid var(--soft);background:linear-gradient(135deg,var(--accent),rgba(255,255,255,.55));flex-wrap:wrap}
+.route-head .rn{display:flex;align-items:center;justify-content:center;min-width:56px;height:28px;padding:0 10px;border:1.5px solid var(--line);border-radius:8px;background:#fff;font-weight:900;font-size:12px}
+.route-head h4{font-size:14.5px;margin:0;flex:1;min-width:180px}
+.route-head .tag{padding:3px 10px;border:1.5px solid var(--line);border-radius:999px;font-size:11px;font-weight:800;white-space:nowrap;background:#fff}
+.route-body{padding:14px 16px}
+.route-body p{margin:0 0 8px;color:var(--muted);font-size:13.4px}
+.route-body p:last-child{margin-bottom:0}
+.route-body b{color:var(--ink)}
+.tocwrap{margin-top:18px;padding:16px 20px;border:1.5px solid var(--line);border-radius:14px;background:var(--paper);box-shadow:var(--shadow-sm)}
+.tocwrap h3{font-size:14px;margin-bottom:10px}
+.toc{display:grid;grid-template-columns:repeat(2,1fr);gap:6px 20px;margin:0;padding:0;list-style:none}
+@media (max-width:640px){.toc{grid-template-columns:1fr}}
+.toc li{font-size:13.2px;color:var(--muted);padding:4px 0;border-bottom:1px dashed var(--soft)}
+.toc li b{color:var(--ink)}
+.footer{margin-top:40px;color:var(--muted);text-align:center;font-size:13px}
+.footer b{color:var(--ink)}
+@media (max-width:640px){.page{width:calc(100% - 20px)}.nav{flex-direction:column;align-items:flex-start}}
+</style>
+</head>
+<body>
+<main class="page" id="top">
+
+<nav class="nav">
+  <a class="brand" href="#top"><span class="mark">T</span><span>课题3 · 技术方案</span></a>
+  <div class="nav-links">
+    <a class="pill" href="#principle"><span class="dot" style="background:var(--coral)"></span>第一性原理</a>
+    <a class="pill" href="#arch"><span class="dot" style="background:var(--cyan)"></span>整体架构</a>
+    <a class="pill" href="#ingest"><span class="dot" style="background:var(--blue)"></span>数据接入</a>
+    <a class="pill" href="#organize"><span class="dot" style="background:var(--violet)"></span>知识组织·三路线</a>
+    <a class="pill" href="#retrieval"><span class="dot" style="background:var(--gold)"></span>检索</a>
+    <a class="pill" href="#inject"><span class="dot" style="background:var(--pink)"></span>个性化注入</a>
+    <a class="pill" href="#generate"><span class="dot" style="background:var(--green)"></span>生成与自检</a>
+    <a class="pill" href="#eval"><span class="dot" style="background:var(--coral)"></span>评估</a>
+    <a class="pill" href="#deploy"><span class="dot" style="background:var(--ink)"></span>工程与选型</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <span class="eyebrow">课题3 · 基于本地私域数据的 AI 个性化能力构建 · 完整技术方案</span>
+  <h1>一套让 AI <span class="hl">记住、像、并能代表</span>智慧芽判断的系统。</h1>
+  <p>本文是课题3的端到端技术方案，覆盖从数据接入到评估的完整链路。检索只是其中一环。核心主张：<b>决定"个性化"的不是检索多准，而是知识怎么组织、生成时注入了什么、生成后如何自检改写。</b>知识组织给出三条可选路线（纯向量 RAG / LLM Wiki 为主 / 双层混合）并给出选型判断。</p>
+  <div style="margin-top:18px;padding:16px 18px;border:1.5px solid var(--line);border-radius:14px;background:rgba(255,255,255,.7)">
+    <div style="font-size:12px;font-weight:900;letter-spacing:.04em;color:var(--muted);margin-bottom:10px">📚 课题3 系列文档 · 建议阅读顺序</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px" class="docmap">
+      <a href="课题详解.html" style="padding:12px 14px;border:1.5px solid var(--line);border-radius:11px;background:#fff;display:block"><div style="font-size:11px;font-weight:800;color:var(--muted)">① 全局手册 ↗</div><div style="font-weight:900;font-size:14px;margin:3px 0">课题详解</div><div style="font-size:12px;color:var(--muted)">做什么、怎么交付、7天计划、路演。</div></a>
+      <div style="padding:12px 14px;border:2px solid var(--line);border-radius:11px;background:linear-gradient(135deg,rgba(184,234,85,.22),rgba(255,194,61,.12))"><div style="font-size:11px;font-weight:800;color:var(--muted)">② 你在这里</div><div style="font-weight:900;font-size:14px;margin:3px 0">技术方案</div><div style="font-size:12px;color:var(--muted)">端到端架构、知识组织三路线、检索、注入、评估。</div></div>
+      <a href="LLM-Wiki-概念笔记.md" style="padding:12px 14px;border:1.5px solid var(--line);border-radius:11px;background:#fff;display:block"><div style="font-size:11px;font-weight:800;color:var(--muted)">③ 立意来源 ↗</div><div style="font-weight:900;font-size:14px;margin:3px 0">LLM Wiki 概念笔记</div><div style="font-size:12px;color:var(--muted)">路线 B 的概念依据，"企业记忆"叙事出处。</div></a>
+    </div>
+  </div>
+  <style>@media (max-width:640px){.docmap{grid-template-columns:1fr !important}}</style>
+  <div class="tocwrap">
+    <h3>文档结构</h3>
+    <ul class="toc">
+      <li><b>一、第一性原理</b> — 这道题真正要解决什么</li>
+      <li><b>二、整体架构</b> — 六段链路总览</li>
+      <li><b>三、数据接入</b> — Smart-Doc + 代码解析 + 切片</li>
+      <li><b>四、知识组织（三条路线）</b> — 纯向量 / Wiki / 双层</li>
+      <li><b>五、检索</b> — 元数据圈定为主，语义为辅</li>
+      <li><b>六、个性化注入</b> — 术语 / 风格 / 工作流</li>
+      <li><b>七、生成与自检</b> — 批判回路 + 溯源</li>
+      <li><b>八、评估</b> — 三方对比与指标</li>
+      <li><b>九、工程与选型</b> — 部署、路线取舍、风险</li>
+    </ul>
+  </div>
+</header>
+
+<!-- 一、第一性原理 -->
+<section class="section" id="principle">
+  <div class="section-label"><h2>一、第一性原理：这道题要解决什么</h2><span>先定义问题，再选技术</span></div>
+  <p class="lead">题目三个痛点是风格漂移、术语失准、经验断层，对应三种能力：<b>企业记忆、企业表达、企业判断</b>。翻译成技术语言得到四条约束，它们决定后面每一个技术选择。</p>
+
+  <div class="grid2">
+    <div class="box" style="--accent:var(--coral)"><h4>约束1 · 指定素材任务，非开放问答</h4><p>宣传稿针对选定项目，竞品对比针对指定竞品，路线判断针对给定能力盘点。素材是"点名"来的。<b>所以取材以元数据确定性圈定为主，语义检索为辅。</b></p></div>
+    <div class="box" style="--accent:var(--violet)"><h4>约束2 · 个性化发生在生成，不在检索</h4><p>让输出"像智慧芽"的是术语表、风格指南、工作流，它们是<b>恒定注入</b>的上下文。检索召回再准也不会让文案变成官宣口吻。</p></div>
+    <div class="box" style="--accent:var(--blue)"><h4>约束3 · 双数据源是硬要求</h4><p>任务②③④明写"结合网络数据"：竞品资料不在本地、趋势判断要看当下。<b>系统必须有本地库 + 网络检索两条取材通道。</b></p></div>
+    <div class="box" style="--accent:var(--green)"><h4>约束4 · 可溯源是可信度前提</h4><p>竞品对比、路线判断要经得起追问。<b>每个事实点绑回来源，无来源的标"待核实"</b>，而不是让模型编。</p></div>
+  </div>
+
+  <div class="callout warn"><b>由此得到贯穿全文的取舍原则</b>：检索层是"普通 RAG"对照组也有的能力，堆重它不产生差异化。工程力应投在检索<b>之上</b>——知识组织、个性化注入、自检改写、溯源。</div>
+</section>
+
+<!-- 二、整体架构 -->
+<section class="section" id="arch">
+  <div class="section-label"><h2>二、整体架构</h2><span>六段链路</span></div>
+  <p class="lead">系统是一条六段管线。与通用 RAG 的差别集中在第 2、4、5 段：知识怎么组织、生成前注入什么、生成后如何自检。</p>
+
+  <div class="flow">
+    <span class="chip" style="--accent:var(--blue)">① 数据接入</span><span class="arrow">→</span>
+    <span class="chip" style="--accent:var(--violet)">② 知识组织</span><span class="arrow">→</span>
+    <span class="chip" style="--accent:var(--gold)">③ 检索取材（本地＋网络）</span><span class="arrow">→</span>
+    <span class="chip" style="--accent:var(--pink)">④ 个性化注入</span><span class="arrow">→</span>
+    <span class="chip" style="--accent:var(--green)">⑤ 生成＋自检</span><span class="arrow">→</span>
+    <span class="chip" style="--accent:var(--coral)">⑥ 溯源＋评估</span>
+  </div>
+
+  <div class="callout"><b>各段对应章节</b>：① → 三；② → 四（三条路线在此分野）；③ → 五；④ → 六；⑤⑥ → 七、八。第九节讲工程部署与路线选型。</div>
+</section>
+
+<!-- 三、数据接入 -->
+<section class="section" id="ingest">
+  <div class="section-label"><h2>三、数据接入</h2><span>解析 → 代码处理 → 切片 → 元数据</span></div>
+  <p class="lead">数据接入产出两种形态：<b>供事实检索的切片</b>，和<b>供风格学习的整篇文档</b>。同一份资料按用途可同时产出两者。</p>
+
+  <div class="stack">
+    <div class="slayer" style="--accent:var(--cyan)">
+      <span class="lnum">1</span>
+      <div><h4>解析 · Smart-Doc API</h4>
+      <p>三个端点：<code>/image/smart-doc</code>（图片）、<code>/pdf/smart-doc</code>（PDF）、<code>/document/smart-doc</code>（Office 文档，先转 PDF 再处理，支持 doc/docx/ppt/pptx/xls/xlsx 等）。调用参数置 <code>detailed:true, markdown:true, ocr_backend:"auto"</code>。</p>
+      <p><b>先讲清它返回什么、不返回什么</b>：它做的是版面分析 + OCR + Markdown 聚合，产出<b>拼接好的 Markdown 文本</b>和<b>带 bounding box 的版面块</b>。它<b>不</b>直接给"H1/H2/H3 树"或"表格行列关系"的结构化 JSON——标题层级和表格要从它输出的 Markdown 里自己解析（Markdown 的 <code>#/##</code> 和表格语法已够还原）。这一步只写一个适配器：Markdown → 统一内容块。</p></div>
+    </div>
+    <div class="slayer" style="--accent:var(--blue)">
+      <span class="lnum">2</span>
+      <div><h4>代码文件 · 单独处理（Smart-Doc 不管代码）</h4>
+      <p>开源项目代码用 tree-sitter 解析，以"一个函数 + 签名 + docstring"为一块，函数体细节丢弃。不要把整个文件揉成一块，否则问具体能力时定位不准。README/文档仍走 Smart-Doc。</p></div>
+    </div>
+    <div class="slayer" style="--accent:var(--violet)">
+      <span class="lnum">3</span>
+      <div><h4>切片 · 按语义单元，且区分用途</h4>
+      <p>事实检索用的切片：按标题层级和语义段落切，每块几百字，一块一个完整意思。</p>
+      <p><b>关键：风格样本不切片。</b>风格藏在整篇文章的谋篇、节奏、过渡里，切碎就没了，而风格是本课题主轴。官宣/技术博客<b>整篇另存一份</b>供第六节风格注入；同一批文案<b>再切一份</b>进检索库供事实使用。</p></div>
+    </div>
+    <div class="slayer" style="--accent:var(--gold)">
+      <span class="lnum">4</span>
+      <div><h4>元数据 · 本课题的检索主键</h4>
+      <p>每块强制打标——"指定素材"任务靠这些字段确定性圈定范围：</p>
+      <div class="mono">{
+  "chunk_id": "eureka-readme-0007",
+  "parent_doc_id": "eureka-readme",
+  "source_type": "official | paper | code | doc | competitor",
+  "project": "eureka",
+  "usage": ["技术传播"],
+  "title": "Eureka 产品说明",
+  "year": 2024,
+  "source_url": "https://...",
+  "content": "……",
+  "embedding": [/* 1024 维，路线 A/C 用 */]
+}</div></div>
+    </div>
+  </div>
+
+  <div class="callout good"><b>力气分配</b>：真正决定质量的是<b>切片</b>和<b>元数据</b>，靠人理解、不能自动化偷懒。解析用官方 API、不自研 OCR。评委一眼能看出知识库是"精切精标"还是"整本塞进去"。</div>
+</section>
+
+<!-- 四、知识组织：三条路线 -->
+<section class="section" id="organize">
+  <div class="section-label"><h2>四、知识组织：三条技术路线</h2><span>方案的分野点</span></div>
+  <p class="lead">数据接入之后，"知识怎么组织"有三条路线。它们不是优劣关系，而是<b>投入产出与叙事高度的权衡</b>。逐条给出做法、代价、适用，最后给推荐。</p>
+
+  <div class="route" style="--accent:var(--cyan)">
+    <div class="route-head"><span class="rn">路线 A</span><h4>纯向量 RAG</h4><span class="tag">最稳 · 最省事</span></div>
+    <div class="route-body">
+      <p><b>做法</b>：切片 → embedding → 向量库；查询时向量 kNN + BM25 混合召回，取 topK 塞进上下文。经典 RAG。</p>
+      <p><b>代价</b>：低，一周内一定做得完，工具链成熟。</p>
+      <p><b>问题</b>：这正是三方对比里"普通 RAG"对照组的样子。<b>只做 A 等于把自己做成对照组</b>，差异化全靠第六节注入层撑，叙事也平。</p>
+      <p><b>适用</b>：作为<b>保底基线</b>和对照组必然要有；但不宜作为最终形态和主叙事。</p>
+    </div>
+  </div>
+
+  <div class="route best" style="--accent:var(--violet);border-color:var(--violet);border-width:2px">
+    <div class="route-head" style="background:linear-gradient(135deg,rgba(123,102,255,.28),rgba(255,255,255,.55))"><span class="rn">路线 B</span><h4>LLM Wiki 为主，向量为辅</h4><span class="tag" style="background:var(--lime)">推荐 · 立意最高</span></div>
+    <div class="route-body">
+      <p><b>做法</b>：把资料<b>编译成互链的 Wiki 页面</b>——项目一页、论文一页、技术能力一页、术语一页、竞品一页、Demo 场景一页，页面间双向链接。Agent 操作从"retrieve chunks"升级为 <b>search / read / follow-link</b>：先搜到入口页，再顺链接遍历相关实体。向量检索退为"帮 Agent 找到该读哪一页"的入口定位器。另设 <b>Error Book</b> 页沉淀错误与待核实项。</p>
+      <p><b>为什么更贴题</b>：直接兑现三种能力——页面结构=企业记忆，风格页/术语页=企业表达，竞品页/路线页=企业判断。"受控生长"（AI 辅助建页、人工审核、修正写回）落地详解里"越用越懂"的复利叙事。主叙事可打成 <b>"从 RAG 到 LLM Wiki：构建智慧芽企业记忆"</b>。</p>
+      <p><b>代价</b>：中。要设计页面模板、建页、维护链接，但页面可由 AI 辅助生成 + 人工确认，一周做 15-25 页样板可行。</p>
+      <p><b>企业版必须受控</b>：不能让 AI 随便写改。重要页面人工确认、核心分类人工审核、不确定项只标注不写成事实、修正保留来源与版本。定位为<b>受控的场景型企业 Wiki</b>（技术传播与战略分析），不是"全公司大百科"——后者治理与合规风险会被质疑。</p>
+    </div>
+  </div>
+
+  <div class="route" style="--accent:var(--gold)">
+    <div class="route-head"><span class="rn">路线 C</span><h4>双层：Wiki 在上，向量在下</h4><span class="tag">最完整 · 最重</span></div>
+    <div class="route-body">
+      <p><b>做法</b>：知识层用 Wiki 页面组织（人读、Agent 遍历、可溯源）；检索层用向量库做页面内与跨页的语义定位。Wiki 负责"知识的结构和记忆"，向量负责"在结构里快速找相关片段"，各司其职。</p>
+      <p><b>代价</b>：高。等于 B 和 A 都搭还要打通，一周半脱产下工作量最大。</p>
+      <p><b>适用</b>：数据规模大、或想在答辩同时展示"结构化记忆 + 工程完整度"时。时间紧则不必强求，B 已能讲清立意。</p>
+    </div>
+  </div>
+
+  <div class="callout"><b>选型判断</b>：<b>A 一定要有</b>（保底 + 对照组）。<b>主推 B</b>：立意最高、最贴题、工作量可控——Wiki 组织知识，向量库降为入口定位器，你们已投入的向量库不浪费、且被放到更合理的位置。<b>C 作为有余力的目标</b>。<b>落地路径</b>：先按 A 跑通保底，再把知识层重构成 B 的 Wiki 结构——A 的向量库正好被 B 复用为入口定位器，两步是叠加而非重做。</div>
+
+  <div class="mono" style="margin-top:14px">知识层目录（路线 B/C）：
+patsnap-memory-skill/
+├── SKILL.md
+├── wiki/
+│   ├── projects/        # 每个开源项目一页
+│   ├── papers/          # 每篇论文一页
+│   ├── technologies/    # 每个核心技术能力一页
+│   ├── competitors/     # 每个竞品一页
+│   └── use-cases/       # 每个 Demo 场景一页
+├── glossary.md          # 术语页（表达层）
+├── style-guide.md       # 官宣风格页（表达层）
+├── workflows/           # 三个任务各一套分步流程
+├── error-book.md        # 错误与待核实项沉淀
+└── evaluation-card.md   # 评估卡</div>
+
+  <div class="callout warn"><b>出处表述留分寸</b>：LLM Wiki 概念受 Karpathy 倡导启发，但原帖全文未直接核验。正式材料建议表述为"受 Karpathy 所倡导的 LLM Wiki 思路启发，结合近期 agent-native retrieval / self-evolving wiki 研究"，不要把出处说得过满。</div>
+</section>
+
+<!-- 五、检索 -->
+<section class="section" id="retrieval">
+  <div class="section-label"><h2>五、检索：元数据圈定为主，语义为辅</h2><span>三个任务形状不同，一个开关切换</span></div>
+  <p class="lead">因为是"指定素材"任务，检索第一步不是撒向量，而是<b>用元数据把范围锁死</b>，再在范围内做语义排序。三个任务的检索形状差异很大：</p>
+
+  <div class="grid3">
+    <div class="box" style="--accent:var(--coral)"><h4>宣传稿（主）· 检索最轻</h4><p>点名一个项目，其全部资料通常<b>小到能整篇注入上下文</b>。最优解是<b>全量注入、几乎不检索</b>——检索反而可能漏段。</p></div>
+    <div class="box" style="--accent:var(--blue)"><h4>竞品对比 · 检索最重</h4><p>按多维度取证，竞品资料主要在<b>网络</b>。这里<b>本地库 + 网络双源</b>才真正值回票价，是向量/Wiki 检索发挥最大价值处。</p></div>
+    <div class="box" style="--accent:var(--violet)"><h4>技术路线 · 网络为主</h4><p>依赖当下 AI 趋势，本地只提供"现有能力"这一半，另一半靠联网与人的判断。检索是辅助。</p></div>
+  </div>
+
+  <div class="callout"><b>一个开关解决</b>：管线支持"<b>全量注入</b>"与"<b>检索取材</b>"两档。主 Demo 走全量注入档，竞品/路线走检索+网络档。范围锁定后，范围内再走向量 kNN + BM25 融合（A/C）或 Wiki follow-link（B）。<b>收益主要来自"范围圈得对"，不是"权重调得巧"</b>，不要在权重上过度调参。</div>
+
+  <div class="callout warn"><b>网络检索的边界</b>：竞品/路线两 Tab 按主方案是"提前跑好、人工校对"的结果，故网络检索是<b>准备阶段工具</b>，不做现场实时联网（慢且不可控）。网络结果同样带 <code>source_url</code> 落进溯源，与本地一视同仁；冲突时以本地权威为准并标注。联网只取公开信息，不外传私域内容。</div>
+</section>
+
+<!-- 六、个性化注入 -->
+<section class="section" id="inject">
+  <div class="section-label"><h2>六、个性化注入：个性化真正发生处</h2><span>术语 / 风格 / 工作流，恒定注入</span></div>
+  <p class="lead">前面拿到的还只是"料"。让输出"像智慧芽"的是生成前强制叠加的三层<b>恒定上下文</b>——不随查询变化、每次都在，是"专属 Skill"区别于"普通 RAG"的地方。</p>
+
+  <div class="grid3">
+    <div class="box" style="--accent:var(--blue)"><h4>术语层</h4><p>10-20 条"标准叫法 / 常见误用 / 推荐译法"对照表，全量注入，生成前先校准命名。体量小、不检索。<b>条目须拿智慧芽真实用法逐条核实</b>，不能凭印象写。</p></div>
+    <div class="box" style="--accent:var(--violet)"><h4>风格层</h4><p>5-10 条可执行风格规则 + 2-3 篇<b>整篇</b>真实官方文案作"改写标尺"，让生成对齐风格而非自由发挥。整篇样本来自第三节不切片的那份。</p></div>
+    <div class="box" style="--accent:var(--gold)"><h4>工作流层</h4><p>该任务的分步流程作为指令骨架：检索→提取→规划→草稿→术语校准→风格改写→事实校验→输出，让模型按流程办事、每步可追溯。</p></div>
+  </div>
+
+  <div class="callout"><b>最终 Prompt 组装顺序</b>：工作流指令（怎么做）＋ 术语表＋风格规则与样本（按谁的标准）＋ 检索到的事实素材（用什么料）＋ 用户任务。检索结果只是一块料，三层注入才是"厨师的手艺"。</div>
+</section>
+
+<!-- 七、生成与自检 -->
+<section class="section" id="generate">
+  <div class="section-label"><h2>七、生成与自检：把"能跑"推到"效果好"</h2><span>批判回路 + 溯源</span></div>
+  <p class="lead">一次性生成的输出，风格会漂、术语会错。真正拉高质量的是<b>生成后让模型拿着术语表和风格样本自我批改、再改写一遍</b>。这条回路的收益大于任何检索调优。</p>
+
+  <div class="flow">
+    <span class="chip" style="--accent:var(--gold)">生成初稿</span><span class="arrow">→</span>
+    <span class="chip" style="--accent:var(--coral)">术语自检（对照术语表逐条查）</span><span class="arrow">→</span>
+    <span class="chip" style="--accent:var(--violet)">风格自检（对照样本打分）</span><span class="arrow">→</span>
+    <span class="chip" style="--accent:var(--blue)">事实自检（每点绑来源）</span><span class="arrow">→</span>
+    <span class="chip" style="--accent:var(--green)">改写终稿</span>
+  </div>
+
+  <div class="grid2">
+    <div class="box" style="--accent:var(--green)"><h4>溯源</h4><p>输出结构固定为<b>主稿 + 事实来源列表 + 不确定项清单</b>。每个关键事实点绑回 <code>source_url / parent_doc_id</code>；无来源支撑的明确标"待核实"。路线 B 的 Error Book 收集这些待核实项，人工确认后写回 Wiki。</p></div>
+    <div class="box" style="--accent:var(--coral)"><h4>禁止条款</h4><p>Prompt 写死"只能使用提供的检索结果与注入内容，不得调用内部知识"；每次调用检查返回是否含来源字段，防止模型跳过标注。这是可信度的工程保障。</p></div>
+  </div>
+
+  <div class="callout good"><b>为什么这才是效果的来源</b>：检索决定"有没有料"，这条回路决定"料写得像不像、准不准"——<b>后者才是评委打分时真正在看的东西。</b></div>
+</section>
+
+<!-- 八、评估 -->
+<section class="section" id="eval">
+  <div class="section-label"><h2>八、评估：三方对比</h2><span>把"感觉更好"变成"数字证明"</span></div>
+  <p class="lead">同一任务用三种方式各跑一遍：<b>通用大模型 / 普通 RAG（路线 A）/ 专属方案（B 或 C + 三层注入）</b>，按四项指标打分。加"普通 RAG"这一档，直接堵住"你们不就是个 RAG"的质疑。</p>
+
+  <div class="evwrap">
+    <table class="evtable">
+      <thead><tr><th style="width:150px">指标</th><th>定义</th><th>打分方法</th></tr></thead>
+      <tbody>
+        <tr><td><b>事实准确性</b></td><td>陈述是否有资料支撑、有无编造。</td><td>标出关键事实点逐条对照，算命中率。</td></tr>
+        <tr><td><b>术语一致性</b></td><td>是否符合智慧芽标准命名。</td><td>用术语对照表统计命中率。</td></tr>
+        <tr><td><b>风格贴合度</b></td><td>语气句式是否像官方文案。</td><td>与真实官方文案并列，用另一模型或 2-3 人按 1-5 分评。</td></tr>
+        <tr><td><b>改动量</b>（反向）</td><td>改到可直接发布还需人工改多少。</td><td>熟悉风格的人当编辑，记录改动字数占比，越低越好。</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout"><b>对照组几乎零成本</b>："普通 RAG"就是"本方案砍掉三层注入和自检回路后的样子"。所以对照组<b>直接复用同一套管线、关掉注入即可</b>——对比最干净，且证明"多出的分正是注入与自检带来的"。用真实跑出的数据，样本 5-8 组即可，不要用漂亮的假数。</div>
+</section>
+
+<!-- 九、工程与选型 -->
+<section class="section" id="deploy">
+  <div class="section-label"><h2>九、工程与选型</h2><span>部署、路线取舍、风险</span></div>
+
+  <h4 style="font-size:14.5px;margin:16px 0 6px">部署</h4>
+  <div class="grid2">
+    <div class="box" style="--accent:var(--blue)"><h4>组件</h4><ul><li><b>解析</b>：官方 Smart-Doc API（内网直连，结果本地缓存，同文档不重复解析）。</li><li><b>向量库</b>：任一支持"元数据过滤 + 向量检索"的库；万级切片以内<b>单节点足够，不上集群</b>。</li><li><b>向量化</b>：离线批量跑，不常驻 GPU。</li><li><b>生成</b>：主流大模型 API。</li></ul></div>
+    <div class="box" style="--accent:var(--green)"><h4>与产品的关系</h4><ul><li>本方案是详解里"网页产品"的<b>引擎</b>：主 Demo（宣传稿）现场真跑通这条链路。</li><li>竞品/路线两 Tab 展示准备阶段跑好、人工校对的结果。</li><li>知识层（路线 B 的 Wiki 目录）就是可交付的 Skill 文件夹。</li></ul></div>
+  </div>
+
+  <h4 style="font-size:14.5px;margin:20px 0 6px">路线取舍一览</h4>
+  <div class="evwrap">
+    <table class="evtable">
+      <thead><tr><th style="width:130px">路线</th><th>工作量</th><th>贴题/立意</th><th>用途</th></tr></thead>
+      <tbody>
+        <tr><td><b>A 纯向量 RAG</b></td><td>低</td><td>低（就是对照组）</td><td>保底基线 + 三方对比对照组，<b>必做</b></td></tr>
+        <tr><td><b>B Wiki 为主</b></td><td>中</td><td><b>高</b>（企业记忆 + 复利叙事）</td><td>方案主形态与主叙事，<b>推荐</b></td></tr>
+        <tr><td><b>C 双层</b></td><td>高</td><td>高 + 工程完整度</td><td>数据量大/秀工程时的进阶目标</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h4 style="font-size:14.5px;margin:20px 0 6px">主要风险与应对</h4>
+  <div class="grid2">
+    <div class="box" style="--accent:var(--coral)"><h4>风险</h4><ul><li>私域数据大部分是公开的，"企业记忆"最弱。</li><li>Wiki 建页耗时，可能挤占主 Demo。</li><li>现场实时链路崩。</li></ul></div>
+    <div class="box" style="--accent:var(--gold)"><h4>应对</h4><ul><li>主轴押"企业表达/术语"（公开数据可支撑），记忆尽力而为。</li><li>Wiki 先做 15-25 页样板，AI 辅助生成 + 人工确认。</li><li>主 Demo 备"预置结果"降级档；先按 A 跑通保底再升 B。</li></ul></div>
+  </div>
+
+  <div class="callout good"><b>一句话选型</b>：<b>A 保底、B 主推、C 选做</b>。向量库你们保留得对——它在路线 B 里降为"入口定位器"、在竞品场景真有用，只是别把它当胜负手。真正拉开差距的是知识组织成 Wiki、三层注入、生成后的自检回路。</div>
+</section>
+
+<div class="footer">
+  <p>课题3 · 基于本地私域数据的 AI 个性化能力构建 · 完整技术方案</p>
+</div>
+
+</main>
+</body>
+</html>
