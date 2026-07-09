@@ -13,6 +13,7 @@
 """
 import os
 import re
+import time
 from dataclasses import dataclass, field
 
 
@@ -183,25 +184,65 @@ def load_case(case_dir: str) -> Case:
     return Case(question=question, materials=materials)
 
 
-def load_live(live_dir: str, question: str) -> Case:
+def _list_md(live_dir: str) -> list:
+    return sorted(n for n in os.listdir(live_dir) if n.endswith(".md"))
+
+
+def _read_live_snapshot(live_dir: str) -> list:
+    """读一次 live 目录的所有 .md，返回 [(name, text), ...]（按文件名排序）。
+
+    检索侧覆盖目录时（先删旧文件、再写新文件），文件列表和内容都可能在读取
+    过程中变化。这里读前读后都取一次文件名列表，两次不一致就当作"正在被
+    覆盖中"，交给调用方重试；单个文件在读取瞬间被删除/替换（FileNotFoundError /
+    OSError）同样交给调用方重试。不在这层吞掉异常，是为了让重试判断基于
+    "这次读取是否完整、一致"，而不是"读到了什么就算什么"。
+    """
+    before = _list_md(live_dir)
+    snapshot = []
+    for name in before:
+        with open(os.path.join(live_dir, name), encoding="utf-8") as f:
+            snapshot.append((name, f.read()))
+    after = _list_md(live_dir)
+    if before != after:
+        raise RuntimeError(f"live 目录在读取过程中被并发修改（读前 {before} vs 读后 {after}）")
+    return snapshot
+
+
+def load_live(live_dir: str, question: str, retries: int = 3, retry_delay: float = 0.3) -> Case:
     """读检索侧实时写出的 live 目录（固定路径，每次检索覆盖整目录），配合用户
     当次提问组成 Case。目录下可以是 1 个或多个 .md（比如按子查询分开检索），
     每个文件各自可能被解析成一条或多条 Material（见 parse_materials_from_file）。
+
+    检索侧"覆盖整目录"的写入过程本身不是原子的（先删旧文件、再写新文件有
+    先后顺序），我们这边是多线程 HTTP server，读取时机可能恰好撞上覆盖过程
+    中间态。用有限次重试应对这种瞬时不一致；如果检索侧改成"写临时目录后
+    os.replace 整体切换"这种原子写法，这层重试就不再需要，但保留它对两种
+    写法都安全，不依赖检索侧的实现细节。
 
     真实检索场景：不再依赖 question.txt——问题就是用户刚提的那句话，由调用方传入。
     """
     if not os.path.isdir(live_dir):
         raise FileNotFoundError(f"检索结果目录不存在: {live_dir}")
-    md_names = sorted(n for n in os.listdir(live_dir) if n.endswith(".md"))
-    if not md_names:
-        raise FileNotFoundError(f"检索结果目录里没有 .md 文件: {live_dir}")
 
-    materials = []
-    for name in md_names:
-        with open(os.path.join(live_dir, name), encoding="utf-8") as f:
-            materials.extend(parse_materials_from_file(f.read(), filename=name))
-    materials.sort(key=lambda m: m.score, reverse=True)
-    return Case(question=question, materials=materials)
+    last_err = None
+    for attempt in range(retries):
+        try:
+            snapshot = _read_live_snapshot(live_dir)
+        except (OSError, RuntimeError) as e:
+            last_err = e
+            if attempt < retries - 1:
+                time.sleep(retry_delay)
+            continue
+        if not snapshot:
+            raise FileNotFoundError(f"检索结果目录里没有 .md 文件: {live_dir}")
+
+        materials = []
+        for name, text in snapshot:
+            materials.extend(parse_materials_from_file(text, filename=name))
+        materials.sort(key=lambda m: m.score, reverse=True)
+        return Case(question=question, materials=materials)
+
+    raise RuntimeError(f"读取 live 目录失败（重试 {retries} 次仍不一致，可能检索正在写入）: {last_err}")
 
 
 def group_by_topic(materials: list) -> dict:

@@ -3,9 +3,11 @@ import os
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+import loader
 from loader import parse_material, parse_materials_from_file, load_case, load_live, group_by_topic, Material
 
 
@@ -174,6 +176,67 @@ class TestLoadLive(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             with self.assertRaises(FileNotFoundError):
                 load_live(d, question="q")
+
+    def test_retries_on_concurrent_overwrite_then_succeeds(self):
+        # 模拟检索侧正在覆盖目录：第一次读到的文件列表前后不一致（并发写入的
+        # 典型信号），第二次读到时已经写完、前后一致 —— 应该重试后成功，不报错。
+        with tempfile.TemporaryDirectory() as d:
+            _write(d, "01-a.md", "---\nsource: uri-a\ntopic: t1\nscore: 0.9\n---\nA正文\n")
+            call_count = {"n": 0}
+            real_list_md = loader._list_md
+
+            def flaky_list_md(live_dir):
+                call_count["n"] += 1
+                # 第一次 _read_live_snapshot 内的"读后"校验（第 2 次调用 _list_md）
+                # 返回一个和"读前"不同的假列表，制造一次不一致；之后正常。
+                if call_count["n"] == 2:
+                    return ["01-a.md", "02-b.md"]
+                return real_list_md(live_dir)
+
+            with mock.patch.object(loader, "_list_md", side_effect=flaky_list_md), \
+                 mock.patch.object(loader.time, "sleep"):
+                case = load_live(d, question="q", retries=3, retry_delay=0)
+            self.assertEqual(len(case.materials), 1)
+            self.assertGreater(call_count["n"], 2)   # 确认真的重试了，不是凑巧一次过
+
+    def test_persistent_inconsistency_raises_after_retries_exhausted(self):
+        # 一直不一致（检索侧持续在写、迟迟没写完）→ 重试用尽后应该报错，而不是
+        # 悄悄返回一份不完整/错乱的数据。
+        with tempfile.TemporaryDirectory() as d:
+            _write(d, "01-a.md", "---\nsource: uri-a\n---\nA\n")
+            real_list_md = loader._list_md
+            call_count = {"n": 0}
+
+            def always_flaky(live_dir):
+                call_count["n"] += 1
+                # 每次"读后"校验都返回和"读前"不同的列表 —— 永远不一致
+                if call_count["n"] % 2 == 0:
+                    return ["01-a.md", "99-ghost.md"]
+                return real_list_md(live_dir)
+
+            with mock.patch.object(loader, "_list_md", side_effect=always_flaky), \
+                 mock.patch.object(loader.time, "sleep"):
+                with self.assertRaises(RuntimeError):
+                    load_live(d, question="q", retries=3, retry_delay=0)
+
+    def test_file_deleted_mid_read_retries_then_succeeds(self):
+        # 单个文件在读取瞬间被删除（覆盖写入时先删旧文件）→ OSError，应重试；
+        # 重试时目录已经是新内容，读成功。
+        with tempfile.TemporaryDirectory() as d:
+            _write(d, "01-a.md", "---\nsource: uri-a\n---\nA\n")
+            call_count = {"n": 0}
+            real_open = open
+
+            def flaky_open(path, *a, **kw):
+                call_count["n"] += 1
+                if call_count["n"] == 1 and path.endswith("01-a.md"):
+                    raise OSError("file vanished mid-read (simulated overwrite)")
+                return real_open(path, *a, **kw)
+
+            with mock.patch("builtins.open", side_effect=flaky_open), \
+                 mock.patch.object(loader.time, "sleep"):
+                case = load_live(d, question="q", retries=3, retry_delay=0)
+            self.assertEqual(len(case.materials), 1)
 
 
 class TestGroupByTopic(unittest.TestCase):

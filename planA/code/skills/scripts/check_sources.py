@@ -29,6 +29,37 @@ HONEST_PAT = re.compile(r"(待核实|未找到|未在.*找到|无(来源|资料)
 # 事实性陈述的粗略信号（数字、"支持N种"、"率""倍"等），用于估计"该有来源的地方"
 FACT_HINT_PAT = re.compile(r"(\d+\s*(种|个|倍|%|％|项|款|年)|支持|兼容|领先|首个|唯一|准确率|召回)")
 
+# "来源：..." 整个来源子句，取到下一个"更新时间"标注或句末标点为止（不能只
+# 取第一个 token —— 多来源常写成 "来源：`A`、`B`、`C`，更新时间：..."，只看
+# 第一个会漏掉后面几个）。
+SOURCE_CLAUSE_RE = re.compile(r"来源[：:]\s*(.+?)(?:，?\s*更新时间|[。；\n]|$)")
+# 来源子句内，多个来源之间的分隔符：、，, 都算
+_SOURCE_ITEM_SPLIT_RE = re.compile(r"[、，,]")
+# 允许的非 URI 标注：诚实缺失标注本身、以及 CaseTools 的工具调用引用
+# （check_conflicts() 这类是真实发生的工具调用，不是编造，应放行）
+_ALLOWED_NON_URI_LABEL = re.compile(
+    r"^(未知|待核实|未找到|无来源|无资料|"
+    r"list_materials\(\)|read_material\(.*\)?|check_conflicts\(\)?)$"
+)
+
+
+def _find_fake_source_labels(text: str):
+    """返回"来源：..."子句里，每个来源既不是真实 URI/URL、也不是允许的诚实
+    标注/工具引用的那些 token。子句可能包含多个用"、"分隔的来源，逐个检查。"""
+    fakes = []
+    for clause_m in SOURCE_CLAUSE_RE.finditer(text):
+        clause = clause_m.group(1)
+        for item in _SOURCE_ITEM_SPLIT_RE.split(clause):
+            token = item.strip().strip("`").strip("《》（）").strip()
+            if not token:
+                continue
+            if token.startswith("viking://") or token.startswith("http://") or token.startswith("https://"):
+                continue
+            if _ALLOWED_NON_URI_LABEL.match(token):
+                continue
+            fakes.append(token)
+    return fakes
+
 
 def read_input(arg: str) -> str:
     if arg == "-":
@@ -72,10 +103,21 @@ def check(text: str) -> int:
             "既无来源也无\"待核实/未找到\"等诚实标注 —— 有编造风险，请核对。"
         )
 
+    # 规则4：出现"来源：X"标注，但 X 不是真实可溯源的 URI/URL（比如缩写成 "S1"
+    # 这种编号）→ 告警。契约要求来源必须可点回原文，缩写编号做不到这一点。
+    fake_labels = _find_fake_source_labels(text)
+    if fake_labels:
+        sample = "、".join(sorted(set(fake_labels))[:5])
+        warnings.append(
+            f"发现 {len(fake_labels)} 处「来源：」标注不是真实 URI/URL（如 {sample}）——"
+            "来源必须是可溯源的完整地址，不能用编号/缩写代替。"
+        )
+
     # --- 报告 ---
     print("=== check_sources.py 产物校验 ===")
     print(f"来源(viking://): {len(uris)}  外部链接(http): {len(urls)}  "
-          f"时间标注: {len(times)}  诚实缺失标注: {len(honest)}  事实信号: {len(fact_hints)}")
+          f"时间标注: {len(times)}  诚实缺失标注: {len(honest)}  事实信号: {len(fact_hints)}  "
+          f"疑似虚假来源标注: {len(fake_labels)}")
 
     if not warnings:
         print("✓ 通过：来源与时效标注符合产物契约。")
