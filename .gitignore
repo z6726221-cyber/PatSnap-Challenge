@@ -2,3 +2,21 @@
 .env
 *.env
 !.env.example
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+chroma_db/
+
+# planB —— 不推送到远程（本地保留）
+planB/
+
+# 第三方项目
+OpenViking-main/
+
+# 外部参考资料 / 素材（不进仓库）
+ref/
+planA/ref/
+挑战赛课题库.html
+*.jpg
+*.png
