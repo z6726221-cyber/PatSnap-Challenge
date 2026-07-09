@@ -13,7 +13,7 @@ import os
 import json
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-from agent_runtime import run_agent
+from agent_runtime import run_agent, run_agent_auto
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 SAMPLE_DIR = os.path.join(HERE, "..", "sample_retrieval")
@@ -24,10 +24,15 @@ _MODE_SKILL = {
     "comparison": "patsnap-compare",
     "promo": "patsnap-promo",
 }
+_SKILL_MODE = {v: k for k, v in _MODE_SKILL.items()}
 
 
 def mode_to_skill(mode: str) -> str:
     return _MODE_SKILL.get(mode, "patsnap-tech-qa")
+
+
+def skill_to_mode(skill: str) -> str:
+    return _SKILL_MODE.get(skill, "qa")
 
 
 def _fallback(mode: str) -> dict:
@@ -36,21 +41,57 @@ def _fallback(mode: str) -> dict:
     return data.get(mode, data["qa"])
 
 
+# —— 资料召回（模拟检索侧）：按问题挑最相关的已召回资料集 ——
+# 真实架构里这一步是检索系统按 message 做向量召回。demo 里用字面重合度模拟。
+# 注意：这里只挑「资料」，不决定「用哪个能力」——能力由 Agent 自主判断（见 run_agent_auto）。
+
+def _char_overlap(a: str, b: str) -> int:
+    """极简中文相关度：共享的 2-gram 数量。无第三方分词依赖。"""
+    grams = lambda s: {s[i:i + 2] for i in range(len(s) - 1)}
+    return len(grams(a) & grams(b))
+
+
+def pick_case(message: str) -> str:
+    """按问题与各 case 自带 question 的字面重合度挑最相关的 case；无重合则退第一个。"""
+    cases = list_cases()
+    if not cases:
+        return ""
+    best, best_score = None, 0
+    for c in cases:
+        score = _char_overlap(message, c["question"])
+        if score > best_score:
+            best, best_score = c["case"], score
+    return best if best else cases[0]["case"]
+
+
 def handle_chat(body: dict) -> dict:
-    """核心逻辑：mode→skill，加载 case 跑 Agent，失败降级。"""
-    case = body.get("case")
-    if not case:
-        return {"error": "缺少 case 参数"}
-    mode = body.get("mode", "qa")
-    skill = mode_to_skill(mode)
+    """召回资料(case) → Agent 自主选 skill 并执行 → 失败降级。
+    mode 是 Agent 选出来的（不是后端预判），仅用于前端展示能力标签与选降级档。"""
+    message = (body.get("message") or "").strip()
+    explicit_case = body.get("case")
+    if not message and not explicit_case:
+        return {"error": "缺少 message 参数"}
+
+    case = explicit_case or pick_case(message)
     case_dir = os.path.join(SAMPLE_DIR, case)
+
+    # 显式指定 mode/skill 时走定 skill 通道（供测试/回归），否则 Agent 自主选
+    explicit_mode = body.get("mode")
     try:
-        text, trace = run_agent(skill, case_dir, verbose=False)
-        return {"text": text, "trace": trace, "degraded": False}
+        if explicit_mode:
+            skill = mode_to_skill(explicit_mode)
+            text, trace = run_agent(skill, case_dir, verbose=False)
+            mode = explicit_mode
+        else:
+            text, trace, selected = run_agent_auto(case_dir, verbose=False)
+            mode = skill_to_mode(selected) if selected else "qa"
+        return {"text": text, "trace": trace, "degraded": False,
+                "mode": mode, "case": case}
     except Exception as e:  # noqa
+        mode = explicit_mode or "qa"
         fb = _fallback(mode)
         return {"text": fb["text"], "trace": [], "degraded": True,
-                "degraded_reason": str(e)[:120]}
+                "degraded_reason": str(e)[:120], "mode": mode, "case": case}
 
 
 def list_cases() -> list:

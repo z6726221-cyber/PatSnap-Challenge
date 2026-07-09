@@ -22,11 +22,51 @@ from loader import load_case
 from case_tools import CaseTools, TOOLS
 
 SKILLS_DIR = os.path.join(os.path.dirname(__file__), "..", "skills")
+SAMPLE_DIR = os.path.join(os.path.dirname(__file__), "..", "sample_retrieval")
 
 
 def _read(path):
     with open(path, encoding="utf-8") as f:
         return f.read()
+
+
+def _skill_frontmatter(skill_md):
+    """从 SKILL.md 抽 name 与 description（description 可能是多行折叠标量）。"""
+    if not skill_md.startswith("---"):
+        return "", ""
+    end = skill_md.find("\n---", 3)
+    fm = skill_md[3:end] if end != -1 else skill_md
+    name, desc, in_desc, desc_lines = "", "", False, []
+    for line in fm.splitlines():
+        if in_desc:
+            # 折叠标量的续行是缩进的；遇到下一个顶层 key 就停
+            if line and not line[0].isspace():
+                in_desc = False
+            else:
+                desc_lines.append(line.strip())
+                continue
+        if line.startswith("name:"):
+            name = line.split(":", 1)[1].strip()
+        elif line.startswith("description:"):
+            rest = line.split(":", 1)[1].strip()
+            if rest in (">-", ">", "|", "|-", ""):
+                in_desc = True          # 多行折叠，后续缩进行是内容
+            else:
+                desc = rest.strip('"').strip("'")
+    if desc_lines:
+        desc = " ".join(x for x in desc_lines if x)
+    return name, desc
+
+
+def list_skills():
+    """扫 skills 目录，返回 [{name, description}]，供 Agent 自主判断该用哪个。"""
+    out = []
+    for entry in sorted(os.listdir(SKILLS_DIR)):
+        skill_path = os.path.join(SKILLS_DIR, entry, "SKILL.md")
+        if os.path.exists(skill_path):
+            name, desc = _skill_frontmatter(_read(skill_path))
+            out.append({"name": name or entry, "description": desc})
+    return out
 
 
 def load_skill_prompt(skill_name):
@@ -53,6 +93,99 @@ def load_skill_prompt(skill_name):
         "===== SKILL.md =====\n" + skill_md + "".join(ref_blocks)
     )
     return system
+
+
+# select_skill 工具：让 Agent 自主判断该用哪个 skill。
+# Agent 调用它并给出 skill_name → 后端把该 skill 的完整 SKILL.md 回给它 → 据此执行。
+SELECT_SKILL_TOOL = {
+    "type": "function", "function": {
+        "name": "select_skill",
+        "description": "根据用户问题，从可选 skill 里选一个最合适的并加载它。这是你的第一步：先想清楚这是技术问答、竞品对比、还是宣传生成，再选对应 skill。工具会返回该 skill 的完整操作说明（Workflow/Output Contract/Boundaries），你之后严格照它执行。",
+        "parameters": {"type": "object", "properties": {
+            "skill_name": {"type": "string", "description": "要加载的 skill 名，取自可选 skill 列表的 name 字段"},
+        }, "required": ["skill_name"]}}}
+
+
+def run_agent_auto(case_dir, max_turns=8, verbose=True):
+    """Agent 自主选 skill：system 只给三个 skill 的 name+description，
+    Agent 先 select_skill 选能力（后端回传该 skill 全文），再用 case 工具执行。
+    返回 (最终产物, 轨迹, 被选中的 skill 名)。"""
+    cli = LLMClient()
+    case = load_case(case_dir)
+    tools_obj = CaseTools(case)
+    tool_impl = tools_obj.impl()
+
+    skills = list_skills()
+    catalog = "\n".join(f"- {s['name']}: {s['description']}" for s in skills)
+    system = (
+        "你是「芽懂」——智慧芽私域知识库的技术助手。用户会用大白话提一个需求，"
+        "你要先判断它属于下面哪个 skill 的场景，用 select_skill 加载那个 skill，"
+        "然后严格按它返回的 Workflow / Output Contract / Boundaries 执行。\n\n"
+        "可选 skill：\n" + catalog + "\n\n"
+        "本次资料已由检索系统召回，你通过 list_materials / read_material / "
+        "check_conflicts 三个工具访问。不要凭记忆编造，所有事实都来自工具返回的资料，"
+        "并附来源和更新时间；资料没支撑的点标「待核实」。\n"
+        "第一步必须是 select_skill。"
+    )
+    messages = [
+        {"role": "system", "content": system},
+        {"role": "user", "content": case.question},
+    ]
+    all_tools = [SELECT_SKILL_TOOL] + TOOLS
+    trace = []
+    selected = None
+
+    for turn in range(max_turns):
+        msg, usage = cli.chat(messages, tools=all_tools)
+        assistant_msg = {"role": "assistant", "content": msg.get("content") or ""}
+        tool_calls = msg.get("tool_calls")
+        if tool_calls:
+            assistant_msg["tool_calls"] = tool_calls
+        messages.append(assistant_msg)
+
+        if not tool_calls:
+            if verbose:
+                print(f"[turn {turn}] Agent 给出最终产物。")
+            return msg.get("content", ""), trace, selected
+
+        for tc in tool_calls:
+            fname = tc["function"]["name"]
+            try:
+                args = json.loads(tc["function"]["arguments"] or "{}")
+            except json.JSONDecodeError:
+                args = {}
+
+            if fname == "select_skill":
+                sname = args.get("skill_name", "")
+                skill_path = os.path.join(SKILLS_DIR, sname, "SKILL.md")
+                if os.path.exists(skill_path):
+                    selected = sname
+                    result = {"skill_md": load_skill_prompt(sname)}
+                    if verbose:
+                        print(f"[turn {turn}] Agent 选择 skill: {sname}")
+                else:
+                    result = {"error": f"未知 skill: {sname}",
+                              "available": [s["name"] for s in skills]}
+            else:
+                impl = tool_impl.get(fname)
+                if impl is None:
+                    result = {"error": f"unknown tool {fname}"}
+                else:
+                    try:
+                        result = impl(**args)
+                    except Exception as e:  # noqa
+                        result = {"error": str(e)}
+                if verbose:
+                    print(f"[turn {turn}] 调用 {fname}({args})")
+
+            trace.append({"turn": turn, "tool": fname, "args": args, "result": result})
+            messages.append({
+                "role": "tool",
+                "tool_call_id": tc["id"],
+                "content": json.dumps(result, ensure_ascii=False),
+            })
+
+    return "(达到最大轮次，未收敛)", trace, selected
 
 
 def run_agent(skill_name, case_dir, max_turns=8, verbose=True):
