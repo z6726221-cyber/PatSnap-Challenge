@@ -95,29 +95,31 @@ planB/code/
 
 | # | 任务 | 状态 |
 |---|---|---|
-| 1 | 脚手架：目录结构 + requirements.txt + backend/.env（真实网关，已验证连通）+ .env.example + .gitignore 规则 | 待开始 |
-| 2 | TRIZ 语料编造（corpus/domain-docs + open-source + official）+ corpus_manifest.json，含故意冲突点 | 待开始 |
-| 3 | Wiki 编译（Claude 认知工作）：wiki/domain/triz/*.md（5+页）+ product-capability/*.md + open-source-project/openviking.md + 1个初始竞品页 + index.md + SOUL.md（术语表逐条核实）+ error-book.md 初始记录 | 待开始 |
-| 4 | tools/build_index.py（TDD）：整页embedding入chromadb + jieba分词BM25索引 | 待开始 |
-| 5 | tools/build_graph.py（TDD）：扫描related+wikilink→graph.json | 待开始 |
-| 6 | tools/fetch_competitor.py（TDD + 真实网络验证）：trafilatura抓取解析，失败清晰提示 | 待开始 |
-| 7 | tools/lint_wiki.py（TDD）：断链/孤儿页/无源结论/过期未标注 | 待开始 |
-| 8 | backend/llm_client.py：openai SDK封装内部网关（复用已验证配置） | 待开始 |
-| 9 | backend/retrieval.py（TDD）：精确/关系/模糊三路由，整页返回+溯源 | 待开始 |
-| 10 | backend/wiki_tools.py + agent_runtime.py（TDD，mock测工具+真实e2e测完整链路）：function-calling循环 | 待开始 |
-| 11 | patsnap-memory-skill/workflows/tech-qa.md + competitor-analysis.md + SKILL.md | 待开始 |
-| 12 | backend/run_all.py 端到端验收：3种问法口径一致性 + 真实竞品URL抓取（成功+故意失败两种场景） | 待开始 |
-| 13 | pytest 全量跑绿 + 更新本计划文档反映落地状态 | 待开始 |
+| 1 | 脚手架：目录结构 + requirements.txt + backend/.env（真实网关，已验证连通）+ .env.example + .gitignore 规则 | ✅ 完成 |
+| 2 | TRIZ 语料编造（corpus/domain-docs + open-source + official）+ corpus_manifest.json，含故意冲突点 | ✅ 完成 |
+| 3 | Wiki 编译（Claude 认知工作）：wiki/domain/triz/*.md（5+页）+ product-capability/*.md + open-source-project/openviking.md + 1个初始竞品页 + index.md + SOUL.md（术语表逐条核实）+ error-book.md 初始记录 | ✅ 完成 |
+| 4 | tools/build_index.py（TDD）：整页embedding入chromadb + jieba分词BM25索引 | ✅ 完成 |
+| 5 | tools/build_graph.py（TDD）：扫描related+wikilink→graph.json | ✅ 完成 |
+| 6 | tools/fetch_competitor.py（TDD + 真实网络验证）：trafilatura抓取解析，失败清晰提示 | ✅ 完成 |
+| 7 | tools/lint_wiki.py（TDD）：断链/孤儿页/无源结论/过期未标注 | ✅ 完成 |
+| 8 | backend/llm_client.py：openai SDK封装内部网关（复用已验证配置） | ✅ 完成 |
+| 9 | backend/retrieval.py（TDD）：精确/关系/模糊三路由，整页返回+溯源 | ✅ 完成 |
+| 10 | backend/wiki_tools.py + agent_runtime.py（TDD，mock测工具+真实e2e测完整链路）：function-calling循环 | ✅ 完成 |
+| 11 | patsnap-memory-skill/workflows/tech-qa.md + competitor-analysis.md + SKILL.md | ✅ 完成 |
+| 12 | backend/run_all.py 端到端验收：3种问法口径一致性 + 真实竞品URL抓取（成功+故意失败两种场景） | ✅ 完成 |
+| 13 | pytest 全量跑绿 + 更新本计划文档反映落地状态 | ✅ 完成 |
+
+**落地状态**（2026-07-09）：全部 13 项任务完成。`pytest` 52 项全绿（含真实网络测试，标记 `network`）。`backend/run_all.py` 用真实 `gpt-5.5` + 真实网关跑通：3 种问法核心结论一致（矛盾矩阵 39 参数）、竞品 URL 临场抓取成功场景（真实抓取 PatentSight+ 官网）与故意失败场景（不可达域名，清晰提示未编造）均通过。过程中发现并修复一处真实 bug：`retrieval.load_page` 未把 YAML frontmatter 里形如 `2026-07-08` 的日期标量转回字符串，会在 `agent_runtime.py` 的 `json.dumps(result)`（工具结果回传给 LLM）处抛出 `TypeError: Object of type date is not JSON serializable`——只有在竞品页面（`sources` 用 `fetched_at` 而非 `doc_date` 字段）触发真实 e2e 测试时才暴露，已在 `retrieval._normalize_sources` 里改为通用日期类型转换修复。
 
 ---
 
 ## 验收标准（对齐 spec §8.1 相关条目）
 
-- [ ] 技术问答：同一问题 3 种不同问法，答案核心结论一致（口径统一，主验收指标）
-- [ ] 竞品对比：真实 URL 临场抓取可用；用一个故意失败的 URL 验证失败提示清晰、不编造
-- [ ] 每个生成结果带"来源列表 + 待核实清单"
-- [ ] Wiki 每个结论可回查 corpus/（raw/），带 doc_date
-- [ ] 存在至少一处版本冲突，`superseded_by` 链条正确，error-book 记录裁决依据
-- [ ] 术语表每条经过真实核实（WebFetch 核对官网）
-- [ ] 无 API key 泄露在 git 历史（`.env` 已确认 gitignore 生效）
-- [ ] pytest 全绿；`run_all.py` 用真实 gpt-5.5 跑通不降级
+- [x] 技术问答：同一问题 3 种不同问法，答案核心结论一致（口径统一，主验收指标）——`run_all.py` 验证 3 种问法均含"39"（矛盾矩阵参数数）
+- [x] 竞品对比：真实 URL 临场抓取可用；用一个故意失败的 URL 验证失败提示清晰、不编造——成功场景抓取 PatentSight+ 官网，失败场景对不可达域名给出"抓取失败"提示
+- [x] 每个生成结果带"来源列表 + 待核实清单"——`workflows/tech-qa.md`、`workflows/competitor-analysis.md` 的 Output Contract 均强制要求
+- [x] Wiki 每个结论可回查 corpus/（raw/），带 doc_date——`lint_wiki.py` 校验通过，无 unsourced_conclusion
+- [x] 存在至少一处版本冲突，`superseded_by` 链条正确，error-book 记录裁决依据——`triz-contradiction-matrix.md`（39参数 vs 旧笔记48参数）
+- [x] 术语表每条经过真实核实（WebFetch 核对官网）——`SOUL.md` 每条术语标注核实来源
+- [x] 无 API key 泄露在 git 历史（`.env` 已确认 gitignore 生效）——`backend/.env` 已在 `.gitignore`，仓库只提交 `.env.example`
+- [x] pytest 全绿；`run_all.py` 用真实 gpt-5.5 跑通不降级——52 项测试全通过（含 `network` 标记的真实网络测试），`run_all.py` 端到端全部通过

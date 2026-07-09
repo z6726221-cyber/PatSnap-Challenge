@@ -45,17 +45,20 @@ tags:
 
 ## 先读（Workflow 依赖，必读）
 
-进入 Workflow 前**必须先读** `../references/资料使用SOP.md` —— 用料的统一规矩（看料→读料→处理多来源→附来源时效）。
+进入 Workflow 前**必须先读**：
+1. `../SOUL.md` —— 语言人格层：术语规范（生成前强制校准命名）+ 风格底线。恒定注入，每次都读。
+2. `../references/资料使用SOP.md` —— 用料的统一规矩（看料→读料→处理多来源→附来源时效）。
 
 ## Workflow
 
-严格按《资料使用 SOP》执行：
+严格按《资料使用 SOP》执行，命名一律对照 `../SOUL.md` 术语表：
 
 1. **看清有哪些料**：`list_materials()`，按标题/话题/相关度判断哪些与问题相关。
 2. **读相关料**：对相关的调 `read_material(source)` 取正文。事实只来自这里，不凭记忆。
 3. **处理多来源**：`check_conflicts()`。若相关话题 `has_conflict=true`，以 `primary` 为主答案，并把 `conflict_note` 附进回答（曝光另一说法+来源+时效）。
-4. **组织答案**：先给结论、再给依据；每个事实点后附来源 + 更新时间。
-5. **自检**：见 Verification。
+4. **术语校准**：对照 `../SOUL.md` 术语节统一命名，改正误用写法；命名与召回资料正文冲突时以 SOUL 术语表为准；表中列为"待核实候选"的词不当正确答案用，标"待核实"。
+5. **组织答案**：先给结论、再给依据；每个事实点后附来源 + 更新时间。
+6. **自检**：见 Verification。
 
 ## Output Contract
 
@@ -84,5 +87,6 @@ python3 ../scripts/check_sources.py <本次答案文件或文本>
 
 ## Runtime Resources
 
+- `../SOUL.md` —— 语言人格层：术语规范 + 风格底线（必读，恒定注入）。
 - `../references/资料使用SOP.md` —— 用料统一规矩（必读）。
 - `../scripts/check_sources.py` —— 产物校验（来源+时效）。

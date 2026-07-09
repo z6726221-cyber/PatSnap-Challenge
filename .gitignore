@@ -20,3 +20,17 @@ planA/ref/
 挑战赛课题库.html
 *.jpg
 *.png
+课题定向.md
+历史/
+planA/demo原型/
+
+# Claude Code 工作目录（本地）
+.claude/
+
+# sample_retrieval 下的散落检索产物（非样例契约，含内部真实数据，不入库）
+planA/code/sample_retrieval/2.md
+planA/code/sample_retrieval/2026*.md
+
+# 例外：前端运行必需的静态资源（logo 等）要入库
+!planA/code/web/assets/
+!planA/code/web/assets/**

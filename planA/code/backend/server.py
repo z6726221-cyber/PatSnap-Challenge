@@ -125,7 +125,27 @@ class Handler(BaseHTTPRequestHandler):
             return self._send(404, {"error": "前端未构建"})
         if self.path == "/api/cases":
             return self._send(200, {"cases": list_cases()})
+        if self.path.startswith("/assets/"):
+            return self._serve_asset(self.path)
         return self._send(404, {"error": "not found"})
+
+    # 静态资源：只服务 web/assets 下的白名单类型，防目录穿越
+    _ASSET_TYPES = {".png": "image/png", ".jpg": "image/jpeg",
+                    ".jpeg": "image/jpeg", ".svg": "image/svg+xml",
+                    ".webp": "image/webp", ".ico": "image/x-icon"}
+
+    def _serve_asset(self, path):
+        rel = path.lstrip("/")                       # assets/xxx.png
+        assets_root = os.path.realpath(os.path.join(WEB_DIR, "assets"))
+        target = os.path.realpath(os.path.join(WEB_DIR, rel))
+        # 必须落在 assets 目录内（挡住 ../ 穿越）
+        if os.path.commonpath([assets_root, target]) != assets_root:
+            return self._send(403, {"error": "forbidden"})
+        ext = os.path.splitext(target)[1].lower()
+        if ext not in self._ASSET_TYPES or not os.path.isfile(target):
+            return self._send(404, {"error": "not found"})
+        with open(target, "rb") as f:
+            return self._send(200, f.read(), self._ASSET_TYPES[ext])
 
     def do_POST(self):
         if self.path != "/api/chat":
