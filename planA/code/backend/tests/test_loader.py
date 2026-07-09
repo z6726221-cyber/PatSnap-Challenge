@@ -6,7 +6,7 @@ import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from loader import parse_material, load_case, group_by_topic, Material
+from loader import parse_material, parse_materials_from_file, load_case, group_by_topic, Material
 
 
 def _write(dir_path, name, content):
@@ -66,6 +66,71 @@ class TestLoadCase(unittest.TestCase):
             _write(d, "01-a.md", "---\nsource: x\n---\n正文\n")
             with self.assertRaises(FileNotFoundError):
                 load_case(d)
+
+
+class TestParseMaterialsFromFile(unittest.TestCase):
+    """OpenViking 原始检索包解析 —— 一个文件里塞多条命中，无 frontmatter。"""
+
+    def _raw_pack(self, with_full_text=True):
+        full_text_block = (
+            "\n全文内容：\n\nB 完整正文。\n"
+            if with_full_text else ""
+        )
+        return (
+            "# OpenViking 检索结果包\n\n"
+            "- 候选资源数：2\n\n"
+            "## 命中资源明细\n\n"
+            "### 1. viking://resources/a.md\n\n"
+            "- 关键词匹配分：43\n"
+            "- URI：`viking://resources/a.md`\n\n"
+            "摘要/片段：\n\nA 摘要...(truncated for embedding)\n\n"
+            "### 2. viking://resources/b.md\n\n"
+            "- 关键词匹配分：40\n"
+            "- URI：`viking://resources/b.md`\n\n"
+            "摘要/片段：\n\nB 摘要片段。\n"
+            f"{full_text_block}\n"
+            "## 原始工具返回\n\n"
+            "```json\n{\"resources\": []}\n```\n"
+        )
+
+    def test_splits_into_multiple_materials_by_hit_entry(self):
+        mats = parse_materials_from_file(self._raw_pack(), filename="raw.md")
+        self.assertEqual(len(mats), 2)
+        self.assertEqual(mats[0].source, "viking://resources/a.md")
+        self.assertEqual(mats[1].source, "viking://resources/b.md")
+        self.assertEqual(mats[0].score, 43.0)
+        self.assertEqual(mats[1].score, 40.0)
+
+    def test_prefers_full_text_over_abstract(self):
+        mats = parse_materials_from_file(self._raw_pack(with_full_text=True), filename="raw.md")
+        self.assertIn("B 完整正文", mats[1].body)
+
+    def test_falls_back_to_abstract_with_truncation_note(self):
+        mats = parse_materials_from_file(self._raw_pack(), filename="raw.md")
+        self.assertIn("A 摘要", mats[0].body)
+        self.assertIn("可能被截断", mats[0].body)
+
+    def test_no_hit_section_falls_back_to_single_material(self):
+        # 没有"命中资源明细"小节 → 退回契约理想格式，整份文件当一条资料
+        text = "---\nsource: x\n---\n纯正文\n"
+        mats = parse_materials_from_file(text, filename="ideal.md")
+        self.assertEqual(len(mats), 1)
+        self.assertEqual(mats[0].source, "x")
+
+    def test_hit_entry_headers_inside_body_do_not_split_further(self):
+        # 命中条目正文本身含 "## N. xxx" 二级标题（原文片段），不应被误判为
+        # 小节结束点或新条目，必须完整保留在同一条 Material 里。
+        text = (
+            "## 命中资源明细\n\n"
+            "### 1. viking://resources/c.md\n\n"
+            "- URI：`viking://resources/c.md`\n\n"
+            "全文内容：\n\n"
+            "## 7. 主线四：工程服务与交付\n\n正文内容...\n\n"
+            "## 8. 交付保障\n\n更多正文...\n"
+        )
+        mats = parse_materials_from_file(text, filename="raw.md")
+        self.assertEqual(len(mats), 1)
+        self.assertIn("交付保障", mats[0].body)
 
 
 class TestGroupByTopic(unittest.TestCase):

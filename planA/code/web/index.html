@@ -105,6 +105,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
 .msg.me .bubble{background:var(--ink);color:#fff;border-color:var(--ink)}
 .bubble p{margin:0 0 8px}.bubble p:last-child{margin:0}
 .bubble b{font-weight:800}
+.bubble h1,.bubble h2,.bubble h3{line-height:1.4;color:var(--ink);margin:14px 0 6px}
+.bubble h1:first-child,.bubble h2:first-child,.bubble h3:first-child{margin-top:0}
+.bubble h1{font-size:16.5px;font-weight:900}
+.bubble h2{font-size:15px;font-weight:900;padding-bottom:5px;border-bottom:1px solid var(--hair)}
+.bubble h3{font-size:13.5px;font-weight:800}
+.bubble hr{border:none;border-top:1px dashed var(--soft);margin:12px 0}
+.msg.me .bubble h1,.msg.me .bubble h2,.msg.me .bubble h3{color:#fff}
+.msg.me .bubble h2{border-bottom-color:rgba(255,255,255,.2)}
+.msg.me .bubble hr{border-top-color:rgba(255,255,255,.2)}
 .modeflag{font-size:11px;font-weight:700;color:var(--green);margin-bottom:8px;display:inline-block;background:var(--green-soft);border:1px solid #cadecf;border-radius:6px;padding:2px 9px}
 .src{margin-top:10px;padding-top:9px;border-top:1px dashed var(--soft);display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .src .lbl{font-size:11px;font-weight:800;color:var(--muted)}
@@ -335,9 +344,14 @@ function recordMsg(role, html){
   renderHist();
 }
 
-// markdown 表格 + 📎🕐⚠ 标记 → 原型风格
+// markdown 标题/粗体/分隔线/表格 + 📎🕐⚠ 标记 → 原型风格
 function renderText(text){
   let html = esc(text);
+  html = html.replace(/^###\s+(.+)$\n?/gm, '<h3>$1</h3>');
+  html = html.replace(/^##\s+(.+)$\n?/gm, '<h2>$1</h2>');
+  html = html.replace(/^#\s+(.+)$\n?/gm, '<h1>$1</h1>');
+  html = html.replace(/^-{3,}\s*$\n?/gm, '<hr>');
+  html = html.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
   html = html.replace(/((?:^\s*\|.*\|\s*$\n?)+)/gm, block => {
     const rows = block.trim().split("\n").filter(r => r.trim().startsWith("|"));
     if (rows.length < 2) return block;
