@@ -13,10 +13,12 @@ import os
 import json
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-from agent_runtime import run_agent, run_agent_auto
+from agent_runtime import run_agent, run_agent_auto, run_agent_with_case, run_agent_auto_with_case
+from loader import load_live
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 SAMPLE_DIR = os.path.join(HERE, "..", "sample_retrieval")
+LIVE_DIR = os.path.join(SAMPLE_DIR, "live")
 WEB_DIR = os.path.join(HERE, "..", "web")
 
 _MODE_SKILL = {
@@ -41,9 +43,8 @@ def _fallback(mode: str) -> dict:
     return data.get(mode, data["qa"])
 
 
-# —— 资料召回（模拟检索侧）：按问题挑最相关的已召回资料集 ——
-# 真实架构里这一步是检索系统按 message 做向量召回。demo 里用字面重合度模拟。
-# 注意：这里只挑「资料」，不决定「用哪个能力」——能力由 Agent 自主判断（见 run_agent_auto）。
+# —— 假样例回归通道：按问题挑最相关的预置 case 文件夹 ——
+# 仅供测试/回归用（显式传 case 或 mode 时）。真实提问走 live 目录，见 handle_chat。
 
 def _char_overlap(a: str, b: str) -> int:
     """极简中文相关度：共享的 2-gram 数量。无第三方分词依赖。"""
@@ -64,34 +65,49 @@ def pick_case(message: str) -> str:
     return best if best else cases[0]["case"]
 
 
+def _has_live_material() -> bool:
+    return os.path.isdir(LIVE_DIR) and any(n.endswith(".md") for n in os.listdir(LIVE_DIR))
+
+
 def handle_chat(body: dict) -> dict:
-    """召回资料(case) → Agent 自主选 skill 并执行 → 失败降级。
+    """真实提问：读检索侧写到 sample_retrieval/live/ 的实时资料 + 用户问题 → Agent
+    自主选 skill 并执行。live/ 里没有资料（检索还没跑过）时直接降级，不再用假样例兜底。
+
+    显式传 case（供测试/回归）时走假样例 case 文件夹通道，行为不变。
     mode 是 Agent 选出来的（不是后端预判），仅用于前端展示能力标签与选降级档。"""
     message = (body.get("message") or "").strip()
     explicit_case = body.get("case")
     if not message and not explicit_case:
         return {"error": "缺少 message 参数"}
 
-    case = explicit_case or pick_case(message)
-    case_dir = os.path.join(SAMPLE_DIR, case)
-
-    # 显式指定 mode/skill 时走定 skill 通道（供测试/回归），否则 Agent 自主选
     explicit_mode = body.get("mode")
+    case_label = explicit_case or "live"
     try:
-        if explicit_mode:
-            skill = mode_to_skill(explicit_mode)
-            text, trace = run_agent(skill, case_dir, verbose=False)
-            mode = explicit_mode
+        if explicit_case:
+            case_dir = os.path.join(SAMPLE_DIR, explicit_case)
+            if explicit_mode:
+                text, trace = run_agent(mode_to_skill(explicit_mode), case_dir, verbose=False)
+                mode = explicit_mode
+            else:
+                text, trace, selected = run_agent_auto(case_dir, verbose=False)
+                mode = skill_to_mode(selected) if selected else "qa"
         else:
-            text, trace, selected = run_agent_auto(case_dir, verbose=False)
-            mode = skill_to_mode(selected) if selected else "qa"
+            if not _has_live_material():
+                raise RuntimeError("live/ 暂无检索资料（检索系统还未产出结果）")
+            case = load_live(LIVE_DIR, question=message)
+            if explicit_mode:
+                text, trace = run_agent_with_case(mode_to_skill(explicit_mode), case, verbose=False)
+                mode = explicit_mode
+            else:
+                text, trace, selected = run_agent_auto_with_case(case, verbose=False)
+                mode = skill_to_mode(selected) if selected else "qa"
         return {"text": text, "trace": trace, "degraded": False,
-                "mode": mode, "case": case}
+                "mode": mode, "case": case_label}
     except Exception as e:  # noqa
         mode = explicit_mode or "qa"
         fb = _fallback(mode)
         return {"text": fb["text"], "trace": [], "degraded": True,
-                "degraded_reason": str(e)[:120], "mode": mode, "case": case}
+                "degraded_reason": str(e)[:120], "mode": mode, "case": case_label}
 
 
 def list_cases() -> list:

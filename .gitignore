@@ -31,6 +31,9 @@ planA/demo原型/
 planA/code/sample_retrieval/2.md
 planA/code/sample_retrieval/2026*.md
 
+# live/ 是真实检索的实时落盘目录，每次覆盖且可能含内部真实数据，不入库
+planA/code/sample_retrieval/live/
+
 # 例外：前端运行必需的静态资源（logo 等）要入库
 !planA/code/web/assets/
 !planA/code/web/assets/**

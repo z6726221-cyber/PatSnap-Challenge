@@ -6,7 +6,7 @@ import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from loader import parse_material, parse_materials_from_file, load_case, group_by_topic, Material
+from loader import parse_material, parse_materials_from_file, load_case, load_live, group_by_topic, Material
 
 
 def _write(dir_path, name, content):
@@ -131,6 +131,49 @@ class TestParseMaterialsFromFile(unittest.TestCase):
         mats = parse_materials_from_file(text, filename="raw.md")
         self.assertEqual(len(mats), 1)
         self.assertIn("交付保障", mats[0].body)
+
+
+class TestLoadLive(unittest.TestCase):
+    """load_live() —— 真实检索场景：固定目录、每次覆盖、question 由调用方传入（不读 question.txt）。"""
+
+    def test_reads_single_md_with_frontmatter(self):
+        with tempfile.TemporaryDirectory() as d:
+            _write(d, "01-a.md", "---\nsource: uri-a\nupdated_at: 2026-06\ntopic: t1\nscore: 0.9\n---\nA正文\n")
+            case = load_live(d, question="用户实时提的问题")
+            self.assertEqual(case.question, "用户实时提的问题")
+            self.assertEqual(len(case.materials), 1)
+            self.assertEqual(case.materials[0].source, "uri-a")
+
+    def test_multiple_md_files_all_parsed_and_merged(self):
+        # 检索侧可能按子查询分开写多个 md；每个都要被读到，合并进同一个 Case
+        with tempfile.TemporaryDirectory() as d:
+            _write(d, "01-a.md", "---\nsource: uri-a\ntopic: t1\nscore: 0.9\n---\nA正文\n")
+            _write(d, "02-b.md", "---\nsource: uri-b\ntopic: t2\nscore: 0.5\n---\nB正文\n")
+            case = load_live(d, question="q")
+            sources = {m.source for m in case.materials}
+            self.assertEqual(sources, {"uri-a", "uri-b"})
+
+    def test_single_file_with_multiple_hit_entries_all_extracted(self):
+        # 一个 md 内含多条命中（OpenViking 检索包格式）也要全部拆出来
+        raw_pack = (
+            "## 命中资源明细\n\n"
+            "### 1. viking://resources/a.md\n\n- URI：`viking://resources/a.md`\n\n全文内容：\n\nA\n\n"
+            "### 2. viking://resources/b.md\n\n- URI：`viking://resources/b.md`\n\n全文内容：\n\nB\n\n"
+            "## 原始工具返回\n\n```json\n{}\n```\n"
+        )
+        with tempfile.TemporaryDirectory() as d:
+            _write(d, "search-result.md", raw_pack)
+            case = load_live(d, question="q")
+            self.assertEqual(len(case.materials), 2)
+
+    def test_missing_dir_raises(self):
+        with self.assertRaises(FileNotFoundError):
+            load_live("/tmp/definitely-not-a-real-live-dir-xyz", question="q")
+
+    def test_dir_with_no_md_raises(self):
+        with tempfile.TemporaryDirectory() as d:
+            with self.assertRaises(FileNotFoundError):
+                load_live(d, question="q")
 
 
 class TestGroupByTopic(unittest.TestCase):

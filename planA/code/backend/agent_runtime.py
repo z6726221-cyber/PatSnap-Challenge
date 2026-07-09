@@ -107,11 +107,17 @@ SELECT_SKILL_TOOL = {
 
 
 def run_agent_auto(case_dir, max_turns=8, verbose=True):
+    """Agent 自主选 skill，case 来自假样例 case 文件夹（case-xxx/question.txt + md）。
+    返回 (最终产物, 轨迹, 被选中的 skill 名)。"""
+    return run_agent_auto_with_case(load_case(case_dir), max_turns=max_turns, verbose=verbose)
+
+
+def run_agent_auto_with_case(case, max_turns=8, verbose=True):
     """Agent 自主选 skill：system 只给三个 skill 的 name+description，
     Agent 先 select_skill 选能力（后端回传该 skill 全文），再用 case 工具执行。
+    接收一个已构建好的 Case（假样例 case 文件夹或真实检索 live 目录皆可）。
     返回 (最终产物, 轨迹, 被选中的 skill 名)。"""
     cli = LLMClient()
-    case = load_case(case_dir)
     tools_obj = CaseTools(case)
     tool_impl = tools_obj.impl()
 
@@ -189,9 +195,14 @@ def run_agent_auto(case_dir, max_turns=8, verbose=True):
 
 
 def run_agent(skill_name, case_dir, max_turns=8, verbose=True):
-    """加载 skill + case 文件夹，让 Agent 生成产物。返回 (最终产物, 轨迹)。"""
+    """加载 skill + 假样例 case 文件夹，让 Agent 生成产物。返回 (最终产物, 轨迹)。"""
+    return run_agent_with_case(skill_name, load_case(case_dir), max_turns=max_turns, verbose=verbose)
+
+
+def run_agent_with_case(skill_name, case, max_turns=8, verbose=True):
+    """加载 skill + 已构建好的 Case（假样例或真实检索 live 目录皆可），让 Agent 生成产物。
+    返回 (最终产物, 轨迹)。"""
     cli = LLMClient()
-    case = load_case(case_dir)
     tools_obj = CaseTools(case)
     tool_impl = tools_obj.impl()
 

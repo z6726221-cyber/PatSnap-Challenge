@@ -162,7 +162,10 @@ def parse_materials_from_file(text: str, filename: str) -> list:
 
 
 def load_case(case_dir: str) -> Case:
-    """读一个 case 文件夹：question.txt 必需；md 资料按 score 降序（score 相同按文件名）。"""
+    """读一个 case 文件夹：question.txt 必需；md 资料按 score 降序（score 相同按文件名）。
+
+    用于假样例演示与回归测试（sample_retrieval/case-xxx/）。真实检索场景见 load_live()。
+    """
     q_path = os.path.join(case_dir, "question.txt")
     if not os.path.exists(q_path):
         raise FileNotFoundError(f"缺少 question.txt: {case_dir}")
@@ -176,6 +179,27 @@ def load_case(case_dir: str) -> Case:
         with open(os.path.join(case_dir, name), encoding="utf-8") as f:
             materials.extend(parse_materials_from_file(f.read(), filename=name))
     # score 降序；score 都为 0 时保持文件名顺序（sorted 已按名，稳定排序保序）
+    materials.sort(key=lambda m: m.score, reverse=True)
+    return Case(question=question, materials=materials)
+
+
+def load_live(live_dir: str, question: str) -> Case:
+    """读检索侧实时写出的 live 目录（固定路径，每次检索覆盖整目录），配合用户
+    当次提问组成 Case。目录下可以是 1 个或多个 .md（比如按子查询分开检索），
+    每个文件各自可能被解析成一条或多条 Material（见 parse_materials_from_file）。
+
+    真实检索场景：不再依赖 question.txt——问题就是用户刚提的那句话，由调用方传入。
+    """
+    if not os.path.isdir(live_dir):
+        raise FileNotFoundError(f"检索结果目录不存在: {live_dir}")
+    md_names = sorted(n for n in os.listdir(live_dir) if n.endswith(".md"))
+    if not md_names:
+        raise FileNotFoundError(f"检索结果目录里没有 .md 文件: {live_dir}")
+
+    materials = []
+    for name in md_names:
+        with open(os.path.join(live_dir, name), encoding="utf-8") as f:
+            materials.extend(parse_materials_from_file(f.read(), filename=name))
     materials.sort(key=lambda m: m.score, reverse=True)
     return Case(question=question, materials=materials)
 

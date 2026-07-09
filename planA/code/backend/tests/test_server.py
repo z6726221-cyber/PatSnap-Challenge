@@ -48,8 +48,10 @@ class TestPickCase(unittest.TestCase):
 
 class TestHandleChat(unittest.TestCase):
     def test_auto_skill_returns_mode_from_agent(self):
-        # Agent 自主选了 compare → 后端把 skill 反推成 mode 回给前端
-        with mock.patch.object(server, "run_agent_auto",
+        # 无 case → 走真实 live 通道；Agent 自主选了 compare → 后端把 skill 反推成 mode
+        with mock.patch.object(server, "_has_live_material", return_value=True), \
+             mock.patch.object(server, "load_live", return_value="fake-case"), \
+             mock.patch.object(server, "run_agent_auto_with_case",
                                return_value=("对比表 📎 viking://x 🕐 2026-06",
                                              [{"tool": "select_skill", "args": {}}],
                                              "patsnap-compare")):
@@ -57,7 +59,7 @@ class TestHandleChat(unittest.TestCase):
         self.assertIn("对比表", out["text"])
         self.assertEqual(out["degraded"], False)
         self.assertEqual(out["mode"], "comparison")   # 来自 Agent 的选择
-        self.assertTrue(out["case"])
+        self.assertEqual(out["case"], "live")
 
     def test_explicit_mode_bypasses_auto(self):
         with mock.patch.object(server, "run_agent",
@@ -69,11 +71,25 @@ class TestHandleChat(unittest.TestCase):
         self.assertEqual(m.call_args[0][0], "patsnap-promo")
 
     def test_error_degrades(self):
-        with mock.patch.object(server, "run_agent_auto", side_effect=RuntimeError("LLM down")):
+        # live 通道内部出错（LLM 调用失败等）也要降级
+        with mock.patch.object(server, "_has_live_material", return_value=True), \
+             mock.patch.object(server, "load_live", return_value="fake-case"), \
+             mock.patch.object(server, "run_agent_auto_with_case", side_effect=RuntimeError("LLM down")):
             out = server.handle_chat({"message": "Eureka 支持多少种语言"})
         self.assertEqual(out["degraded"], True)
         self.assertIn("text", out)
         self.assertNotEqual(out["text"], "")
+
+    def test_no_live_material_degrades_without_fake_case_fallback(self):
+        # live/ 里没有检索资料（检索系统还没跑过）→ 直接降级，不再退回假样例匹配
+        with mock.patch.object(server, "_has_live_material", return_value=False), \
+             mock.patch.object(server, "pick_case") as pick, \
+             mock.patch.object(server, "run_agent_auto") as auto:
+            out = server.handle_chat({"message": "随便问点什么"})
+        self.assertEqual(out["degraded"], True)
+        self.assertIn("live/ 暂无检索资料", out["degraded_reason"])
+        pick.assert_not_called()      # 不应该退回假样例匹配
+        auto.assert_not_called()
 
     def test_missing_message_returns_error(self):
         out = server.handle_chat({})
