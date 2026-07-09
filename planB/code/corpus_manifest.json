@@ -1,0 +1,79 @@
+{
+  "description": "P0 语料登记表。所有语料由 Claude 手写编造（TRIZ 领域公开知识综述），跳过 Smart-Doc 解析，直接作为 raw/ 事实底座编译进 wiki/。",
+  "domain_scope": "TRIZ（发明问题解决理论）",
+  "entries": [
+    {
+      "doc_id": "triz-40-principles",
+      "path": "domain-docs/triz-40-principles.md",
+      "type": "domain-doc",
+      "domain": "triz",
+      "authority": "official",
+      "doc_date": "2024-03-10",
+      "note": "40个发明原理总览"
+    },
+    {
+      "doc_id": "triz-contradiction-matrix-classic",
+      "path": "domain-docs/triz-contradiction-matrix-classic.md",
+      "type": "domain-doc",
+      "domain": "triz",
+      "authority": "official",
+      "doc_date": "2024-03-10",
+      "note": "矛盾矩阵权威版（39参数），取代 triz-contradiction-matrix-old-note"
+    },
+    {
+      "doc_id": "triz-contradiction-matrix-old-note",
+      "path": "domain-docs/triz-contradiction-matrix-old-note.md",
+      "type": "domain-doc",
+      "domain": "triz",
+      "authority": "internal_note",
+      "doc_date": "2021-06-01",
+      "note": "故意保留的过期/冲突版本（48参数说法），用于验证版本裁决与冲突曝光机制",
+      "superseded_by": "triz-contradiction-matrix-classic"
+    },
+    {
+      "doc_id": "triz-ideal-final-result",
+      "path": "domain-docs/triz-ideal-final-result.md",
+      "type": "domain-doc",
+      "domain": "triz",
+      "authority": "official",
+      "doc_date": "2024-03-12",
+      "note": "理想最终结果 IFR"
+    },
+    {
+      "doc_id": "triz-su-field-analysis",
+      "path": "domain-docs/triz-su-field-analysis.md",
+      "type": "domain-doc",
+      "domain": "triz",
+      "authority": "official",
+      "doc_date": "2024-03-15",
+      "note": "物场分析"
+    },
+    {
+      "doc_id": "triz-in-patent-mining",
+      "path": "domain-docs/triz-in-patent-mining.md",
+      "type": "domain-doc",
+      "domain": "triz",
+      "authority": "official",
+      "doc_date": "2024-03-18",
+      "note": "TRIZ与专利挖掘结合应用"
+    },
+    {
+      "doc_id": "patsnap-engineering-agents",
+      "path": "official/patsnap-engineering-agents.md",
+      "type": "official",
+      "domain": "product-capability",
+      "authority": "official",
+      "doc_date": "2026-06-20",
+      "note": "官网摘录，WebFetch 已核实（2026-07-08），Engineering Agents 含 root-cause/TRIZ-based ideation"
+    },
+    {
+      "doc_id": "openviking-overview",
+      "path": "open-source/openviking/openviking-overview.md",
+      "type": "open-source",
+      "domain": "open-source-project",
+      "authority": "official",
+      "doc_date": "2026-05-01",
+      "note": "摘录自 volcengine/OpenViking 官方 README，任务②宣传材料生成的占位素材"
+    }
+  ]
+}
