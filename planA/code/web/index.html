@@ -48,7 +48,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
 .side .foot b{color:var(--dark)}
 
 /* ===== Main ===== */
-.main{display:flex;flex-direction:column;min-width:0;background:var(--paper)}
+.main{display:flex;flex-direction:column;min-width:0;min-height:0;background:var(--paper)}
 .view{display:none;flex-direction:column;height:100%;min-height:0}
 .view.show{display:flex}
 
@@ -68,13 +68,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
 .bigbox .go{margin-left:auto;background:var(--dark);color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:7px}
 .bigbox .go:disabled{opacity:.5;cursor:wait}
 
-.capttl{max-width:690px;margin:22px auto 8px;font-size:12px;color:var(--muted);text-align:left;padding-left:4px}
-.caps{max-width:690px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:9px}
-.cap{font-size:13px;font-weight:600;color:var(--ink);background:#fff;border:1.5px solid var(--soft);border-radius:12px;padding:12px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;text-align:left}
-.cap:hover{border-color:var(--green);background:var(--green-soft)}
-.cap .ic{font-size:17px;flex-shrink:0}
-.cap .tx b{display:block;font-size:13px}
-.cap .tx span{font-size:11.5px;color:var(--muted);font-weight:500}
+.capttl{max-width:820px;margin:22px auto 10px;font-size:12px;color:var(--muted);text-align:center}
+/* 建议问题跑马灯：一条横向自动滚动的胶囊带，悬停暂停，点击即填入并发送 */
+.marquee{max-width:900px;margin:0 auto;overflow:hidden;position:relative;-webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
+.track{display:flex;gap:10px;width:max-content;animation:marq 48s linear infinite}
+.marquee:hover .track{animation-play-state:paused}
+@keyframes marq{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.cap{flex-shrink:0;font-size:12.5px;font-weight:600;color:var(--ink);background:#fff;border:1.5px solid var(--soft);border-radius:20px;padding:9px 15px;cursor:pointer;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.cap:hover{border-color:var(--green);background:var(--green-soft);color:var(--green)}
+.cap .ic{font-size:15px;flex-shrink:0}
 
 .collab{max-width:690px;margin:26px auto 40px;background:#fff;border:1.5px solid var(--soft);border-radius:15px;padding:22px 24px;display:flex;gap:22px;align-items:center;box-shadow:4px 5px 0 rgba(42,45,41,.06)}
 .collab .txt{flex:1}
@@ -85,7 +87,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
 .collab .tags span{font-size:12px;font-weight:700;color:var(--green);background:var(--green-soft);border:1px solid #d3e0d5;border-radius:9px;padding:8px 12px;text-align:center;white-space:nowrap}
 
 /* CHAT */
-.chattop{padding:14px 24px;border-bottom:1.5px solid var(--soft);display:flex;align-items:center;gap:12px;background:var(--panel)}
+.chattop{flex-shrink:0;padding:14px 24px;border-bottom:1.5px solid var(--soft);display:flex;align-items:center;gap:12px;background:var(--panel)}
 .chattop .ttl{font-weight:800;font-size:14.5px}
 .chattop .sub{font-size:11.5px;color:var(--muted)}
 .chattop .pill{margin-left:auto;font-size:11px;font-weight:700;color:var(--green);background:var(--green-soft);border:1.5px solid var(--green);border-radius:20px;padding:3px 11px;display:flex;align-items:center;gap:6px}
@@ -93,7 +95,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
 .dot{width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block}
 .pill.degraded .dot{background:var(--coral)}
 
-.stream{flex:1;overflow-y:auto;padding:22px 24px 8px;display:flex;flex-direction:column;gap:18px}
+.stream{flex:1;min-height:0;overflow-y:auto;padding:22px 24px 8px;display:flex;flex-direction:column;gap:18px}
 .msg{display:flex;gap:11px;max-width:840px}
 .msg.me{align-self:flex-end;flex-direction:row-reverse}
 .av{width:31px;height:31px;border-radius:9px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff}
@@ -122,7 +124,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
 .typing i:nth-child(2){animation-delay:.2s}.typing i:nth-child(3){animation-delay:.4s}
 @keyframes bl{0%,60%,100%{opacity:.25}30%{opacity:1}}
 
-.compose{padding:13px 24px 16px;border-top:1.5px solid var(--soft);background:var(--panel)}
+.compose{flex-shrink:0;padding:13px 24px 16px;border-top:1.5px solid var(--soft);background:var(--panel)}
 .inputbar{display:flex;gap:10px;align-items:center;border:2px solid var(--line);border-radius:13px;padding:8px 8px 8px 15px;background:#fff}
 .inputbar textarea{flex:1;border:none;outline:none;font-size:13.5px;font-family:inherit;resize:none;height:24px;background:transparent;padding-top:3px}
 .send{width:38px;height:38px;border-radius:10px;background:var(--dark);color:#fff;border:none;font-size:17px;cursor:pointer;flex-shrink:0}
@@ -171,8 +173,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
             </div>
           </div>
 
-          <div class="capttl">💡 不知道怎么开口？点一个建议，帮你把问题填好 —</div>
-          <div class="caps" id="caps"></div>
+          <div class="capttl">💡 试试这些 · 点一下直接问</div>
+          <div class="marquee"><div class="track" id="caps"></div></div>
 
           <div class="collab">
             <div class="txt">
@@ -219,21 +221,44 @@ const SUGGEST_META = [
   {icon:"✍️", sub:"贴官宣风格的初稿"},
   {icon:"🔍", sub:"产品能力速查"},
 ];
-let history = [];  // {q, node}
+// —— 会话持久化（localStorage）——
+// 一个 session = 一次"新对话"下的多轮问答。刷新不丢，点侧栏条目可回看。
+const LS_KEY = "yadong.sessions.v1";
+let sessions = [];          // [{id, title, ts, msgs:[{role:"me"|"ai", html}]}]
+let currentId = null;       // 当前会话 id；null 表示尚未开始
 
-// —— 加载建议卡（用各 case 的真实 question 作建议问题）——
+function loadSessions(){
+  try { sessions = JSON.parse(localStorage.getItem(LS_KEY)) || []; }
+  catch(e){ sessions = []; }
+}
+function saveSessions(){
+  try { localStorage.setItem(LS_KEY, JSON.stringify(sessions)); } catch(e){}
+}
+function curSession(){ return sessions.find(s => s.id === currentId); }
+
+// —— 加载建议问题跑马灯（用各 case 的真实 question）——
+// 轨道内容复制两份，配合 translateX(-50%) 动画实现无缝循环滚动。
 fetch("/api/cases").then(r => r.json()).then(d => {
   const cases = d.cases || [];
-  const caps = document.getElementById("caps");
-  caps.innerHTML = "";
-  cases.forEach((c, i) => {
+  const track = document.getElementById("caps");
+  track.innerHTML = "";
+  if (!cases.length) return;
+  const makeCap = (c, i) => {
     const meta = SUGGEST_META[i % SUGGEST_META.length];
     const el = document.createElement("div");
     el.className = "cap";
-    el.innerHTML = `<span class="ic">${meta.icon}</span><span class="tx"><b>${esc(c.question)}</b><span>${meta.sub}</span></span>`;
-    el.onclick = () => { document.getElementById("homeInput").value = c.question; startFromHome(); };
-    caps.appendChild(el);
-  });
+    el.dataset.q = c.question;                 // 干净的问题文本（不含图标）
+    el.innerHTML = `<span class="ic">${meta.icon}</span>${esc(c.question)}`;
+    el.onclick = () => { document.getElementById("homeInput").value = el.dataset.q; startFromHome(); };
+    return el;
+  };
+  // 一份基础序列：case 少时重复几遍，让单份就够宽（覆盖可视区，避免空档）
+  const base = [];
+  const reps = Math.max(1, Math.ceil(8 / cases.length));
+  for (let r = 0; r < reps; r++) cases.forEach((c, k) => base.push([c, k]));
+  // track = 两份相同序列，配合 translateX(-50%) 无缝循环
+  for (let pass = 0; pass < 2; pass++)
+    base.forEach(([c, k]) => track.appendChild(makeCap(c, k)));
 }).catch(() => {});
 
 function esc(s){ return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
@@ -244,7 +269,10 @@ const chatView = document.getElementById("chat");
 const stream = document.getElementById("stream");
 function goChat(){ homeView.classList.remove("show"); chatView.classList.add("show"); }
 function newChat(){
+  currentId = null;                       // 下一句发送时开新 session
+  stream.innerHTML = "";
   chatView.classList.remove("show"); homeView.classList.add("show");
+  document.querySelectorAll(".hist a").forEach(x => x.classList.remove("on"));
   document.getElementById("homeInput").value = "";
   document.getElementById("homeInput").focus();
 }
@@ -257,6 +285,32 @@ function startFromHome(){
   send();
 }
 
+// —— 侧栏历史：一条 = 一个 session ——
+function renderHist(){
+  const h = document.getElementById("hist");
+  h.innerHTML = "";
+  if (!sessions.length){ h.innerHTML = '<div class="empty">还没有会话，发一条试试</div>'; return; }
+  sessions.forEach(s => {
+    const a = document.createElement("a");
+    a.textContent = "💬 " + s.title;
+    a.title = s.title;
+    if (s.id === currentId) a.classList.add("on");
+    a.onclick = () => openSession(s.id);
+    h.appendChild(a);
+  });
+}
+
+function openSession(id){
+  const s = sessions.find(x => x.id === id);
+  if (!s) return;
+  currentId = id;
+  stream.innerHTML = "";
+  s.msgs.forEach(m => bubble(m.role, m.html));
+  goChat();
+  renderHist();
+  stream.scrollTop = stream.scrollHeight;
+}
+
 function bubble(who, inner){
   const wrap = document.createElement("div");
   wrap.className = "msg" + (who === "me" ? " me" : "");
@@ -267,16 +321,18 @@ function bubble(who, inner){
   return wrap.querySelector(".bubble");
 }
 
-function addHistory(q){
-  const h = document.getElementById("hist");
-  const first = h.querySelector(".empty");
-  if (first) first.remove();
-  const a = document.createElement("a");
-  a.textContent = "💬 " + q;
-  a.title = q;
-  document.querySelectorAll(".hist a").forEach(x => x.classList.remove("on"));
-  a.classList.add("on");
-  h.prepend(a);
+// 把一条消息追加进当前 session 并持久化。role: "me" | "ai"
+function recordMsg(role, html){
+  let s = curSession();
+  if (!s){
+    s = { id: "s" + Date.now(), title: "", ts: Date.now(), msgs: [] };
+    sessions.unshift(s);
+    currentId = s.id;
+  }
+  if (role === "me" && !s.title) s.title = html.replace(/<[^>]+>/g, "").slice(0, 40);
+  s.msgs.push({ role, html });
+  saveSessions();
+  renderHist();
 }
 
 // markdown 表格 + 📎🕐⚠ 标记 → 原型风格
@@ -309,8 +365,9 @@ async function send(){
   const typed = document.getElementById("chatInput").value.trim();
   if (!typed) return;
 
-  bubble("me", esc(typed));
-  addHistory(typed);
+  const meHtml = esc(typed);
+  bubble("me", meHtml);
+  recordMsg("me", meHtml);                 // 存问题（也会新建 session）
   document.getElementById("chatInput").value = "";
   const sendBtn = document.getElementById("chatSend");
   const homeGo = document.getElementById("homeGo");
@@ -333,7 +390,10 @@ async function send(){
       document.getElementById("pillText").textContent = "资料已就绪";
     }
 
-    if (data.error){ loading.innerHTML = "⚠ " + esc(data.error); return; }
+    if (data.error){
+      const errHtml = "⚠ " + esc(data.error);
+      loading.innerHTML = errHtml; recordMsg("ai", errHtml); return;
+    }
 
     let html = "";
     if (data.mode && MODE_LABEL[data.mode]) html += `<span class="modeflag">${MODE_LABEL[data.mode]}</span><br>`;
@@ -343,13 +403,19 @@ async function send(){
       html += `<details class="trace"><summary>🔎 执行轨迹（${data.trace.length} 步工具调用）</summary><div style="margin-top:6px">${steps}</div></details>`;
     }
     loading.innerHTML = html;
+    recordMsg("ai", html);                 // 存回复
     stream.scrollTop = stream.scrollHeight;
   } catch (e) {
-    loading.innerHTML = "请求失败：" + esc(String(e));
+    const errHtml = "请求失败：" + esc(String(e));
+    loading.innerHTML = errHtml; recordMsg("ai", errHtml);
   } finally {
     sendBtn.disabled = false; homeGo.disabled = false;
   }
 }
+
+// —— 启动：恢复历史会话 ——
+loadSessions();
+renderHist();
 
 document.getElementById("chatInput").addEventListener("keydown", e => {
   if (e.key === "Enter" && !e.shiftKey){ e.preventDefault(); send(); }
