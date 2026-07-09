@@ -149,7 +149,7 @@ h1 .hl{background:linear-gradient(180deg,transparent 62%,var(--lime) 62%);paddin
       <li><b>三、整体架构</b> — 产品 ↔ API ↔ OpenViking</li>
       <li><b>四、数据接入</b> — 自带解析 + 关键件 smart-doc</li>
       <li><b>五、知识组织</b> — viking:// 文件系统 + L0/L1/L2</li>
-      <li><b>六、检索</b> — 目录递归 + 我方补专名召回</li>
+      <li><b>六、检索</b> — 四步 SOP —— 引擎理解口语 + 我方圈范围与专名兜底</li>
       <li><b>七、时间线/版本</b> — 用 OV 原生快照 + watch</li>
       <li><b>八、内外数据结合</b> — 竞品按维度对比</li>
       <li><b>九、宣传材料生成</b> — 官方任务2</li>
@@ -193,7 +193,7 @@ h1 .hl{background:linear-gradient(180deg,transparent 62%,var(--lime) 62%);paddin
         <tr><td><b>文档解析</b></td><td>接 OCR、写各格式适配器</td><td>自带解析 PDF/Word/PPT/Excel/网页/代码库/飞书文档</td></tr>
         <tr><td><b>分片 + 分层</b></td><td>自己切片、拼上下文前缀</td><td>导入即自动生成 L0 摘要 / L1 概览 / L2 详情三层</td></tr>
         <tr><td><b>索引 + 检索</b></td><td>向量库 + 混合召回 + rerank 全都自己搭</td><td>意图分析 + 目录递归检索 + rerank 内置</td></tr>
-        <tr><td><b>版本 / 更新</b></td><td>自己设计版本字段、去重逻辑</td><td>原生 git 快照(commit/log/restore)+ watch 定时增量更新</td></tr>
+        <tr><td><b>版本 / 更新</b></td><td>自己设计版本字段、去重逻辑</td><td>原生 git 快照(commit/restore/show)+ watch 定时增量更新</td></tr>
         <tr><td><b>接入</b></td><td>自己写 API</td><td>本身是 MCP server + HTTP API + Python SDK</td></tr>
         <tr><td><b>可观察</b></td><td>自己做日志</td><td>检索轨迹可视化(目录浏览路径可回看)</td></tr>
       </tbody>
@@ -216,7 +216,7 @@ h1 .hl{background:linear-gradient(180deg,transparent 62%,var(--lime) 62%);paddin
     <span class="chip" style="--accent:var(--blue)">OpenViking HTTP API</span><span class="arrow">→</span>
     <span class="chip" style="--accent:var(--violet)">OpenViking 服务(检索/存储/版本)</span>
   </div>
-  <p class="lead" style="margin-top:12px">我方"编排后端"负责 OpenViking 管不了的场景逻辑:查询理解与改写、专名 grep 兜底、竞品对比的查询分解与维度对齐、外部网页实时抓取、把检索结果 + 用户 prompt 组装后调大模型生成、给答案附来源与时效。</p>
+  <p class="lead" style="margin-top:12px">我方"编排后端"负责 OpenViking 管不了的场景逻辑:按五模块圈定检索范围、专名 grep 兜底、竞品对比的查询分解与维度对齐、外部网页实时抓取、把检索结果 + 用户 prompt 组装后调大模型生成、给答案附来源与时效。</p>
 
   <div class="callout"><b>各段对应章节</b>:数据进 OpenViking → 四;OpenViking 怎么组织 → 五;检索(含我方补强)→ 六(含七时间线、八内外结合);生成端由用户 prompt 主导、刻意做薄;评估 → 九;选型与风险 → 十。</div>
 </section>
@@ -277,43 +277,50 @@ ov add-resource ./triz_docs/ --reason "TRIZ 基础资料" --wait</div></div>
 
 <!-- 六、检索 -->
 <section class="section" id="retrieval">
-  <div class="section-label"><h2>六、检索:目录递归 + 我方补专名召回</h2><span>用 OpenViking 内置检索,补它的短板</span></div>
-  <p class="lead">OpenViking 的检索是"意图分析 → 目录递归 → rerank"。我方在它之外补两件它做不好的事:<b>专名精确召回</b>和<b>对比类查询分解</b>。</p>
+  <div class="section-label"><h2>六、检索:四步 SOP —— 引擎理解口语 + 我方圈范围与专名兜底</h2><span>前两步交给 OpenViking,后两步我方补强</span></div>
+  <p class="lead">检索是所有读取类场景(问答/对比/宣传取料)的公共动作。我方把它固化成一套<b>四步 SOP</b>:前两步里"读懂口语"交给 OpenViking 引擎(它的 <code>ov search</code> 自带意图分析),我方只补引擎做不了、且是我方核心价值的两件事——<b>按五模块圈定范围</b>和<b>专名精确兜底</b>。</p>
+
+  <div class="callout key"><b>命令核准说明</b>:范围限定参数是 <b><code>--uri</code></b>(不是早期草稿里的 <code>target_uri</code>/<code>--target</code>);口语检索优先用 <b><code>ov search</code></b>(带意图分析、查询扩展),<code>ov find</code> 是纯向量、留给已精确化的专名查询。这些命令名对照 OpenViking 本地文档核准;本节描述的是<b>接入真引擎后</b>的检索链路(当前落地为生成侧闭环,检索由上游模拟,见第十一节落地状态)。</div>
 
   <div class="stack">
     <div class="slayer" style="--accent:var(--pink)">
-      <span class="lnum">1</span>
-      <div><h4>OpenViking 内置:意图分析 + 目录递归检索 <span class="tag ov">OpenViking</span></h4>
-      <p><code>ov find</code> / API <code>/search/find</code>:先由 LLM 把 query 拆成若干带类型的子查询,再<b>全局向量定位到高分目录 → 目录内二次检索 → 逐层递归深入 → rerank 精排</b>。可用 <code>target_uri</code> 限定检索范围(如只在某模块/某项目),每条结果返回 <code>viking://</code> URI 作来源。</p></div>
-    </div>
-    <div class="slayer" style="--accent:var(--coral)">
-      <span class="lnum">2</span>
-      <div><h4>我方补强①:专名召回的触发与融合逻辑 <span class="tag us">我方</span></h4>
-      <p><code>grep</code>(正则精确匹配)<b>是 OpenViking 自带的 API,不是我们造的</b>;开源版默认也不接真 BM25(那要接火山商业云 VikingDB)。我方编排层做的是判断逻辑:query 含明确专名/型号时,<b>并行跑一次 <code>ov grep</code></b>,把命中结果与 <code>find</code> 的语义结果融合排序。工程贡献在"何时触发、怎么融合",不在"补上一个缺失的检索能力"。</p></div>
+      <span class="lnum">①</span>
+      <div><h4>口语检索(引擎理解意图) <span class="tag ov">OpenViking</span></h4>
+      <p>直接把运营的口语问题交给 <code>ov search</code>——它内置意图分析 + 查询扩展 + 会话上下文,已经把"读懂口语、改写成检索友好表述"这件事做了。<b>所以我方不再自己先过一遍小模型改写</b>(那是早期设想,与"不重复造轮子"冲突,已砍掉)。每条结果返回 <code>viking://</code> URI 作来源。</p></div>
     </div>
     <div class="slayer" style="--accent:var(--blue)">
-      <span class="lnum">3</span>
-      <div><h4>我方补强②:查询理解与改写 <span class="tag us">我方</span></h4>
-      <p>运营问得口语("这玩意儿比别人强在哪")。编排层先过一次小模型:识别涉及哪个模块/项目、是否对比、时间意图,把口语改写成检索友好的表述并选定 <code>target_uri</code> 范围,再交给 OpenViking。<b>范围圈对了,后面就对了一大半。</b></p></div>
+      <span class="lnum">②</span>
+      <div><h4>按五模块圈范围(我方判断,引擎不懂我们的目录结构) <span class="tag us">我方</span></h4>
+      <p>引擎的通用意图分析不知道"芽懂"的五模块结构,圈不准。我方编排层据问题判断属哪个模块,用 <b><code>--uri</code></b> 收窄(如 <code>--uri viking://resources/products/eureka</code>)。<b>范围圈对了,后面就对了一大半。</b></p></div>
+    </div>
+    <div class="slayer" style="--accent:var(--coral)">
+      <span class="lnum">③</span>
+      <div><h4>专名兜底(我方判断,引擎不认智慧芽专名) <span class="tag us">我方</span></h4>
+      <p><code>grep</code>(正则精确匹配)是 OpenViking 自带 API,开源版默认不接真 BM25(那要接火山商业云 VikingDB),中文专名(Eureka/TRIZ)纯向量可能召不回。我方编排层做<b>判断逻辑</b>:query 含专名词典里的词时,并行跑一次 <code>ov grep &lt;专名&gt; --uri &lt;范围&gt; --ignore-case</code>,与 <code>search</code> 的语义结果融合排序。工程贡献在"何时触发、怎么融合"。</p></div>
+    </div>
+    <div class="slayer" style="--accent:var(--green)">
+      <span class="lnum">④</span>
+      <div><h4>附来源 + 时效(产物,交给校验脚本兜底) <span class="tag us">我方</span></h4>
+      <p>每条采用的结果取其 <code>uri</code> 字段作来源;更新时间从资源元数据/<code>ov stat</code> 取(不假设检索结果直接带时间)。这一步是机械可验证的产物,由共享脚本 <code>check_sources.py</code> 卡死,不靠 agent 自觉(见第十一节)。</p></div>
     </div>
   </div>
 
   <div class="flow">
     <span class="chip" style="--accent:var(--blue)">口语 query</span><span class="arrow">→</span>
-    <span class="chip" style="--accent:var(--blue)">我方查询理解(范围+改写+时间意图)</span><span class="arrow">→</span>
-    <span class="chip" style="--accent:var(--pink)">ov find 目录递归</span><span class="arrow">∥</span>
-    <span class="chip" style="--accent:var(--coral)">ov grep 专名兜底</span><span class="arrow">→</span>
-    <span class="chip" style="--accent:var(--green)">融合 + 附来源</span><span class="arrow">→</span>
+    <span class="chip" style="--accent:var(--pink)">① ov search(引擎理解意图)</span><span class="arrow">→</span>
+    <span class="chip" style="--accent:var(--blue)">② <code>--uri</code> &lt;②我方按五模块圈的范围&gt;</span><span class="arrow">→</span>
+    <span class="chip" style="--accent:var(--coral)">③ 含专名并行 ov grep 兜底,融合去重</span><span class="arrow">→</span>
+    <span class="chip" style="--accent:var(--green)">④ 附来源(uri 字段)+ 时效(ov stat)</span><span class="arrow">→</span>
     <span class="chip" style="--accent:var(--ink)">喂大模型</span>
   </div>
 
-  <h4 style="font-size:15px;margin:22px 0 6px">最难的场景 · 对比类提问 <span class="tag us">我方</span></h4>
+  <h4 style="font-size:15px;margin:22px 0 6px">最难的场景 · 对比类提问(我方) <span class="tag us">我方</span></h4>
   <p class="lead">销售天天问对比:"我们 Eureka 的多语言比竞品X强在哪?"直接检索会偏向一边。编排层做<b>查询分解 + 多源分别召回 + 按维度对齐</b>——这段逻辑 OpenViking 不管,是我方核心工程。</p>
   <div class="mono">用户问:"Eureka 多语言 vs 竞品A 强在哪?"
 我方编排层:
   ① 拆解 → {维度:多语言, 我方:eureka, 竞品:[竞品A], 时间:最新}
-  ② 路A: find(target_uri=viking://resources/products/eureka)   → 本地
-     路B: find(target_uri=viking://resources/competitors/竞品A) → 竞品
+  ② 路A: ov search ... --uri viking://resources/products/eureka    → 本地
+     路B: ov search ... --uri viking://resources/competitors/竞品A → 竞品
           (竞品库没有 → 触发实时抓取,见第八节)
   ③ 按"多语言"维度对齐两边,附各自来源,喂模型生成对比</div>
   <div class="callout warn"><b>没有这个分解,对比类回答一定差。</b>这恰是产品核心卖点(内外结合),所以是我方必做的工程,不能指望 OpenViking 内置检索直接搞定。</div>
@@ -325,7 +332,7 @@ ov add-resource ./triz_docs/ --reason "TRIZ 基础资料" --wait</div></div>
   <p class="lead">"资料会更新、口径要用最新版"是本产品的硬需求。好消息:<b>OpenViking 原生支持</b>,我们几乎不用自研——这是选它的一个大加分项。</p>
 
   <div class="grid2">
-    <div class="box best"><h4>git 快照系统</h4><p>OpenViking 内置基于 git 的快照:<code>snapshot.commit / log / restore</code>,每个 account 一个逻辑仓库,<b>历史不可改写</b>(restore 生成新提交而非覆盖)。每次资料更新可留一个可追溯的版本点。</p></div>
+    <div class="box best"><h4>git 快照系统</h4><p>OpenViking 内置基于 git 的快照:<code>commit / restore / show</code>,每个 account 一个逻辑仓库,<b>历史不可改写</b>(restore 生成新提交而非覆盖)。每次资料更新可留一个可追溯的版本点。</p><div class="callout warn" style="margin-top:8px;font-size:13px;padding:10px 13px"><b>核准说明</b>:这是 OpenViking 版本控制<b>设计文档</b>里的原语(可能以内部方法 <code>VikingFS.commit/restore/show</code> 形式提供),<b>未必是已稳定发布的 <code>ov</code> CLI 命令</b>。答辩引用时表述为"OpenViking 的账号级快照能力(commit/restore/show)",并注明依赖版本,不要说成现成命令。</div></div>
     <div class="box" style="--accent:var(--green)"><h4>watch 自动增量更新</h4><p>导入时设 <code>--watch-interval</code>,OpenViking 会<b>定时从 Git 仓库/网页源自动检测更新并同步</b>。资料一变,库自动跟进,不用人工重导。也可 <code>trigger_watch</code> 手动立即刷新。</p></div>
   </div>
 
@@ -367,7 +374,7 @@ ov add-resource ./triz_docs/ --reason "TRIZ 基础资料" --wait</div></div>
   <p class="lead">销售宣传必有横向对比,外部竞品数据是刚需。两条腿:主 Demo 用预存竞品资料保稳,另做"抛竞品网址实时抓取"作亮点。</p>
 
   <div class="grid2">
-    <div class="box" style="--accent:var(--cyan)"><h4>预存竞品(主 Demo,稳) <span class="tag ov">OpenViking</span></h4><p>提前把主要竞品资料 <code>add-resource</code> 到 <code>viking://resources/competitors/</code>,与本地同结构。现场不联网,检索时用 <code>target_uri</code> 把本地能力与竞品分开取,再对齐。</p></div>
+    <div class="box" style="--accent:var(--cyan)"><h4>预存竞品(主 Demo,稳) <span class="tag ov">OpenViking</span></h4><p>提前把主要竞品资料 <code>add-resource</code> 到 <code>viking://resources/competitors/</code>,与本地同结构。现场不联网,检索时用 <code>--uri</code> 把本地能力与竞品分开取,再对齐。</p></div>
     <div class="box" style="--accent:var(--pink)"><h4>实时抓取竞品 URL(亮点) <span class="tag us">我方</span></h4><p>用户抛一个竞品网址,我方编排层抓取该页 → 去噪 → 按对比维度抽取 → 与本地对齐。也可即时 <code>add-resource</code> 该 URL 让 OpenViking 解析入库再检索。演示最有冲击力。</p></div>
   </div>
 
@@ -460,31 +467,67 @@ ov add-resource ./triz_docs/ --reason "TRIZ 基础资料" --wait</div></div>
       <thead><tr><th style="width:150px">Skill</th><th>做什么</th><th>对应任务</th></tr></thead>
       <tbody>
         <tr><td><b>建库规范 skill</b></td><td>教 AI 把资料按五模块归到正确的 <code>viking://</code> 目录;关键件先走 smart-doc;归档时做话题重复检测,同话题多来源打权威性标签(见第七之二节)</td><td>任务1</td></tr>
-        <tr><td><b>技术问答 skill</b></td><td>口语查询 → 理解改写 → <code>find</code> + 专名 <code>grep</code> 兜底融合 → 附来源与时效;命中"同话题多来源"标记时,主答案之外附注另一说法。核心是统一口径</td><td>任务1 应用</td></tr>
+        <tr><td><b>技术问答 skill</b></td><td>口语查询 → <code>ov search</code> + 专名 <code>grep</code> 兜底融合 → 附来源与时效;命中"同话题多来源"标记时,主答案之外附注另一说法。核心是统一口径</td><td>任务1 应用</td></tr>
         <tr><td><b>竞品对比 skill</b></td><td>对比问题拆解 → 本地与竞品分别召回 → 按维度对齐 → 标注冲突与缺失</td><td>任务3</td></tr>
         <tr><td><b>宣传生成 skill</b></td><td>检索料 + 注入风格样本 + 用户 prompt → 生成富文本 + 附来源/待核实</td><td>任务2</td></tr>
       </tbody>
     </table>
   </div>
-  <p class="lead" style="margin-top:14px">以"技术问答 skill"为例,<code>SKILL.md</code> 的骨架(按官方格式简化):</p>
+  <p class="lead" style="margin-top:14px">以"技术问答 skill"为例,下面是<b>实际落地的 <code>patsnap-tech-qa/SKILL.md</code> 骨架</b>(与磁盘一致):</p>
   <div class="mono">---
 name: patsnap-tech-qa
-description: 当运营/销售问智慧芽技术问题(产品能力、方法论、技术口径)时加载。
-  涉及统一口径、带来源的技术问答时触发。
-compatibility: OpenViking CLI configured at ~/.openviking/ovcli.conf
+description: 当运营/销售/市场用大白话问智慧芽技术问题(产品能力、方法论、技术口径),
+  需要有来源、口径统一的标准答案时加载。纯竞品横向对比交给 patsnap-compare;
+  写宣传稿交给 patsnap-promo。(Load When 触发条件写在 description 里)
+compatibility: 资料由上游检索系统召回,通过 list_materials / read_material /
+  check_conflicts 三个工具访问。本 skill 只管"拿到料之后怎么组织成统一口径的答案"。
+allowed-tools: [list_materials, read_material, check_conflicts]
 ---
-# 智慧芽技术问答(统一口径)
-## Goal   把口语技术问题变成有来源、口径统一的标准答案。
+# 芽懂 · 技术问答(统一口径)
+## Goal   口语问题 + 已召回资料 → 挑相关料 → 组织成结论清晰、每个事实绑来源、带时效的答案。
+## 先读(Workflow 依赖,必读)  ../references/资料使用SOP.md
 ## Workflow
-  1. 理解意图:涉及哪个模块/项目、是否对比、时间意图
-  2. 圈定范围:选定 target_uri(如 viking://resources/products/)
-  3. 语义检索:ov find &lt;改写后 query&gt; --target &lt;uri&gt;
-  4. 专名兜底:含专名/型号时并行 ov grep 精确匹配,融合结果
-  5. 组装回答:附每条来源 URI + 该资料更新时间
+  1. 看清有哪些料:list_materials(),按标题/话题/相关度判断哪些相关
+  2. 读相关料:read_material(source) 取正文;事实只来自这里,不凭记忆
+  3. 处理多来源:check_conflicts();has_conflict 时以 primary 为主答案,
+     并把 conflict_note(另一说法+来源+时效)附进回答
+  4. 组织答案:先结论后依据,每个事实附来源 URI + 更新时间
+  5. 自检:python3 ../scripts/check_sources.py <答案>
+## Output Contract  每个事实绑来源;带时间或标"时间未知";无来源标"待核实"
 ## Boundaries
-  - 无来源支撑的结论标"待核实",不编造
-  - 冲突信息以本地权威版为准并标注</div>
-  <div class="callout good"><b>没有一行传统代码</b>——它用规矩把 OpenViking 的 <code>find/grep</code> 编排成"智慧芽场景下的正确用法"。这组 SKILL.md 目前是设计,后续可按此格式落地成实物(放 <code>planA/skills/</code>),Demo/答辩时手上就有可演示的交付物。</div>
+  - 不编造、不凭记忆;不做检索(料是上游给定的)
+  - 冲突以本地权威版为准并标注;单对象问答不做多竞品横向拉表(那是 patsnap-compare)</div>
+  <div class="callout key"><b>架构关键(与第六节的关系)</b>:第六节描述的是<b>接了真 OpenViking 后</b>的全链路检索 SOP(skill 直接调 <code>ov search</code>/<code>ov grep</code>)。而<b>当前落地</b>把检索侧与生成侧解耦——检索由上游完成(Demo 里用模拟召回),3 个生成 skill 只通过 <code>list_materials</code>/<code>read_material</code>/<code>check_conflicts</code> 消费"已召回的资料"。两者是同一设计的两个阶段。</div>
+  <div class="callout good"><b>已经落地成实物</b>——这 3 个 SKILL.md 已按上述架构写成实物,目录结构见下节(落地状态)。放在 <code>planA/code/skills/</code>,Demo/答辩时手上就有可演示的交付物。</div>
+
+  <h4 style="font-size:15px;margin:22px 0 6px">skill 的分层架构(设计原则)</h4>
+  <p class="lead">skill 不是随意平铺,而是按"触发准、口径统一、不重复"三条原则组织:</p>
+  <div class="box" style="margin-top:14px"><p><b>做成多个自包含 skill,不做一个大 skill。</b> OpenViking/Claude 的 skill 都靠 <code>description</code> 里的触发条件(Load When)被 agent 加载。具体的触发条件,比一个笼统的大 skill 更准;做成一个大 skill 会被迫在正文里手写意图路由(重造 agent 本就会做的事),且把场景规矩挤进 references 又会引出"怎么保证 references 被读"的矛盾。这也贴合官方示例(<code>ov-resources</code>/<code>ov-add-paper</code> 都是一 skill 一事)。<b>当前已落地 3 个生成侧 skill</b>(问答/对比/宣传);建库规范 skill(<code>patsnap-ingest</code>)已在设计中、暂未实现。</p><p style="margin-top:10px"><b>用料复用:判断内联、产物脚本兜底。</b> 三个生成 skill(问答/对比/宣传)都要用料。用料里<b>需要 AI 判断</b>的步骤(看料→读料→处理多来源→附来源时效)抽成一份共享的 <code>references/资料使用SOP.md</code>,各 skill 在 Workflow 里<b>强制读取</b>;机械可验证的产物(每条结果带来源 + 时效)交给共享脚本 <code>scripts/check_sources.py</code> 卡死。口径不漂移靠脚本兜底,不靠三份文字自觉保持一致。</p><p style="margin-top:10px"><b>怎么保证共享规矩被读。</b> 关键不在"放哪",而在 SKILL.md 正文怎么写。每个 skill 单开一节"<b>先读(Workflow 依赖,必读)</b>",写明"未读不得进入下一步"——把读取变成绕不过去的执行动作。references 不会自动注入,只有写成强制步骤才可靠。</p><p style="margin-top:10px"><b>纯规矩/清单才共享,场景逻辑不共享。</b> 用料 SOP 这类<b>通用规矩</b>抽进顶层 <code>references/</code> 共享(漂移风险低);各场景的判断逻辑留在各自 SKILL.md 正文(触发准、加载一个就完整),如竞品对比逻辑放在 <code>patsnap-compare/references/对比维度与维度对齐.md</code>。</p></div>
+
+  <h4 style="font-size:15px;margin:22px 0 6px">skill 格式选择</h4>
+  <p class="lead">以 <b>Anthropic/Claude 格式为基准 + 兼容 OpenViking 约定</b>,一份两边都认。理由:执行 skill 的是<b>外部 Claude Agent</b>(Demo 后端运行时 / Claude Code),它只调 OpenViking 的 API/CLI 取数据,OpenViking 只是"库"不是执行者——所以 Claude 格式更自洽;<code>ov skills add</code> 只是把 skill "托管存放"进 OpenViking,不等于必须用它的格式执行。具体做法:frontmatter 用标准 <code>name</code>/<code>description</code>/<code>allowed-tools</code>/<code>tags</code>,正文保留 <code>Goal</code>/<code>Load When</code>/<code>Workflow</code>/<code>Output Contract</code>/<code>Verification</code>/<code>Boundaries</code>/<code>Runtime Resources</code>,<code>description</code> 里写清触发条件。字段是超集,<code>ov skills validate</code> 大概率也能过。</p>
+
+  <h4 style="font-size:15px;margin:22px 0 6px">落地状态(已实现 / 待补)</h4>
+  <p class="lead"><b>已实现</b>——3 个生成侧 skill + 共享规矩 + 校验脚本,以及一个能真跑的 Agent 运行时(见第十二节)。实际目录如下:</p>
+  <div class="mono">planA/code/
+├── skills/
+│   ├── references/
+│   │   └── 资料使用SOP.md          # 3 个 skill 共享的用料规矩(必读)
+│   ├── scripts/
+│   │   └── check_sources.py        # 产物校验(来源+时效),已本地跑通
+│   ├── patsnap-tech-qa/            # 技术问答  SKILL.md(引用 ../references/资料使用SOP.md)
+│   ├── patsnap-compare/            # 竞品对比  SKILL.md + references/对比维度与维度对齐.md
+│   └── patsnap-promo/              # 宣传生成  SKILL.md
+├── backend/                        # Agent 运行时(纯标准库,零第三方依赖)
+│   ├── agent_runtime.py            # 加载 skill + 工具调用循环;支持 Agent 自主选 skill
+│   ├── case_tools.py               # 三个工具:list_materials/read_material/check_conflicts
+│   ├── loader.py conflict.py       # 资料解析 + 权威/时效裁决
+│   ├── llm_client.py server.py     # LLM 客户端 + http.server 服务(带降级档)
+│   └── tests/                      # 30 个单元测试,全部通过
+├── sample_retrieval/               # 模拟检索侧产出的样例 case(问题 + 已召回资料)
+└── web/index.html                  # 对话网页 Demo(接 /api/chat、/api/cases)</div>
+  <div class="callout warn"><b>待补(设计中,暂未写成实物)</b>:建库规范 skill(<code>patsnap-ingest</code>)——负责按五模块归目录、关键件走 smart-doc、归档时打权威性标签(见第七之二节)。因当前尚未接真 OpenViking 引擎(建库依赖引擎的 <code>add-resource</code>),这一 skill 留待引擎接入后落地。前文提到的"五模块目录结构/检索四步SOP/专名词典"等 references,属于第六节全链路检索设计接入真引擎后才需要的文件,当前生成侧架构下由一份 <code>资料使用SOP.md</code> 承载。</div>
+  <div class="callout warn"><b>诚实边界</b>:受环境限制(无法在本机起 OpenViking 真引擎),<b>当前落地的是"生成侧闭环"</b>——检索由上游模拟(<code>sample_retrieval/</code> 预置已召回资料),Agent 基于真实 LLM 调用完成挑料/裁决冲突/组织答案/附来源,<code>check_sources.py</code> 做确定性校验,<code>run_logs/</code> 有三场景真跑记录。skill 与真引擎的端到端需在能运行 OpenViking 的环境执行,已列入评测清单(见第十三节)。</div>
 </section>
 
 <!-- 十二、产品 Demo -->
@@ -552,7 +595,7 @@ compatibility: OpenViking CLI configured at ~/.openviking/ovcli.conf
     <div class="slayer" style="--accent:var(--blue)">
       <span class="lnum">1</span>
       <div><h4>建 20–30 题召回评测集</h4>
-      <p>攒 20–30 个<b>真实运营会问的问题</b>(方法论科普、产品能力、竞品对比各来几个),每题人工标注"理想应召回哪几个资源 URI"。用它量 <b>召回率@k、MRR</b>,拿来调 <code>target_uri</code> 圈定策略、grep 兜底触发条件、top 数量。</p></div>
+      <p>攒 20–30 个<b>真实运营会问的问题</b>(方法论科普、产品能力、竞品对比各来几个),每题人工标注"理想应召回哪几个资源 URI"。用它量 <b>召回率@k、MRR</b>,拿来调 <code>--uri</code> 圈定策略、grep 兜底触发条件、top 数量。</p></div>
     </div>
     <div class="slayer" style="--accent:var(--gold)">
       <span class="lnum">2</span>
