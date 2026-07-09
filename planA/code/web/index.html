@@ -29,18 +29,25 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
 
 /* ===== Sidebar (浅米色) ===== */
 .side{background:var(--side);color:var(--ink);display:flex;flex-direction:column;border-right:1.5px solid var(--soft)}
-.brand{padding:18px 18px 15px;display:flex;align-items:center;gap:11px;border-bottom:1px solid var(--soft)}
-.logo{width:36px;height:36px;border-radius:10px;background:var(--dark);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px;flex-shrink:0}
-.brand .t{font-weight:900;font-size:14.5px;color:var(--ink)}
-.brand .s{font-size:11px;color:var(--muted);margin-top:1px}
+.brand{padding:18px 18px 14px;display:flex;align-items:center;border-bottom:1px solid var(--soft)}
+.brand-logo{width:150px;height:auto;max-height:52px;object-fit:contain;object-position:left center;display:block}
 
-.newbtn{margin:14px 12px 4px;padding:10px;background:var(--dark);color:#fff;border-radius:11px;font-size:13px;font-weight:800;text-align:center;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;border:none;width:calc(100% - 24px)}
+/* 功能导航：首页/技术问答/竞品分析/内容生成 */
+.nav{padding:12px 12px 6px;display:flex;flex-direction:column;gap:3px}
+.nav a{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:9px;font-size:13px;font-weight:700;color:var(--ink);text-decoration:none;cursor:pointer;border:1px solid transparent}
+.nav a:hover{background:#fff}
+.nav a.on{background:#fff;color:var(--dark);border-color:var(--hair);box-shadow:2px 2px 0 rgba(42,45,41,.06)}
+.nav a .ni{width:20px;text-align:center;font-size:15px;flex-shrink:0;color:var(--green)}
 
 .subttl{padding:16px 18px 7px;font-size:11px;font-weight:800;letter-spacing:.05em;color:var(--muted);text-transform:uppercase}
 .hist{padding:0 12px;display:flex;flex-direction:column;gap:2px;overflow-y:auto}
-.hist a{font-size:12.5px;color:var(--muted);padding:8px 13px;border-radius:8px;text-decoration:none;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;border:1px solid transparent}
+.hist a{font-size:12.5px;color:var(--muted);padding:8px 13px;border-radius:8px;text-decoration:none;display:flex;align-items:center;gap:6px;cursor:pointer;border:1px solid transparent}
 .hist a:hover{background:#fff;color:var(--ink)}
 .hist a.on{background:#fff;color:var(--dark);font-weight:700;border-color:var(--hair);box-shadow:2px 2px 0 rgba(42,45,41,.06)}
+.hist a .tt{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hist a .del{flex-shrink:0;width:18px;height:18px;line-height:16px;text-align:center;border-radius:5px;font-size:14px;color:var(--muted);background:transparent;border:none;cursor:pointer;opacity:0;transition:opacity .12s}
+.hist a:hover .del{opacity:.7}
+.hist a .del:hover{opacity:1;color:var(--coral);background:#faeee6}
 .hist .empty{font-size:12px;color:var(--muted);padding:6px 13px;opacity:.7}
 
 .side .spacer{flex:1}
@@ -141,11 +148,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
   <!-- Sidebar -->
   <aside class="side">
     <div class="brand">
-      <div class="logo">芽</div>
-      <div><div class="t">芽懂 · 技术知识助手</div><div class="s">统一口径 · 带出处</div></div>
+      <img class="brand-logo" src="assets/yado-logo.png" alt="芽懂 Yado">
     </div>
 
-    <button class="newbtn" onclick="newChat()">＋ 新对话</button>
+    <nav class="nav" id="nav">
+      <a data-page="home" onclick="goPage('home')"><span class="ni">✦</span><span>首页</span></a>
+      <a data-page="qa" onclick="goPage('qa')"><span class="ni">💬</span><span>技术问答</span></a>
+      <a data-page="comparison" onclick="goPage('comparison')"><span class="ni">⚔️</span><span>竞品分析</span></a>
+      <a data-page="promo" onclick="goPage('promo')"><span class="ni">✍️</span><span>内容生成</span></a>
+    </nav>
 
     <div class="subttl">历史会话</div>
     <div class="hist" id="hist"><div class="empty">还没有会话，发一条试试</div></div>
@@ -224,8 +235,19 @@ const SUGGEST_META = [
 // —— 会话持久化（localStorage）——
 // 一个 session = 一次"新对话"下的多轮问答。刷新不丢，点侧栏条目可回看。
 const LS_KEY = "yadong.sessions.v1";
-let sessions = [];          // [{id, title, ts, msgs:[{role:"me"|"ai", html}]}]
+let sessions = [];          // [{id, title, ts, mode, msgs:[{role:"me"|"ai", html}]}]
 let currentId = null;       // 当前会话 id；null 表示尚未开始
+
+// —— 功能页 ——
+// currentMode: null=首页(Agent 自主选 skill) | "qa"/"comparison"/"promo"(锁定对应 skill)
+let currentMode = null;
+const PAGES = {
+  home:       { mode:null,         ttl:"💬 对话",     sub:"随便问，Agent 自动判断该用哪个能力", ph:"继续提问…" },
+  qa:         { mode:"qa",         ttl:"💬 技术问答", sub:"锁定技术问答 · 带来源的统一口径答案", ph:"例如：Eureka 到底支持多少种语言？" },
+  comparison: { mode:"comparison", ttl:"⚔️ 竞品分析", sub:"锁定竞品对比 · 按维度对齐出对比表",   ph:"例如：我们 vs Clarivate，帮我对比" },
+  promo:      { mode:"promo",      ttl:"✍️ 内容生成", sub:"锁定宣传生成 · 贴官宣风格带来源初稿", ph:"例如：写一条 Analytics AI Mode 的推文" },
+};
+function modeKey(mode){ return mode || "home"; }   // mode → PAGES 的 key
 
 function loadSessions(){
   try { sessions = JSON.parse(localStorage.getItem(LS_KEY)) || []; }
@@ -268,11 +290,44 @@ const homeView = document.getElementById("home");
 const chatView = document.getElementById("chat");
 const stream = document.getElementById("stream");
 function goChat(){ homeView.classList.remove("show"); chatView.classList.add("show"); }
+
+// 高亮侧栏导航项（按 currentMode）
+function markNav(){
+  const key = modeKey(currentMode);
+  document.querySelectorAll("#nav a").forEach(a =>
+    a.classList.toggle("on", a.dataset.page === key));
+}
+// 应用某功能页的界面文案（标题/副标题/输入框占位）
+function applyChrome(mode){
+  const p = PAGES[modeKey(mode)];
+  document.querySelector("#chat .chattop .ttl").textContent = p.ttl;
+  document.querySelector("#chat .chattop .sub").textContent = p.sub;
+  document.getElementById("chatInput").placeholder = p.ph;
+}
+
+// 点击侧栏功能项：首页回首页视图；功能页锁定 skill 并进对话
+function goPage(key){
+  currentMode = PAGES[key].mode;
+  markNav();
+  if (key === "home"){
+    newChat();
+    return;
+  }
+  currentId = null;                       // 功能页起一段新对话
+  stream.innerHTML = "";
+  applyChrome(currentMode);
+  document.querySelectorAll(".hist a").forEach(x => x.classList.remove("on"));
+  goChat();
+  document.getElementById("chatInput").focus();
+}
+
 function newChat(){
   currentId = null;                       // 下一句发送时开新 session
+  currentMode = null;                     // 回首页 = Agent 自主选
   stream.innerHTML = "";
   chatView.classList.remove("show"); homeView.classList.add("show");
   document.querySelectorAll(".hist a").forEach(x => x.classList.remove("on"));
+  markNav();
   document.getElementById("homeInput").value = "";
   document.getElementById("homeInput").focus();
 }
@@ -292,21 +347,47 @@ function renderHist(){
   if (!sessions.length){ h.innerHTML = '<div class="empty">还没有会话，发一条试试</div>'; return; }
   sessions.forEach(s => {
     const a = document.createElement("a");
-    a.textContent = "💬 " + s.title;
-    a.title = s.title;
     if (s.id === currentId) a.classList.add("on");
     a.onclick = () => openSession(s.id);
+
+    const tt = document.createElement("span");
+    tt.className = "tt";
+    tt.textContent = "💬 " + s.title;
+    tt.title = s.title;
+
+    const del = document.createElement("button");
+    del.className = "del";
+    del.textContent = "×";
+    del.title = "删除此会话";
+    del.onclick = (e) => { e.stopPropagation(); deleteSession(s.id); };
+
+    a.appendChild(tt);
+    a.appendChild(del);
     h.appendChild(a);
   });
+}
+
+// 删除一条历史会话；若删的是当前会话则回到首页新对话
+function deleteSession(id){
+  sessions = sessions.filter(s => s.id !== id);
+  saveSessions();
+  if (id === currentId){
+    newChat();          // 回首页、清空、currentMode=null
+  } else {
+    renderHist();
+  }
 }
 
 function openSession(id){
   const s = sessions.find(x => x.id === id);
   if (!s) return;
   currentId = id;
+  currentMode = s.mode || null;           // 恢复该会话的能力锁定（旧会话无 mode 按 null）
   stream.innerHTML = "";
+  applyChrome(currentMode);
   s.msgs.forEach(m => bubble(m.role, m.html));
   goChat();
+  markNav();
   renderHist();
   stream.scrollTop = stream.scrollHeight;
 }
@@ -325,7 +406,7 @@ function bubble(who, inner){
 function recordMsg(role, html){
   let s = curSession();
   if (!s){
-    s = { id: "s" + Date.now(), title: "", ts: Date.now(), msgs: [] };
+    s = { id: "s" + Date.now(), title: "", ts: Date.now(), mode: currentMode, msgs: [] };
     sessions.unshift(s);
     currentId = s.id;
   }
@@ -375,9 +456,11 @@ async function send(){
   const loading = bubble("ai", '<span class="typing"><i></i><i></i><i></i></span> 正在挑料、裁决冲突、组织答案…');
 
   try {
+    const payload = { message: typed };            // 首页不带 mode → Agent 自选
+    if (currentMode) payload.mode = currentMode;   // 功能页锁定对应 skill
     const r = await fetch("/api/chat", {
       method:"POST", headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({ message: typed })   // 只发问题，能力+资料后端自动路由
+      body: JSON.stringify(payload)
     });
     const data = await r.json();
 
@@ -416,6 +499,7 @@ async function send(){
 // —— 启动：恢复历史会话 ——
 loadSessions();
 renderHist();
+markNav();          // 初始高亮「首页」
 
 document.getElementById("chatInput").addEventListener("keydown", e => {
   if (e.key === "Enter" && !e.shiftKey){ e.preventDefault(); send(); }

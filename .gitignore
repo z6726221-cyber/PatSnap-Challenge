@@ -20,3 +20,7 @@ planA/ref/
 挑战赛课题库.html
 *.jpg
 *.png
+
+# 例外：前端运行必需的静态资源（logo 等）要入库
+!planA/code/web/assets/
+!planA/code/web/assets/**
