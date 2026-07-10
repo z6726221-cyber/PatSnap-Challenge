@@ -312,7 +312,7 @@ body{margin:0;display:flex;background:var(--bg);color:var(--text);font-family:"P
 .hero{width:min(980px,calc(100vw - 360px));margin:168px auto 0;padding:0;text-align:center;background:transparent}.hero .hi{display:none}.hero h1{margin:0;color:var(--green-dark);font-size:clamp(34px,4.2vw,54px);font-weight:520;line-height:1.2;letter-spacing:0}.hero h1 .u{color:inherit;text-decoration:none}.hero .sub{margin:16px auto 42px;color:var(--muted);font-size:16px;line-height:1.6;max-width:720px}
 .bigbox{min-height:156px;max-width:none;margin:0;padding:24px;border:1px solid var(--line);border-radius:28px;background:var(--card);box-shadow:var(--shadow);text-align:left}.bigbox textarea{height:72px;color:var(--text);font-size:16px;font-weight:680}.bigbox .bar{margin-top:18px;padding-top:0;border-top:0}.bigbox .hint{color:#9c9b91;font-size:14px;font-weight:650}.bigbox .go,.send{color:var(--card);background:var(--green-dark);border-radius:50%}.bigbox .go{width:42px;height:42px;padding:0;justify-content:center;font-size:0}.bigbox .go:after{content:"↑";font-size:20px}
 .capttl{display:block;max-width:820px;margin:22px auto 10px;color:var(--muted);font-size:12px;text-align:center}.marquee{max-width:900px;margin:0 auto;overflow:hidden;position:relative;-webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}.track{display:flex;gap:10px;width:max-content;animation:marq 48s linear infinite;flex-wrap:nowrap;justify-content:flex-start}.marquee:hover .track{animation-play-state:paused}.cap{flex-shrink:0;height:42px;padding:0 18px;border:1px solid var(--line);border-radius:999px;color:var(--green-dark);background:var(--card);font-size:14px;font-weight:760;white-space:nowrap}.cap .ic{display:none}
-.collab{width:min(720px,calc(100vw - 420px));min-height:134px;margin:96px auto 42px;padding:24px 30px;border:1px solid var(--line);border-radius:22px;background:var(--card);box-shadow:0 14px 30px rgba(7,53,31,.05)}.collab .kicker{color:var(--green);font-weight:800}.collab h4{margin:8px 0 6px;color:var(--text);font-size:20px;letter-spacing:0}.collab p{color:var(--muted);font-size:14px}.collab .tags span{border:0;border-radius:999px;color:var(--card);background:var(--green)}
+.collab{width:min(720px,calc(100vw - 420px));min-height:134px;margin:96px auto 42px;padding:24px 30px;border:1px solid var(--line);border-radius:22px;background:var(--card);box-shadow:0 14px 30px rgba(7,53,31,.05);justify-content:space-between}.collab .kicker{color:var(--green);font-weight:800}.collab h4{margin:8px 0 6px;color:var(--text);font-size:20px;letter-spacing:0}.collab p{color:var(--muted);font-size:14px}.collab .tags{display:none}.mini-preview{position:relative;width:210px;height:94px;flex:0 0 auto}.preview-card{position:absolute;right:0;bottom:0;width:170px;height:70px;padding:12px;border:1px solid var(--line);border-radius:14px;background:var(--card);box-shadow:0 12px 26px rgba(7,53,31,.05)}.card-label{margin-bottom:10px;color:var(--green);font-size:12px;font-weight:800}.card-line{width:56%;height:8px;margin-top:7px;border-radius:999px;background:var(--green-soft)}.card-line.wide{width:88%}.float-chip{position:absolute;padding:7px 10px;border-radius:999px;color:var(--card);background:var(--green);font-size:12px;font-weight:780;box-shadow:0 8px 18px rgba(7,53,31,.08);white-space:nowrap}.chip-a{top:0;left:16px}.chip-b{top:22px;right:8px}.chip-c{bottom:10px;left:0}
 .chattop{padding:56px 64px 20px;border-bottom:0;background:transparent;align-items:flex-end}.chattop .ttl{color:var(--green-dark);font-size:34px;font-weight:620}.chattop .sub{margin-top:10px;color:var(--muted);font-size:15px;line-height:1.6}.chattop .pill{margin-left:auto;height:42px;padding:0 18px;border:0;border-radius:999px;color:#fff;background:var(--green-dark);font-size:14px;font-weight:760}.dot{background:#fff}
 .split{flex:1;min-height:0;overflow:auto;display:grid;grid-template-columns:360px minmax(0,1fr);gap:22px;padding:0 64px 56px}.cfgcard,.reportcard,.draft-card,.video-card,.mini-q,.kbfrow,.kbcard,.kbschedule div{border:1px solid var(--line);border-radius:22px;background:var(--card);box-shadow:0 14px 30px rgba(7,53,31,.04)}.cfgcard{position:sticky;top:0;padding:22px;gap:16px}.cfgcard input,.cfgcard select,.promo-input-row textarea{border:1px solid var(--line);border-radius:12px;background:#fffefa}.cfgcard .go,.promo-input-row .go{height:42px;padding:0 18px;border-radius:999px;color:#fff;background:var(--green-dark);font-weight:760}.cfg-mini div{border:1px solid var(--line);border-radius:14px;background:var(--panel)}.mini-thread{gap:10px}
 .reportcard{padding:26px;min-height:100%;font-size:14px;line-height:1.7}.report-toolbar{margin-bottom:24px;padding-bottom:0;border-bottom:0}.report-toolbar .status{height:26px;display:inline-flex;align-items:center;border:0;border-radius:999px;color:#38513d;background:#eef6ec}.report-toolbar .rmeta{margin-left:10px;color:var(--muted);font-size:13px}.toolbar-actions button{height:32px;border:1px solid var(--line);border-radius:999px;color:var(--green-dark);background:var(--panel);font-size:13px}
@@ -361,6 +361,21 @@ body{margin:0;display:flex;background:var(--bg);color:var(--text);font-family:"P
 .side-title button:active{background:rgba(31,111,78,.08);transform:scale(.96)}
 .side-title button:focus-visible{outline:2px solid rgba(31,111,78,.25);outline-offset:2px}
 .degraded-note{margin:0 0 16px;padding:12px 14px;border:1px solid #e7b99d;border-radius:14px;color:#9a4b22;background:#fff4ed;font-size:13px;line-height:1.6}
+#kbSales .kbpage,
+#kbPromo .kbpage{display:block;grid-template-columns:none;padding:0 64px 56px;overflow:auto}
+#kbSales .sales-layout,
+#kbPromo .material-layout{width:100%;max-width:1120px;margin:0 auto}
+#kbSales .sales-layout{grid-template-columns:320px minmax(0,1fr)}
+#kbPromo .material-layout{grid-template-columns:minmax(0,1fr) 330px}
+#kbSales .folder-panel,
+#kbSales .sales-main,
+#kbPromo .material-main,
+#kbPromo .schedule-panel{min-width:0}
+#kbSales .knowledge-card h3,
+#kbSales .knowledge-card p,
+#kbSales .knowledge-card div,
+#kbPromo .asset-card h3,
+#kbPromo .asset-card p{overflow-wrap:break-word;word-break:normal}
 @media (max-width:920px){body{overflow:auto}.app{height:auto;min-height:100vh;display:block;overflow:visible}.side{width:100%;height:auto;position:relative}.main{height:auto;min-height:100vh}.hero{width:calc(100vw - 36px);margin:64px auto 0}.collab{width:calc(100vw - 36px);margin-top:48px}.split,.workbench-grid,.kbpage{grid-template-columns:1fr;padding-left:20px;padding-right:20px}.chattop,.page-workspace{padding-left:20px;padding-right:20px}.page-header{display:block}}
 </style>
 </head>
@@ -376,13 +391,18 @@ body{margin:0;display:flex;background:var(--bg);color:var(--text);font-family:"P
 
     <nav class="nav" id="nav">
       <a data-page="home" onclick="goPage('home')"><span class="ni">✦</span><span>首页</span></a>
-      <a data-page="research" onclick="goPage('research')"><span class="ni">▤</span><span>研发工作台</span></a>
-      <a data-page="comparison" onclick="goPage('comparison')"><span class="ni">◎</span><span>竞品分析</span></a>
-      <a data-page="promo" onclick="goPage('promo')"><span class="ni">✎</span><span>内容生成</span></a>
     </nav>
 
-    <div class="side-title"><span>知识项目</span><button class="project-add" aria-label="新增项目" title="新增知识项目" onclick="openProjectDialog()">+</button></div>
+    <div class="subttl">业务工作台</div>
+    <nav class="nav" id="navBiz">
+      <a data-page="sales-presales" onclick="goPage('sales-presales')"><span class="ni">◒</span><span>销售与售前</span></a>
+      <a data-page="promo" onclick="goPage('promo')"><span class="ni">✎</span><span>营销与传播</span></a>
+      <a data-page="comparison" onclick="goPage('comparison')"><span class="ni">◎</span><span>市场与产品洞察</span></a>
+    </nav>
+
+    <div class="side-title"><span>知识工作台</span><button class="project-add" aria-label="新增项目" title="新增知识项目" onclick="openProjectDialog()">+</button></div>
     <nav class="nav" id="navKb">
+      <a data-page="research" onclick="goPage('research')"><span class="ni">▤</span><span>研发工作台</span></a>
       <a data-page="promo-kb" onclick="goPage('promo-kb')"><span class="ni">□</span><span>运营素材库</span></a>
       <a data-page="sales-kb" onclick="goPage('sales-kb')"><span class="ni">□</span><span>销售知识库</span></a>
     </nav>
@@ -424,15 +444,19 @@ body{margin:0;display:flex;background:var(--bg);color:var(--text);font-family:"P
 
           <div class="collab">
             <div class="txt">
-              <div class="kicker">为智慧芽团队定制的 AI 协作空间</div>
+              <div class="kicker">为智慧芽团队定制 AI 协作空间</div>
               <h4>减少重复沟通，让知识在团队间流动</h4>
-              <p>检索侧负责把资料召回好；本系统只对给定资料负责：挑料、裁决冲突、组织成带来源的产物，不编造、不装懂。</p>
+              <p>研发负责上传与审核知识，销售和运营直接调用可信内容，减少反复确认与信息误差。</p>
             </div>
-            <div class="tags">
-              <span>销售话术</span>
-              <span>运营文案</span>
-              <span>引用来源</span>
-              <span>曝光冲突</span>
+            <div class="mini-preview">
+              <div class="preview-card main-card">
+                <div class="card-label">引用来源</div>
+                <div class="card-line wide"></div>
+                <div class="card-line"></div>
+              </div>
+              <div class="float-chip chip-a">销售话术</div>
+              <div class="float-chip chip-b">运营文案</div>
+              <div class="float-chip chip-c">研发审核</div>
             </div>
           </div>
         </div>
@@ -558,7 +582,7 @@ body{margin:0;display:flex;background:var(--bg);color:var(--text);font-family:"P
       </main>
     </div>
 
-    <!-- VIEW: 竞品分析（左配置 + 右报告） -->
+    <!-- VIEW: 市场与产品洞察（左配置 + 右报告） -->
     <div class="view" id="splitComparison">
       <div class="chattop">
         <div><div class="ttl">把竞品差异整理成可用材料</div><div class="sub">输入产品和竞品对象，芽懂会生成带表格、图表和销售建议的富文本报告。</div></div>
@@ -598,10 +622,10 @@ body{margin:0;display:flex;background:var(--bg);color:var(--text);font-family:"P
           <div class="reportcard" id="cmpReport">
             <div class="report-toolbar">
               <div><span class="status">富文本预览</span><span class="rmeta">PatSnap Analytics AI Mode vs Clarivate / IPRally</span></div>
-              <div class="toolbar-actions"><button onclick="copyReport('cmpReport')">复制</button><button onclick="exportReport('cmpReport','竞品分析报告')">导出</button></div>
+              <div class="toolbar-actions"><button onclick="copyReport('cmpReport')">复制</button><button onclick="exportReport('cmpReport','市场与产品洞察报告')">导出</button></div>
             </div>
             <div class="report-header">
-              <h2>Analytics AI Mode 竞品分析摘要</h2>
+              <h2>Analytics AI Mode 市场与产品洞察摘要</h2>
               <p>面向销售团队，快速说明 PatSnap Analytics 在 AI Mode 加持下，相比 Clarivate 和 IPRally 在专利检索、专利解读、竞争情报和报告交付上的差异。</p>
             </div>
             <div class="insight-row">
@@ -632,7 +656,63 @@ body{margin:0;display:flex;background:var(--bg);color:var(--text);font-family:"P
       </div>
     </div>
 
-    <!-- VIEW: 内容生成（左多轮对话 + 右内容预览） -->
+    <!-- VIEW: 销售与售前 -->
+    <div class="view" id="splitSales">
+      <div class="chattop">
+        <div><div class="ttl">把研发知识转成销售行动</div><div class="sub">面向销售拜访、客户异议、售前方案和演示准备，快速组织可复用的对外表达。</div></div>
+        <button class="pill" onclick="goPage('sales-kb')"><span class="dot"></span> <span>查看销售知识库</span></button>
+      </div>
+      <div class="split">
+        <div class="split-left">
+          <div class="cfgcard">
+            <p class="split-copy">选择常见售前任务，结合销售知识库与研发资料生成带依据的表达材料。</p>
+            <div class="cfg-mini">
+              <div><span>销售拜访</span><b>开场话术 / 需求澄清</b></div>
+              <div><span>售前支持</span><b>方案框架 / 演示重点</b></div>
+              <div><span>客户异议</span><b>可追溯回答 / 风险提醒</b></div>
+            </div>
+          </div>
+          <div class="mini-thread">
+            <div class="mini-q"><b>推荐：</b>生成制造业客户首次拜访话术</div>
+            <div class="mini-q"><b>推荐：</b>整理 Analytics AI Mode 售前演示提纲</div>
+            <div class="mini-q"><b>推荐：</b>回答客户关于 AI 结果可追溯的疑问</div>
+          </div>
+        </div>
+        <div class="split-right">
+          <div class="reportcard">
+            <div class="report-toolbar">
+              <div><span class="status">工作台</span><span class="rmeta">销售话术 · 售前方案 · 客户异议</span></div>
+              <div class="toolbar-actions"><button onclick="goPage('sales-kb')">知识库</button><button onclick="goPage('home')">发起对话</button></div>
+            </div>
+            <div class="report-header">
+              <h2>销售与售前任务面板</h2>
+              <p>把研发材料、销售知识库和历史问答串起来，帮助销售团队在拜访前快速准备可信话术、方案要点和客户问题回答。</p>
+            </div>
+            <div class="insight-row">
+              <div><span>当前重点</span><strong>把产品能力翻译成客户价值</strong></div>
+              <div><span>输出原则</span><strong>保留引用来源，不确定内容显式提示</strong></div>
+            </div>
+            <div class="mini-chart-section">
+              <div class="chart-card light">
+                <h3>售前准备清单</h3>
+                <div class="agent-matrix">
+                  <div class="matrix-row matrix-head"><span>任务</span><span>材料</span><span>输出</span><span>状态</span></div>
+                  <div class="matrix-row"><span>客户背景</span><b>行业资料</b><b>拜访摘要</b><b>可生成</b></div>
+                  <div class="matrix-row"><span>方案演示</span><b>研发文档</b><b>演示提纲</b><b>可生成</b></div>
+                  <div class="matrix-row"><span>异议处理</span><b>FAQ</b><b>回答口径</b><b>可生成</b></div>
+                </div>
+              </div>
+              <div class="takeaway-card">
+                <h3>建议下一步</h3>
+                <p>从销售知识库选择产品线和客户场景，再让芽懂生成拜访话术、售前演示提纲或客户异议回答。涉及事实判断的内容会保留来源，缺失信息不自动脑补。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: 营销与传播（左多轮对话 + 右内容预览） -->
     <div class="view" id="splitPromo">
       <div class="chattop">
         <div><div class="ttl">把知识变成可发布内容</div><div class="sub">用对话方式生成宣传文案、销售话术或可直接发布的视频内容，并保留可追溯的知识来源。</div></div>
@@ -663,7 +743,7 @@ body{margin:0;display:flex;background:var(--bg);color:var(--text);font-family:"P
           <div class="reportcard" id="promoReport">
             <div class="report-toolbar">
               <div><span class="status">生成结果</span><span class="rmeta">视频脚本 · 16:9 · 可生成 5-10s 单镜头</span></div>
-              <div class="toolbar-actions"><button onclick="copyReport('promoReport')">复制</button><button onclick="exportReport('promoReport','内容生成结果')">下载</button></div>
+              <div class="toolbar-actions"><button onclick="copyReport('promoReport')">复制</button><button onclick="exportReport('promoReport','营销与传播结果')">下载</button></div>
             </div>
             <div class="video-output">
               <div class="video-screen"><button class="play-button" onclick="setPromoSub(document.querySelector('#promoModeSwitch button:nth-child(2)'),'视频')">▶</button><div class="video-caption">让专利分析进入 AI Mode</div></div>
@@ -725,6 +805,8 @@ body{margin:0;display:flex;background:var(--bg);color:var(--text);font-family:"P
             <section class="knowledge-list" id="salesKbGrid">
               <article class="knowledge-card"><span>销售话术</span><h3>Analytics AI Mode 开场介绍</h3><p>适用于首次拜访企业 IP 负责人，强调专利数据库与 AI 分析工作流。</p><div><b>适用对象</b><em>企业 IP / 研发管理者</em></div></article>
               <article class="knowledge-card"><span>FAQ</span><h3>客户问：AI Mode 的结果可以追溯吗？</h3><p>回答需强调来源引用、结果可复核、报告可交付。</p><div><b>适用场景</b><em>产品演示 / 技术确认</em></div></article>
+              <article class="knowledge-card"><span>竞品攻防</span><h3>Clarivate 对比口径</h3><p>对方强在全球 IP 情报资产和成熟服务，Analytics AI Mode 重点强调自然语言入口和分析交付效率。</p><div><b>适用阶段</b><em>竞品比较 / 采购评估</em></div></article>
+              <article class="knowledge-card"><span>客户案例</span><h3>制造业客户专利布局分析</h3><p>客户使用数据库检索与分析能力识别技术空白点，并形成研发决策材料。</p><div><b>适用内容</b><em>方案页 / 宣传文案</em></div></article>
             </section>
           </section>
         </section>
@@ -755,6 +837,8 @@ body{margin:0;display:flex;background:var(--bg);color:var(--text);font-family:"P
             <section class="asset-grid" id="promoKbGrid">
               <article class="asset-card"><div class="asset-thumb">AI</div><span>IP Search</span><h3>Analytics AI Mode 公众号首图</h3><p>用于专利检索、专利解读相关传播。</p><small>图片 · 2026/07/08</small></article>
               <article class="asset-card"><div class="asset-thumb video">▶</div><span>IP Drafting</span><h3>专利撰写流程介绍视频</h3><p>可复用为活动预热视频或销售转发素材。</p><small>视频 · 2026/07/05</small></article>
+              <article class="asset-card"><div class="asset-thumb doc">文</div><span>Life Sciences</span><h3>LS 行业解决方案推文</h3><p>面向生物医药客户的行业场景文案。</p><small>文案 · 2026/07/01</small></article>
+              <article class="asset-card"><div class="asset-thumb doc">表</div><span>Materials</span><h3>材料领域活动排期</h3><p>包含 webinar、社媒发文和销售跟进节奏。</p><small>排期 · 2026/06/28</small></article>
             </section>
           </section>
           <aside class="schedule-panel">
@@ -805,6 +889,12 @@ const SUGGEST_META = [
   {icon:"✍️", sub:"贴官宣风格的初稿"},
   {icon:"🔍", sub:"产品能力速查"},
 ];
+const FALLBACK_CASES = [
+  {question:"算法团队2026 Q3的工作规划是什么，重点方向和风险点有哪些？"},
+  {question:"客户问 Eureka 到底支持多少种语言，我该怎么回？"},
+  {question:"我们 Eureka 的多语言支持比竞品X强在哪？"},
+  {question:"给 Eureka 的语义检索能力写一段公众号推广短文，突出技术亮点。"},
+];
 // —— 会话持久化（localStorage）——
 // 一个 session = 一次"新对话"下的多轮问答。刷新不丢，点侧栏条目可回看。
 const LS_KEY = "yadong.sessions.v1";
@@ -827,12 +917,26 @@ function saveSessions(){
 }
 function curSession(){ return sessions.find(s => s.id === currentId); }
 
-// —— 加载建议问题跑马灯（用各 case 的真实 question）——
-// 轨道内容复制两份，配合 translateX(-50%) 动画实现无缝循环滚动。
-fetch("/api/cases").then(r => r.json()).then(d => {
-  const cases = d.cases || [];
+// —— 加载建议问题跑马灯：从问题库随机抽取一组，轨道复制两份实现无缝循环滚动。——
+function pickCapsuleCases(pool, count = 8){
+  const unique = [];
+  const seen = new Set();
+  (pool || []).forEach(c => {
+    const question = typeof c === "string" ? c : c?.question;
+    if (!question || seen.has(question)) return;
+    seen.add(question);
+    unique.push({ question });
+  });
+  for (let i = unique.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [unique[i], unique[j]] = [unique[j], unique[i]];
+  }
+  return unique.slice(0, Math.min(count, unique.length));
+}
+function renderCaps(pool){
   const track = document.getElementById("caps");
   track.innerHTML = "";
+  const cases = pickCapsuleCases(pool);
   if (!cases.length) return;
   const makeCap = (c, i) => {
     const meta = SUGGEST_META[i % SUGGEST_META.length];
@@ -855,7 +959,11 @@ fetch("/api/cases").then(r => r.json()).then(d => {
   track.style.animation = "none";
   void track.offsetWidth;
   requestAnimationFrame(() => { track.style.animation = ""; });
-}).catch(() => {});
+}
+fetch("/api/cases")
+  .then(r => r.ok ? r.json() : { cases: FALLBACK_CASES })
+  .then(d => renderCaps((d.cases || []).length ? d.cases : FALLBACK_CASES))
+  .catch(() => renderCaps(FALLBACK_CASES));
 
 function esc(s){ return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
 
@@ -864,6 +972,7 @@ function esc(s){ return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").repla
 const VIEW_BY_PAGE = {
   home: "home",
   research: "researchDesk",
+  "sales-presales": "splitSales",
   comparison: "splitComparison", promo: "splitPromo",
   "sales-kb": "kbSales", "promo-kb": "kbPromo",
 };
@@ -882,7 +991,7 @@ function goChat(){ showView("home"); showHomeState("chat"); }
 
 // 高亮侧栏导航项（按 currentPage）
 function markNav(){
-  document.querySelectorAll("#nav a, #navKb a").forEach(a =>
+  document.querySelectorAll("#nav a, #navBiz a, #navKb a").forEach(a =>
     a.classList.toggle("on", a.dataset.page === currentPage));
 }
 
@@ -1173,7 +1282,7 @@ async function runComparison(){
   const purpose = document.getElementById("cmpPurpose").value;
   if (!target || !competitor) return;
 
-  const message = `对比对象：${target}；对比竞品：${competitor}；输出用途：${purpose}。请生成竞品分析报告。`;
+  const message = `对比对象：${target}；对比竞品：${competitor}；输出用途：${purpose}。请生成市场与产品洞察报告。`;
   const btn = document.getElementById("cmpGo");
   const report = document.getElementById("cmpReport");
   btn.disabled = true;
@@ -1196,11 +1305,11 @@ async function runComparison(){
 
     let html = `<div class="report-toolbar">
         <div><span class="status">富文本预览</span><span class="rmeta">${esc(target)} vs ${esc(competitor)}</span></div>
-        <div class="toolbar-actions"><button onclick="copyReport('cmpReport')">复制</button><button onclick="exportReport('cmpReport','竞品分析报告')">导出</button></div>
+        <div class="toolbar-actions"><button onclick="copyReport('cmpReport')">复制</button><button onclick="exportReport('cmpReport','市场与产品洞察报告')">导出</button></div>
       </div>
       ${data.degraded ? `<div class="degraded-note">当前为降级结果：${esc(data.degraded_reason || "未能完成检索/生成链路，展示预置兜底内容。")}</div>` : ""}
       <div class="report-header">
-        <h2>${esc(head || (target + " 竞品分析"))}</h2>
+        <h2>${esc(head || (target + " 市场与产品洞察"))}</h2>
         ${lead ? `<p>${esc(lead)}</p>` : ""}
       </div>
       ${renderInsightRow(insight.content)}
@@ -1459,7 +1568,7 @@ let videoPollTimer = null;
 function defaultPromoPreview(){
   return `<div class="report-toolbar">
       <div><span class="status">生成结果</span><span class="rmeta">视频脚本 · 16:9 · 可生成 5-10s 单镜头</span></div>
-      <div class="toolbar-actions"><button onclick="copyReport('promoReport')">复制</button><button onclick="exportReport('promoReport','内容生成结果')">下载</button></div>
+      <div class="toolbar-actions"><button onclick="copyReport('promoReport')">复制</button><button onclick="exportReport('promoReport','营销与传播结果')">下载</button></div>
     </div>
     <div class="video-output">
       <div class="video-screen"><button class="play-button">▶</button><div class="video-caption">让专利分析进入 AI Mode</div></div>
@@ -1488,7 +1597,7 @@ function renderPromoOutput(text, sub){
   lastPromoText = text;
   let html = `<div class="report-toolbar">
       <div><span class="status">生成结果</span><span class="rmeta">${esc(sub)}${sub === "视频" ? " · 16:9 单镜头短片" : ""}</span></div>
-      <div class="toolbar-actions"><button onclick="copyReport('promoReport')">复制</button><button onclick="exportReport('promoReport','内容生成结果')">下载</button></div>
+      <div class="toolbar-actions"><button onclick="copyReport('promoReport')">复制</button><button onclick="exportReport('promoReport','营销与传播结果')">下载</button></div>
     </div>`;
 
   if (sub === "视频"){
