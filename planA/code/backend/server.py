@@ -18,6 +18,7 @@ import urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 from agent_runtime import run_agent, run_agent_auto, run_agent_with_case, run_agent_auto_with_case
+from external_search import search_external_intel
 from image_client import IMAGE_DIR, ImageClient
 from loader import Case, Material, load_live
 from local_store import add_kb, add_project, add_upload, export_text, list_kb, list_projects, load_store
@@ -109,6 +110,7 @@ _MODE_SKILL = {
     "qa": "patsnap-tech-qa",
     "comparison": "patsnap-compare",
     "promo": "patsnap-promo",
+    "presales": "patsnap-presales",
 }
 _SKILL_MODE = {v: k for k, v in _MODE_SKILL.items()}
 
@@ -215,6 +217,89 @@ def _retrieve_local_case(message: str, mode: str) -> tuple:
     return case, _retrieval_meta("local-kb", case)
 
 
+def _external_intel_materials(message: str) -> tuple:
+    """把外部搜索结果包装成 Material。
+
+    未配置真实搜索服务时，也返回一条 gap material，明确告诉 Agent 哪些外部资料缺失；
+    这样售前报告会诚实暴露检索缺口，而不是凭模型常识补客户事实。
+    """
+    result = search_external_intel(message, limit=5)
+    materials = []
+    if result.get("items"):
+        for i, item in enumerate(result["items"], 1):
+            body = (
+                f"# {item.get('title') or '外部情报'}\n\n"
+                f"外部来源：{item.get('url') or 'external://unknown'}\n"
+                f"更新时间：{item.get('updated_at') or '时间未知'}\n\n"
+                f"{item.get('snippet') or ''}"
+            )
+            materials.append(Material(
+                source=f"external-intel/{i}",
+                updated_at=item.get("updated_at") or "时间未知",
+                authority="L4",
+                topic="external-intel/search-result",
+                score=0.72,
+                title=item.get("title") or "外部情报",
+                body=body,
+            ))
+        return materials, {"available": True, "reason": "", "count": len(materials)}
+
+    reason = result.get("reason") or "外部搜索未返回结果"
+    materials.append(Material(
+        source="external-intel/gap",
+        updated_at="时间未知",
+        authority="L4",
+        topic="external-intel/search-gap",
+        score=0.4,
+        title="外部情报检索缺口",
+        body=(
+            "# 外部情报检索缺口\n\n"
+            f"{reason}\n\n"
+            "生成售前报告时，客户官网、新闻、财报、招聘、专利动态、管理层访谈、"
+            "竞品采用情况等外部事实必须标为“待核实/需外部搜索补充”，不得直接写成已确认事实。"
+        ),
+    ))
+    return materials, {"available": False, "reason": reason, "count": 0}
+
+
+def _retrieve_presales_case(message: str) -> tuple:
+    """销售与售前专用召回：live 资料 + 本地销售/运营 KB + 外部情报适配层。"""
+    materials = []
+    sources = []
+
+    if _has_live_material():
+        live_case = load_live(LIVE_DIR, question=message)
+        materials.extend(getattr(live_case, "materials", []) or [])
+        sources.append("live")
+
+    try:
+        local_case, _ = _retrieve_local_case(message, "presales")
+        materials.extend(getattr(local_case, "materials", []) or [])
+        sources.append("local-kb")
+    except Exception:
+        pass
+
+    external_materials, external_meta = _external_intel_materials(message)
+    materials.extend(external_materials)
+    sources.append("external-intel" if external_meta.get("available") else "external-intel-gap")
+
+    # 去重，避免 live 和本地 KB 同源材料重复进入工具列表。
+    unique = []
+    seen = set()
+    for m in materials:
+        if m.source in seen:
+            continue
+        seen.add(m.source)
+        unique.append(m)
+    if not unique:
+        raise RuntimeError("销售与售前暂无可用内部资料，且外部检索未返回材料")
+
+    case = Case(question=message, materials=unique)
+    meta = _retrieval_meta("+".join(sources), case)
+    meta["external"] = external_meta
+    return case, meta
+
+
 def handle_chat(body: dict) -> dict:
     """真实提问：读检索侧写到 sample_retrieval/live/ 的实时资料 + 用户问题 → Agent
     自主选 skill 并执行。live/ 里没有资料（检索还没跑过）时直接降级，不再用假样例兜底。
@@ -239,8 +324,11 @@ def handle_chat(body: dict) -> dict:
                 text, trace, selected = run_agent_auto(case_dir, verbose=False)
                 mode = skill_to_mode(selected) if selected else "qa"
         else:
-            if explicit_mode in ("promo", "comparison"):
-                if _has_live_material():
+            if explicit_mode in ("promo", "comparison", "presales"):
+                if explicit_mode == "presales":
+                    case, retrieval = _retrieve_presales_case(message)
+                    case_label = retrieval["source"]
+                elif _has_live_material():
                     case = load_live(LIVE_DIR, question=message)
                     retrieval = _retrieval_meta("live", case)
                     case_label = "live"

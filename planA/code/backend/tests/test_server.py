@@ -14,6 +14,7 @@ class TestModeToSkill(unittest.TestCase):
         self.assertEqual(server.mode_to_skill("qa"), "patsnap-tech-qa")
         self.assertEqual(server.mode_to_skill("comparison"), "patsnap-compare")
         self.assertEqual(server.mode_to_skill("promo"), "patsnap-promo")
+        self.assertEqual(server.mode_to_skill("presales"), "patsnap-presales")
 
     def test_unknown_mode_defaults_to_qa(self):
         self.assertEqual(server.mode_to_skill("nonsense"), "patsnap-tech-qa")
@@ -24,6 +25,7 @@ class TestSkillMode(unittest.TestCase):
         self.assertEqual(server.skill_to_mode("patsnap-compare"), "comparison")
         self.assertEqual(server.skill_to_mode("patsnap-promo"), "promo")
         self.assertEqual(server.skill_to_mode("patsnap-tech-qa"), "qa")
+        self.assertEqual(server.skill_to_mode("patsnap-presales"), "presales")
 
     def test_skill_to_mode_unknown_defaults_qa(self):
         self.assertEqual(server.skill_to_mode("nope"), "qa")
@@ -109,6 +111,34 @@ class TestHandleChat(unittest.TestCase):
         self.assertEqual(out["case"], "local-kb")
         self.assertEqual(out["retrieval"]["count"], 1)
         run.assert_called_once()
+
+    def test_presales_combines_local_and_external_gap(self):
+        case = server.Case(question="任务模块：完整报告；目标客户：制造业客户", materials=[
+            server.Material(
+                source="kb://sales/sales-1",
+                updated_at="2026-07-10",
+                authority="L2",
+                topic="sales/数据库/销售话术",
+                score=0.9,
+                title="Analytics AI Mode 开场介绍",
+                body="适用于首次拜访企业 IP 负责人。",
+            )
+        ])
+        with mock.patch.object(server, "_has_live_material", return_value=False), \
+             mock.patch.object(server, "_retrieve_local_case",
+                               return_value=(case, {"source": "local-kb", "count": 1, "titles": ["Analytics AI Mode 开场介绍"]})), \
+             mock.patch.object(server, "search_external_intel",
+                               return_value={"available": False, "reason": "not configured", "items": []}), \
+             mock.patch.object(server, "run_agent_with_case",
+                               return_value=("## 客户拜访售前报告\n来源：`kb://sales/sales-1` 更新时间：2026-07-10", [{"tool": "list_materials"}])) as run:
+            out = server.handle_chat({"message": "任务模块：完整报告；目标客户：制造业客户", "mode": "presales"})
+        self.assertEqual(out["degraded"], False)
+        self.assertEqual(out["mode"], "presales")
+        self.assertIn("local-kb", out["case"])
+        self.assertIn("external-intel-gap", out["case"])
+        self.assertEqual(out["retrieval"]["external"]["available"], False)
+        passed_case = run.call_args[0][1]
+        self.assertIn("external-intel/gap", [m.source for m in passed_case.materials])
 
     def test_explicit_promo_prefers_live_retrieval_when_available(self):
         case = server.Case(question="内容形式：文案。写推文", materials=[

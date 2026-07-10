@@ -11,7 +11,7 @@
 ### 1. 首页对话
 
 - 支持直接输入问题，后端读取检索侧写入的资料并由 Agent 自主选择 skill。
-- 首页保留随机滚动胶囊，胶囊问题只来自当前系统可回答的静态样例 case；后端 `/api/cases` 可用时优先使用后端返回的问题库，不可用时使用前端兜底问题库。
+- 首页保留快捷任务条框，当前包括「生成销售话术」「写运营推文」「解释 TRIZ 概念」「进行竞品分析」。点击条框会把文字填入输入框并追加空格，方便用户继续补充问题。
 - 回答会被结构化渲染：结论、依据、冲突提示、待核实项和引用来源尽量分开展示，避免整段文字堆在一起。
 - 检索资料不足或模型失败时会降级，并在前端明确提示「降级演示 / 资料不足」。
 
@@ -19,13 +19,13 @@
 
 当前侧边栏的业务入口包括：
 
-- **销售与售前**：面向销售拜访、客户异议、售前方案和演示准备，提供销售话术、售前方案、客户异议处理等任务面板。
+- **销售与售前**：使用 `patsnap-presales` skill，面向客户拜访和售前推进，提供深度调研、痛点分析、话术脚本和行动清单四类任务。4 个模块可单独生成，也可汇总成一份完整客户拜访售前报告。
 - **营销与传播**：原「内容生成」，使用 `patsnap-promo` skill，支持宣传稿、运营文案、销售话术、视频脚本 / 视频提示词等生成。
 - **市场与产品洞察**：原「竞品分析」，使用 `patsnap-compare` skill，按维度组织我方与竞品差异，强调可追溯来源、攻防口径和销售可用表达。
 
-营销与传播、市场与产品洞察会优先读取 `sample_retrieval/live/`；如果 live 资料不存在，会使用本地 KB 做轻量召回兜底，并在响应里标注检索来源。
+销售与售前会合并读取 `sample_retrieval/live/`、本地销售 / 运营知识库和外部情报适配层。外部搜索服务未配置时，报告会明确标注 `external-intel/gap` 和待核实项，不会假装已经联网。营销与传播、市场与产品洞察会优先读取 `sample_retrieval/live/`；如果 live 资料不存在，会使用本地 KB 做轻量召回兜底，并在响应里标注检索来源。
 
-### 3. 知识工作台
+### 3. 知识空间
 
 - 支持查看「研发工作台」「运营素材库」和「销售知识库」。
 - 支持新增知识项目、新增知识条目。
@@ -57,9 +57,9 @@
   -> 前端 planA/code/web/index.html
   -> 后端 planA/code/backend/server.py
   -> 读取 sample_retrieval/live/ 或样例 case
-  -> Agent 自主选择 skill
+  -> Agent 自主选择 skill，或由业务页显式指定 skill
   -> skill 按资料使用 SOP 挑料、裁决冲突、组织答案
-  -> 前端结构化展示回答 / 销售话术 / 洞察报告 / 营销文案 / 图片 / 视频任务状态
+  -> 前端结构化展示回答 / 售前报告 / 销售话术 / 洞察报告 / 营销文案 / 图片 / 视频任务状态
 ```
 
 资料契约见 [`planA/code/sample_retrieval/README-契约.md`](planA/code/sample_retrieval/README-契约.md)。
@@ -73,6 +73,7 @@
 | `patsnap-tech-qa` | 产品 / 项目 / 技术概念问答 | 面向销售的清晰解释、标准口径、来源和待核实项 |
 | `patsnap-compare` | 市场与产品洞察、竞品对比、攻防话术 | 维度化对比、我方优势 / 风险、证据和销售话术 |
 | `patsnap-promo` | 营销与传播、宣传稿、运营文案、销售话术、视频脚本 | 带来源的内容初稿、视频提示词、可选图片海报 |
+| `patsnap-presales` | 销售与售前、客户拜访准备、机会推进 | 客户调研、痛点分析、话术脚本、行动清单和完整拜访报告 |
 
 共享规则：
 
@@ -93,6 +94,7 @@ planA/code/
 │   ├── llm_client.py          # OpenAI-compatible LLM 客户端
 │   ├── video_client.py        # 视频生成客户端，支持任务持久化
 │   ├── image_client.py        # 图片生成客户端，保存并回显图片
+│   ├── external_search.py     # 外部情报检索适配器，未配置时显式返回检索缺口
 │   ├── local_store.py         # 本地知识库、上传、导出
 │   ├── fallback.json          # 降级演示结果
 │   └── tests/
@@ -103,6 +105,7 @@ planA/code/
 │   ├── patsnap-tech-qa/
 │   ├── patsnap-compare/
 │   ├── patsnap-promo/
+│   ├── patsnap-presales/
 │   ├── SOUL.md
 │   └── references/资料使用SOP.md
 └── web/
@@ -135,6 +138,11 @@ IMAGE_BASE_URL=https://llm-api.patsnap.info/v1
 IMAGE_MODEL=doubao-seedream-5.0-lite
 IMAGE_FALLBACK_MODEL=doubao-seedream-4.5
 IMAGE_API_KEY=replace-with-your-image-key-or-video-key
+
+# 销售与售前外部情报搜索：可选
+# 未配置时仍可生成报告，但外部客户事实会被标为待核实 / 需补充搜索。
+EXTERNAL_SEARCH_ENDPOINT=
+EXTERNAL_SEARCH_API_KEY=
 ```
 
 注意：
@@ -167,7 +175,7 @@ http://localhost:8001/
 |---|---|---|
 | `GET` | `/` | 前端页面 |
 | `GET` | `/api/cases` | 列出静态样例 case |
-| `POST` | `/api/chat` | 首页对话 / 市场与产品洞察 / 营销与传播主入口 |
+| `POST` | `/api/chat` | 首页对话 / 销售与售前 / 市场与产品洞察 / 营销与传播主入口 |
 | `GET` | `/api/kb` | 读取知识库、知识项目、上传列表 |
 | `POST` | `/api/kb` | 新增知识项目或知识条目 |
 | `POST` | `/api/upload` | 上传资料，并同步到本地 KB 与 `sample_retrieval/live/` |
