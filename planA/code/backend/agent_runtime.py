@@ -23,6 +23,14 @@ from case_tools import CaseTools, TOOLS
 
 SKILLS_DIR = os.path.join(os.path.dirname(__file__), "..", "skills")
 SAMPLE_DIR = os.path.join(os.path.dirname(__file__), "..", "sample_retrieval")
+SOUL_PATH = os.path.join(SKILLS_DIR, "SOUL.md")
+
+# 所有模式共享的行为底线：不编造、只信工具返回的资料、标"待核实"。
+COMMON_RULES = (
+    "本次的资料已由检索系统召回好，你通过 list_materials / read_material / "
+    "check_conflicts 三个工具访问它们。不要凭记忆编造知识，所有事实都必须来自"
+    "工具返回的资料，并附上来源和更新时间；资料没有支撑的点，标「待核实」。"
+)
 
 
 def _read(path):
@@ -70,12 +78,13 @@ def list_skills():
 
 
 def load_skill_prompt(skill_name):
-    """读 SKILL.md + 其引用的 references，拼成给 Agent 的 system prompt。"""
+    """读 SOUL.md + SKILL.md + 其引用的 references，拼成给 Agent 的 system prompt。
+    SOUL.md 是三个生成 skill 共享的恒定注入层，无条件拼入，不依赖 SKILL.md 正文有没有提到它。"""
     skill_dir = os.path.join(SKILLS_DIR, skill_name)
     skill_md = _read(os.path.join(skill_dir, "SKILL.md"))
 
-    # 收集 SKILL.md 里引用的 references 路径（../references/x.md 或 references/x.md）
-    ref_paths = set(re.findall(r"`?\.\.?/references/[^\s`）)]+\.md`?", skill_md))
+    # 收集 SKILL.md 里引用的 references 路径（../references/x.md、./references/x.md 或 references/x.md）
+    ref_paths = set(re.findall(r"`?(?:\.\.?/)?references/[^\s`）)]+\.md`?", skill_md))
     ref_blocks = []
     for rp in sorted(ref_paths):
         clean = rp.strip("`")
@@ -83,14 +92,17 @@ def load_skill_prompt(skill_name):
         if os.path.exists(abs_path):
             ref_blocks.append(f"\n\n===== 引用文档: {clean} =====\n" + _read(abs_path))
 
+    soul_block = ""
+    if os.path.exists(SOUL_PATH):
+        soul_block = "\n\n===== SOUL.md（语言人格层，恒定注入）=====\n" + _read(SOUL_PATH)
+
     system = (
         "你是「芽懂」——智慧芽私域知识库的技术助手。你已加载下面这个 skill，"
         "必须严格按它的 Workflow、Output Contract 和 Boundaries 执行。\n"
-        "本次的资料已由检索系统召回好，你通过 list_materials / read_material / "
-        "check_conflicts 三个工具访问它们。不要凭记忆编造知识，所有事实都必须来自"
-        "工具返回的资料，并附上来源和更新时间；资料没有支撑的点，标「待核实」。\n"
-        "如果 Workflow 要求'先读某些 references'，这些内容已附在下方，视为你已读。\n\n"
-        "===== SKILL.md =====\n" + skill_md + "".join(ref_blocks)
+        + COMMON_RULES + "\n"
+        "如果 Workflow 要求'先读某些 references'，这些内容已附在下方，视为你已读。\n"
+        + soul_block +
+        "\n\n===== SKILL.md =====\n" + skill_md + "".join(ref_blocks)
     )
     return system
 
@@ -128,10 +140,9 @@ def run_agent_auto_with_case(case, max_turns=8, verbose=True):
         "你要先判断它属于下面哪个 skill 的场景，用 select_skill 加载那个 skill，"
         "然后严格按它返回的 Workflow / Output Contract / Boundaries 执行。\n\n"
         "可选 skill：\n" + catalog + "\n\n"
-        "本次资料已由检索系统召回，你通过 list_materials / read_material / "
-        "check_conflicts 三个工具访问。不要凭记忆编造，所有事实都来自工具返回的资料，"
-        "并附来源和更新时间；资料没支撑的点标「待核实」。\n"
-        "第一步必须是 select_skill。"
+        + COMMON_RULES + "\n"
+        "第一步必须是 select_skill。select_skill 返回的内容已包含 SOUL.md（语言人格层），"
+        "生成产物前必须先按它统一术语和风格底线。"
     )
     messages = [
         {"role": "system", "content": system},

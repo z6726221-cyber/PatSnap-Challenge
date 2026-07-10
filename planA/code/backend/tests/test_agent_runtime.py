@@ -26,6 +26,11 @@ class TestListSkills(unittest.TestCase):
         for s in skills:
             self.assertTrue(os.path.isdir(os.path.join(ar.SKILLS_DIR, s["name"])))
 
+    def test_compare_reference_is_injected(self):
+        prompt = ar.load_skill_prompt("patsnap-compare")
+        self.assertIn("===== 引用文档: references/对比维度与维度对齐.md", prompt)
+        self.assertIn("竞品对比：查询分解与维度对齐", prompt)
+
 
 class TestAutoSkillLoop(unittest.TestCase):
     def _fake_cli(self, scripted):
