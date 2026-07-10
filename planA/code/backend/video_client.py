@@ -4,7 +4,7 @@
 未配置 VIDEO 时才回退到可灵 Kling（KLING_*）；如确需复用 LLM_*，必须显式设置 ALLOW_LLM_VIDEO_FALLBACK=1。
 
 接口：
-  OpenAI-compatible: POST /chat/completions
+  OpenAI-compatible: POST /videos/generations
   Kling: POST /v1/videos/text2video，GET /v1/videos/text2video/{task_id}
 
 单次调用只出一个 5-10 秒的短镜头，不做多镜头拼接（见 patsnap-promo 视频模式的范围约束）。
@@ -16,6 +16,7 @@ import time
 import uuid
 import urllib.request
 import urllib.error
+import urllib.parse
 
 
 TASKS = {}
@@ -123,7 +124,7 @@ class VideoClient:
         """提交文生视频任务，返回 task_id。prompt 建议英文，场景/镜头描述越具体越好。"""
         if self.provider == "openai":
             try:
-                return self._submit_openai_compatible(prompt)
+                return self._submit_openai_compatible(prompt, duration=duration)
             except Exception as e:  # noqa
                 if not _has_kling_config(self._conf):
                     raise
@@ -166,23 +167,28 @@ class VideoClient:
             raise RuntimeError(f"Kling 提交失败: {data.get('message')}")
         return data["data"]["task_id"]
 
-    def _submit_openai_compatible(self, prompt):
+    def _submit_openai_compatible(self, prompt, duration="5"):
         task_id = "video-" + uuid.uuid4().hex[:10]
         compact_prompt = _compact_video_prompt(prompt)
         payload = {
             "model": self.model,
-            "messages": [
-                {"role": "user", "content": compact_prompt},
-            ],
+            "input": [{
+                "type": "text",
+                "prompt": compact_prompt,
+            }],
+            "duration": str(duration),
         }
-        data = self._request("POST", "/chat/completions", payload, timeout=120)
-        content = data["choices"][0]["message"].get("content", "")
-        url = _extract_url(content)
+        data = self._request("POST", "/videos/generations", payload, timeout=180)
+        parsed = _parse_openai_video_response(data)
+        remote_task_id = parsed.get("task_id") or task_id
+        status = parsed.get("status") or ("succeed" if parsed.get("video_url") else "processing")
+        message = parsed.get("message") or ("视频任务已提交" if not parsed.get("video_url") else "视频任务已完成")
         _save_task(task_id, {
-            "status": "succeed",
-            "video_url": url,
-            "message": content or "视频任务已完成",
+            "status": status,
+            "video_url": parsed.get("video_url"),
+            "message": message,
             "provider": "doubao-seedance",
+            "remote_task_id": remote_task_id,
             "created_at": time.time(),
         })
         return task_id
@@ -190,6 +196,8 @@ class VideoClient:
     def get_status(self, task_id):
         """返回 {status, video_url, message}。status: submitted/processing/succeed/failed。"""
         local_task = _get_saved_task(task_id)
+        if local_task and local_task.get("provider") == "doubao-seedance":
+            return self._get_openai_video_status(task_id, local_task)
         if local_task and local_task.get("provider") != "kling":
             return {k: local_task.get(k) for k in ("status", "video_url", "message")}
         if local_task and local_task.get("provider") == "kling":
@@ -211,6 +219,32 @@ class VideoClient:
             finally:
                 self.base_url, self._key = old_base, old_key
         return self._get_kling_status(task_id, local_task)
+
+    def _get_openai_video_status(self, task_id, local_task):
+        if local_task.get("status") in ("succeed", "failed") or local_task.get("video_url"):
+            return {k: local_task.get(k) for k in ("status", "video_url", "message")}
+        remote_task_id = local_task.get("remote_task_id") or task_id
+        try:
+            query = urllib.parse.quote(str(remote_task_id), safe="")
+            data = self._request("GET", f"/videos/generations?task_id={query}", timeout=30)
+        except Exception as e:  # noqa
+            # Some gateways return the generated URL synchronously and do not expose a status endpoint.
+            return {
+                "status": local_task.get("status") or "processing",
+                "video_url": local_task.get("video_url"),
+                "message": (local_task.get("message") or "视频任务已提交") + f"；状态查询暂不可用：{str(e)[:120]}",
+            }
+        parsed = _parse_openai_video_response(data)
+        next_task = dict(local_task)
+        if parsed.get("video_url"):
+            next_task["video_url"] = parsed["video_url"]
+            next_task["status"] = parsed.get("status") or "succeed"
+        elif parsed.get("status"):
+            next_task["status"] = parsed["status"]
+        if parsed.get("message"):
+            next_task["message"] = parsed["message"]
+        _save_task(task_id, next_task)
+        return {k: next_task.get(k) for k in ("status", "video_url", "message")}
 
     def _get_kling_status(self, task_id, local_task=None):
         data = self._request("GET", f"/v1/videos/text2video/{task_id}")
@@ -240,6 +274,54 @@ def _extract_url(text):
     return m.group(0).rstrip(".,，。")
 
 
+def _parse_openai_video_response(data):
+    """Accept several common /videos/generations response shapes without binding to one gateway."""
+    text = json.dumps(data, ensure_ascii=False) if not isinstance(data, str) else data
+    url = _find_first(data, ("url", "video_url", "output_url", "download_url"))
+    if not url:
+        url = _extract_url(text)
+    task_id = _find_first(data, ("task_id", "id", "request_id"))
+    status = _normalize_status(_find_first(data, ("status", "task_status", "state")))
+    message = _find_first(data, ("message", "msg", "task_status_msg"))
+    return {
+        "task_id": str(task_id) if task_id else None,
+        "status": status,
+        "video_url": url,
+        "message": str(message) if message else "",
+    }
+
+
+def _find_first(obj, keys):
+    if isinstance(obj, dict):
+        for key in keys:
+            value = obj.get(key)
+            if value:
+                return value
+        for value in obj.values():
+            found = _find_first(value, keys)
+            if found:
+                return found
+    elif isinstance(obj, list):
+        for item in obj:
+            found = _find_first(item, keys)
+            if found:
+                return found
+    return None
+
+
+def _normalize_status(status):
+    if not status:
+        return None
+    s = str(status).lower()
+    if s in ("succeeded", "success", "completed", "complete", "done"):
+        return "succeed"
+    if s in ("failed", "error", "cancelled", "canceled"):
+        return "failed"
+    if s in ("queued", "pending", "submitted", "running", "processing", "in_progress"):
+        return "processing"
+    return s
+
+
 def _compact_video_prompt(prompt):
     text = " ".join((prompt or "").split())
     if not text:
@@ -266,7 +348,7 @@ def _friendly_http_error(code, body):
         pass
     if code >= 500:
         return (
-            f"视频服务 HTTP {code}: 上游视频模型内部错误。已使用单条 user prompt 提交；"
+            f"视频服务 HTTP {code}: 上游视频模型内部错误。已通过 /videos/generations 提交；"
             "如果仍失败，通常是模型网关临时不可用、该账号未开通视频生成、或当前模型只返回文本不产出视频 URL。"
             f" 原始信息：{message[:180]}"
         )

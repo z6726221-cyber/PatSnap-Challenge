@@ -120,7 +120,7 @@ cp .env.example .env
 ```bash
 # LLM：用于对话、skill 选择和最终生成
 LLM_BASE_URL=https://llm-api.patsnap.info/v1
-LLM_MODEL=gpt-5.5
+LLM_MODEL=claude-opus-4-6
 LLM_API_KEY=replace-with-your-backend-llm-key
 
 # 视频：默认走 OpenAI-compatible 网关的 doubao-seedance-2.0
@@ -128,9 +128,10 @@ VIDEO_BASE_URL=https://llm-api.patsnap.info/v1
 VIDEO_MODEL=doubao-seedance-2.0
 VIDEO_API_KEY=replace-with-your-video-key
 
-# 图片：默认 gpt-image-2；不填 IMAGE_API_KEY 时可复用 VIDEO_API_KEY
+# 图片：默认 doubao-seedream-5.0-lite；不可用时可回退 doubao-seedream-4.5
 IMAGE_BASE_URL=https://llm-api.patsnap.info/v1
-IMAGE_MODEL=gpt-image-2
+IMAGE_MODEL=doubao-seedream-5.0-lite
+IMAGE_FALLBACK_MODEL=doubao-seedream-4.5
 IMAGE_API_KEY=replace-with-your-image-key-or-video-key
 ```
 
@@ -138,6 +139,7 @@ IMAGE_API_KEY=replace-with-your-image-key-or-video-key
 
 - `.env` 已被 gitignore，不要提交真实 key。
 - 前端不保存 key，只请求本地后端。
+- `doubao-seedream-*` 要求图片至少 `1920x1920`，后端会自动调整过小尺寸。
 - 视频模型如果只返回文本、不返回 URL，前端会展示错误或任务信息；这通常是网关能力或账号权限问题，不是前端渲染问题。
 
 ## 运行

@@ -34,7 +34,7 @@ class LLMClient:
     def __init__(self, env_path=None):
         c = _load_env(env_path)
         self.base_url = c["LLM_BASE_URL"].rstrip("/")
-        self.model = c.get("LLM_MODEL", "gpt-5.5")
+        self.model = c.get("LLM_MODEL", "claude-opus-4-6")
         self._key = c["LLM_API_KEY"]
         # urllib 默认 opener 会读 https_proxy 环境变量；显式构造以确保走代理
         self._opener = urllib.request.build_opener()
