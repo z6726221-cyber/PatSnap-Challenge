@@ -114,8 +114,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
 .av{width:34px;height:34px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;overflow:hidden}
 .av.ai-logo{width:54px;height:36px;border:1px solid var(--line);border-radius:13px;background:#fff;box-shadow:0 6px 14px rgba(7,53,31,.06)}
 .av.ai-logo img{width:46px;height:auto;display:block}
-.av.yazai{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:#fff;box-shadow:0 6px 14px rgba(7,53,31,.06)}
-.av.yazai img{height:34px;width:auto;max-width:none;display:block;transform:translateX(-1px)}
+.av.yazai{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:#fff;box-shadow:0 6px 14px rgba(7,53,31,.06);padding:2px}
+.av.yazai img{width:100%;height:100%;object-fit:contain;display:block}
 .bubble{border:1.5px solid var(--line);border-radius:13px;padding:12px 15px;font-size:13.5px;line-height:1.62;background:#fff;min-width:0}
 .msg.me .bubble{background:var(--ink);color:#fff;border-color:var(--ink)}
 .bubble p{margin:0 0 8px}.bubble p:last-child{margin:0}
@@ -980,7 +980,7 @@ function bubble(who, inner){
   const wrap = document.createElement("div");
   wrap.className = "msg" + (who === "me" ? " me" : "");
   const av = who === "me"
-    ? '<div class="av yazai"><img src="assets/yado-logo.png" alt="芽仔"></div>'
+    ? '<div class="av yazai"><img src="assets/yazai.png" alt="芽仔"></div>'
     : '<div class="av ai-logo"><img src="assets/yado-logo.png" alt="YADO"></div>';
   wrap.innerHTML = av + `<div class="bubble">${inner}</div>`;
   stream.appendChild(wrap);

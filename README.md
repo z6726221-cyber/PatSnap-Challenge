@@ -1,126 +1,199 @@
 # 芽懂 · 智慧芽私域技术知识库（Plan A）
 
-面向**运营 / 销售 / 市场**的私域技术知识库：用大白话提问，拿到**有来源、有时效、口径统一**的技术问答、竞品对比和宣传初稿。
+面向**运营 / 销售 / 市场**的 AI 协作空间：上传研发资料和业务素材后，用自然语言拿到**有来源、有时效、口径统一**的技术问答、竞品分析、内容文案、图片海报和视频生成入口。
 
-> 本仓库聚焦 **Plan A** 的可运行实现。产品定位、选型论证等完整方案见 [`planA/技术方案-OpenViking.md`](planA/技术方案-OpenViking.md)。
+> 本仓库聚焦 **Plan A** 的可运行 Demo。产品定位、选型论证等完整方案见 [`planA/技术方案-OpenViking.md`](planA/技术方案-OpenViking.md)。
 
 ---
 
-## 它解决什么
+## 当前能力
 
-运营销售遇到技术问题时，问研发慢、研发讲不明白，且不同人对同一能力的说法不一致，客户面前容易露馅。这个系统的头号价值是**统一口径**——同一个问题，谁问都得到同一个可追溯的标准答案。
+### 1. 首页对话
 
-三条核心原则贯穿实现：
+- 支持直接输入问题，后端读取检索侧写入的资料并由 Agent 自主选择 skill。
+- 回答会被结构化渲染：结论、依据、冲突提示、待核实项和引用来源尽量分开展示，避免整段文字堆在一起。
+- 检索资料不足或模型失败时会降级，并在前端明确提示「降级演示 / 资料不足」。
 
-- **不编造**：所有事实都来自召回的资料，没有支撑的点标「待核实」。
-- **可溯源**：每个事实性陈述绑来源 + 更新时间。
-- **冲突曝光而非静默覆盖**：同话题多来源分歧时，按权威性 + 时效裁决出主答案，同时把另一说法如实曝光。
+### 2. 研发工作台 / 知识项目
 
-## 职责边界
+- 支持查看「运营素材库」和「销售知识库」。
+- 支持新增知识项目、新增知识条目。
+- 支持上传销售资料 / 运营素材，文件会同时写入本地知识库和 `sample_retrieval/live/`，模拟上游检索模块产出的资料目录。
+- 支持导出生成结果为 Markdown 下载。
 
-**检索侧不在本仓库**——资料的召回与存储由上游检索系统负责（方案里对应 OpenViking 底座）。本仓库是**生成侧**：拿到已召回的资料后，负责「挑料 → 裁决冲突 → 组织成带来源的产物」。两侧通过一份格式契约解耦，见 [`planA/code/sample_retrieval/README-契约.md`](planA/code/sample_retrieval/README-契约.md)。
+### 3. 竞品分析
 
-```
+- 使用 `patsnap-compare` skill。
+- 按维度组织我方与竞品差异，强调可追溯来源、攻防口径和销售可用表达。
+- 当前链路会优先读取 `sample_retrieval/live/`；如果 live 资料不存在，竞品 / 内容生成会使用本地 KB 做轻量召回兜底，并在响应里标注检索来源。
+
+### 4. 内容生成
+
+- 使用 `patsnap-promo` skill。
+- 支持宣传稿、运营文案、销售话术、视频脚本 / 视频提示词等生成。
+- 生成文案前同样先走资料召回，再基于资料组织产物，不允许无来源硬编。
+- 可选图片增强：调用图片模型生成配套海报，并把图片直接展示在前端。
+- 可选视频增强：从内容生成结果里提取视频提示词，提交给视频模型生成任务；是否能返回可播放视频 URL 取决于上游网关和账号能力。
+
+## 核心原则
+
+- **不编造**：事实只来自召回资料；没有支撑的点标为「待核实」。
+- **可溯源**：事实性陈述需要绑定来源和更新时间。
+- **冲突曝光**：同一话题多来源不一致时，按权威性和时效裁决主答案，同时展示另一说法。
+- **销售友好**：技术问答要清晰、通俗、专业，避免只给研发能看懂的术语堆叠。
+
+## 系统链路
+
+检索模块本身不在本仓库内。比赛 Demo 中，检索模块的输出被模拟为 Markdown 文件目录：
+
+- 静态样例：`planA/code/sample_retrieval/case-*`
+- 实时资料：`planA/code/sample_retrieval/live/`
+- 上传文件：后端会把上传资料同步写入 `live/`
+
+```text
 用户问题
-  → 前端（web/index.html）
-  → 编排后端（backend/）
-      → 召回资料（本仓库用样例 case 模拟检索侧输出）
-      → Agent 自主选 skill → 按 skill 的 SOP 读料/裁决/组织
-  → 带来源的产物（问答 / 竞品对比 / 宣传初稿）
+  -> 前端 planA/code/web/index.html
+  -> 后端 planA/code/backend/server.py
+  -> 读取 sample_retrieval/live/ 或样例 case
+  -> Agent 自主选择 skill
+  -> skill 按资料使用 SOP 挑料、裁决冲突、组织答案
+  -> 前端结构化展示回答 / 表格 / 文案 / 图片 / 视频任务状态
 ```
 
-## 三个 Skill（能力）
+资料契约见 [`planA/code/sample_retrieval/README-契约.md`](planA/code/sample_retrieval/README-契约.md)。
 
-能力选择**由 Agent 自主判断**，不是后端关键词路由：后端只把三个 skill 的 `name + description` 交给模型，模型先调 `select_skill` 选中场景、后端再回传该 skill 全文，之后严格照它的 Workflow / Output Contract / Boundaries 执行（渐进式披露）。
+## Skill 设计
+
+能力选择由 Agent 自主判断，不是后端关键词硬路由。后端把 skill 的 `name + description` 交给模型，模型先选择能力，再读取完整 skill 指令执行。
 
 | Skill | 场景 | 产物 |
 |---|---|---|
-| `patsnap-tech-qa` | 单对象技术问答（能力 / 方法论 / 口径） | 结论清晰、每个事实绑来源的标准答案 |
-| `patsnap-compare` | 我方 vs 一个或多个竞品 | 按维度对齐的可溯源对比表 |
-| `patsnap-promo` | 宣传稿 / 推文 / 产品介绍 / 销售话术 | 贴官宣风格、带来源的富文本初稿 |
+| `patsnap-tech-qa` | 产品 / 项目 / 技术概念问答 | 面向销售的清晰解释、标准口径、来源和待核实项 |
+| `patsnap-compare` | 竞品对比、攻防话术 | 维度化对比、我方优势 / 风险、证据和销售话术 |
+| `patsnap-promo` | 宣传稿、运营文案、销售话术、视频脚本 | 带来源的内容初稿、视频提示词、可选图片海报 |
 
-三个 skill 共享一份用料规矩 [`skills/references/资料使用SOP.md`](planA/code/skills/references/资料使用SOP.md)，并共用校验脚本 `skills/scripts/check_sources.py` 把「附来源 + 时效」从"靠 Agent 自觉"变成"脚本卡死"。
+共享规则：
+
+- [`planA/code/skills/SOUL.md`](planA/code/skills/SOUL.md)：统一表达原则。
+- [`planA/code/skills/references/资料使用SOP.md`](planA/code/skills/references/资料使用SOP.md)：来源、时效、冲突和边界规则。
+- [`planA/code/skills/scripts/check_sources.py`](planA/code/skills/scripts/check_sources.py)：来源校验脚本。
 
 ## 目录结构
 
-```
+```text
 planA/code/
-├── backend/                 # 编排后端（Python 标准库，零第三方依赖）
-│   ├── server.py            # http.server 服务：GET / · GET /api/cases · POST /api/chat
-│   ├── agent_runtime.py     # Agent 工具调用循环 + select_skill 自主选能力
-│   ├── case_tools.py        # 暴露给 Agent 的三个工具
-│   ├── loader.py            # 读 case 文件夹、解析 frontmatter → Material
-│   ├── conflict.py          # 权威 + 时效裁决，冲突曝光
-│   ├── llm_client.py        # urllib 直连 OpenAI 兼容端点（支持 function calling）
-│   ├── fallback.json        # LLM 不可用时的降级预置结果
-│   ├── run_all.py           # 三场景各跑一个 case 并做来源校验
-│   └── tests/               # 30 个单元测试
-├── skills/                  # 三个生成类 skill（本课题头号交付物）
-│   ├── patsnap-tech-qa/ · patsnap-compare/ · patsnap-promo/
-│   ├── references/资料使用SOP.md
-│   └── scripts/check_sources.py
-├── sample_retrieval/        # 模拟检索侧输出的样例 case（含冲突设计）
-└── web/index.html           # 前端 Demo（单文件，无构建）
+├── backend/
+│   ├── server.py              # HTTP 服务和 API 编排
+│   ├── agent_runtime.py       # Agent 工具调用循环和 skill 选择
+│   ├── case_tools.py          # list_materials/read_material/check_conflicts
+│   ├── loader.py              # 读取检索输出 Markdown
+│   ├── conflict.py            # 权威 + 时效裁决
+│   ├── llm_client.py          # OpenAI-compatible LLM 客户端
+│   ├── video_client.py        # 视频生成客户端，支持任务持久化
+│   ├── image_client.py        # 图片生成客户端，保存并回显图片
+│   ├── local_store.py         # 本地知识库、上传、导出
+│   ├── fallback.json          # 降级演示结果
+│   └── tests/
+├── sample_retrieval/
+│   ├── case-*                 # 静态样例 case
+│   └── live/                  # 模拟检索黑盒实时产出的 Markdown 资料
+├── skills/
+│   ├── patsnap-tech-qa/
+│   ├── patsnap-compare/
+│   ├── patsnap-promo/
+│   ├── SOUL.md
+│   └── references/资料使用SOP.md
+└── web/
+    ├── index.html             # 单文件前端 Demo
+    └── assets/                # YADO logo、芽仔头像等静态资源
 ```
 
-## Agent 访问资料的三个工具
+## 环境变量
 
-Agent 不自己检索，只操作已召回的料：
+后端从 `planA/code/backend/.env` 读取配置。可以复制 `.env.example` 后填写真实值：
 
-- `list_materials()` — 列出所有资料的元信息（来源 / 权威级 / 更新时间 / 话题 / 相关度），不含正文，省 token。
-- `read_material(source)` — 按来源读某份资料全文；事实只能来自这里。
-- `check_conflicts()` — 按话题分组做权威 + 时效裁决，返回主答案与「另有资料表述不同」的曝光提示。
+```bash
+cd planA/code/backend
+cp .env.example .env
+```
 
-## 冲突裁决机制
+```bash
+# LLM：用于对话、skill 选择和最终生成
+LLM_BASE_URL=https://llm-api.patsnap.info/v1
+LLM_MODEL=gpt-5.5
+LLM_API_KEY=replace-with-your-backend-llm-key
 
-同话题多来源时（例：官网说 Eureka 支持 12 种语言、旧笔记说 9 种）：
+# 视频：默认走 OpenAI-compatible 网关的 doubao-seedance-2.0
+VIDEO_BASE_URL=https://llm-api.patsnap.info/v1
+VIDEO_MODEL=doubao-seedance-2.0
+VIDEO_API_KEY=replace-with-your-video-key
 
-1. **选主答案**：先按权威级 `L1（官网/产品界面）> L2（内部权威文档）> L3（论文）> L4（二手转述）`，同级再按更新时间取新。
-2. **曝光另一说法**：不删不藏，回答里附一句「另有资料表述不同：…（更新于 …，权威级 …）」。
+# 图片：默认 gpt-image-2；不填 IMAGE_API_KEY 时可复用 VIDEO_API_KEY
+IMAGE_BASE_URL=https://llm-api.patsnap.info/v1
+IMAGE_MODEL=gpt-image-2
+IMAGE_API_KEY=replace-with-your-image-key-or-video-key
+```
 
-不做「两句话语义上矛不矛盾」的自动判断（业界未解决）——只要同话题有多份来源，就排出主答案并如实曝光其余。
+注意：
+
+- `.env` 已被 gitignore，不要提交真实 key。
+- 前端不保存 key，只请求本地后端。
+- 视频模型如果只返回文本、不返回 URL，前端会展示错误或任务信息；这通常是网关能力或账号权限问题，不是前端渲染问题。
 
 ## 运行
 
-### 1. 配置后端密钥
-
-后端从 `planA/code/backend/.env` 读取 LLM 配置（`.env` 已被 gitignore，不入库）。新建该文件：
-
-```bash
-# planA/code/backend/.env
-LLM_BASE_URL=<你的 OpenAI 兼容端点，如 https://.../v1>
-LLM_MODEL=<模型名>
-LLM_API_KEY=<你的 key>
-```
-
-密钥只在后端，前端只调本服务、不接触任何 key。
-
-### 2. 启动服务
+默认端口是 `8000`，也可以传端口，例如当前调试常用 `8001`：
 
 ```bash
 cd planA/code/backend
-python3 server.py           # 默认 0.0.0.0:8000，可传端口：python3 server.py 8080
+python3 server.py 8001
 ```
 
-浏览器打开 http://localhost:8000 即可使用。
+浏览器打开：
 
-> ⚠️ 该服务默认监听 `0.0.0.0` 且**无鉴权**，仅供本地 Demo。若需对外暴露，请自行加访问控制。
-
-### 3. 命令行跑三个场景（可选）
-
-```bash
-cd planA/code/backend
-python3 run_all.py          # 三场景各跑一个样例 case，产物写入 run_logs/ 并做来源校验
+```text
+http://localhost:8001/
 ```
+
+该服务默认监听 `0.0.0.0` 且无鉴权，仅用于本地 Demo 或受控网络环境。对外暴露前需要补访问控制。
+
+## 常用 API
+
+| Method | Path | 说明 |
+|---|---|---|
+| `GET` | `/` | 前端页面 |
+| `GET` | `/api/cases` | 列出静态样例 case |
+| `POST` | `/api/chat` | 对话 / 竞品分析 / 内容生成主入口 |
+| `GET` | `/api/kb` | 读取知识库、知识项目、上传列表 |
+| `POST` | `/api/kb` | 新增知识项目或知识条目 |
+| `POST` | `/api/upload` | 上传资料，并同步到本地 KB 与 `sample_retrieval/live/` |
+| `POST` | `/api/image/generate` | 基于生成文案创建海报图片 |
+| `GET` | `/api/image/file/<name>` | 读取后端保存的生成图片 |
+| `POST` | `/api/video/start` | 从内容生成结果中提取视频提示词并提交任务 |
+| `GET` | `/api/video/status/<task_id>` | 查询视频任务状态 |
+| `POST` | `/api/export` | 导出 Markdown |
+| `GET` | `/api/download/<path>` | 下载导出文件 |
 
 ## 测试
 
 ```bash
 cd planA/code/backend
-python3 -m unittest discover tests     # 30 个测试，覆盖 loader / conflict / case_tools / agent_runtime / server
+python3 -m unittest discover -s tests
+
+cd ../skills/scripts
+python3 -m unittest discover
 ```
 
-## 技术选择说明
+也可以从仓库根目录运行：
 
-- **零第三方依赖**：后端全用 Python 标准库（`http.server` + `urllib`），本环境 PyPI 不可达、无 pyyaml，因此手写了极简 frontmatter 解析器和 LLM 客户端。开箱即跑，无需 `pip install`。
-- **LLM 不可用时降级**：`/api/chat` 捕获异常后回退到 `fallback.json` 的预置结果，前端标「降级演示」，保证 Demo 不白屏。
+```bash
+PYTHONPYCACHEPREFIX=/private/tmp/codex_pycache python3 -m unittest discover -s planA/code/backend/tests
+PYTHONPYCACHEPREFIX=/private/tmp/codex_pycache python3 -m unittest discover -s planA/code/skills/scripts
+```
+
+## 已知边界
+
+- 上游真实检索服务未在仓库内实现；本 Demo 通过 `sample_retrieval/live/` 文件夹承接检索结果。
+- 上传文件当前做轻量文本解码，PDF / Word / PPT 的专用解析器还未接入。
+- 视频生成依赖外部模型网关；当前后端已做任务持久化和可灵配置兜底，但最终是否产出视频 URL 由上游决定。
+- 本地知识库适合 Demo 和轻量验证，生产环境应替换为带权限、审计和索引能力的存储服务。
