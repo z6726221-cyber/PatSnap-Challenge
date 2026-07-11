@@ -247,19 +247,20 @@ def run_frontend_static_checks() -> list[CheckResult]:
         ("frontend_nav_no_market_main", "市场与产品洞察" not in nav_html, "主导航仍包含“市场与产品洞察”"),
         ("frontend_nav_has_sales", "销售与售前" in nav_html, "缺少“销售与售前”入口"),
         ("frontend_nav_knowledge_space", "知识空间" in nav_html, "侧栏仍未改成“知识空间”"),
-        ("frontend_nav_research_workbench", "研发工作台" in nav_html and "研发知识库" not in nav_html, "知识空间研发入口未命名为“研发工作台”"),
+        ("frontend_nav_research_kb", "研发知识库" in nav_html and "研发工作台" not in nav_html, "知识空间研发入口未命名为“研发知识库”"),
+        ("frontend_nav_kb_icons_distinct", "▣" in nav_html and "◫" in nav_html, "运营素材库和销售知识库图标未区分"),
         ("frontend_has_tech_explain_page", "产品与技术解释" in html or "tech_explain" in html, "缺少产品与技术解释工作台"),
         ("frontend_promo_30s", "30s" in html or "30 秒" in html or "30秒" in html, "营销短视频 UI 仍未体现 30 秒方案"),
         ("frontend_upload_not_live", "已同步到 live" not in html, "前端仍暗示上传同步 live"),
         (
             "frontend_home_quick_prompts",
             "quick-prompts" in html
-            and "上传研发材料" in html
+            and "调研客户信息" in html
             and "生成销售话术" in html
             and "写运营推文" in html
-            and "产品与技术解释" in html
-            and "更多" in html,
-            "首页快捷任务条框未与当前原型保持一致",
+            and "生成技术解释" in html
+            and "更多" not in html,
+            "首页快捷任务条框未与当前文案保持一致",
         ),
         ("frontend_kb_search_connected", "searchKb('sales')" in html and "searchKb('promo')" in html and "researchUploadRows" in html, "知识空间搜索/上传列表没有接到前端逻辑"),
     ]
