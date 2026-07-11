@@ -1,0 +1,2193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>芽懂 · 智慧芽技术知识助手</title>
+<style>
+:root{
+  color-scheme: light;
+  --bg:#efe9df;
+  --ink:#2a2d29; --muted:#847f76;
+  --paper:#fffaf3;          /* 暖白主背景 */
+  --side:#f8f1e8;           /* 米色浅侧栏 */
+  --panel:#fffdf9;
+  --dark:#2f342f;           /* 主强调:深墨(近黑),用于logo/主按钮 */
+  --green:#4a7a5f;          /* 柔和灰绿:仅少量点缀 */
+  --green-soft:#eef2ec;     /* 极浅灰绿底 */
+  --gold:#b98a3c;
+  --coral:#c06148;
+  --line:#2a2d29;
+  --soft:rgba(42,45,41,.13);
+  --hair:rgba(42,45,41,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",Arial,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
+
+.app{max-width:1200px;height:calc(100vh - 40px);margin:20px auto;background:var(--panel);border:2px solid var(--line);border-radius:16px;overflow:hidden;display:grid;grid-template-columns:232px 1fr;box-shadow:10px 12px 0 rgba(28,38,33,.09)}
+
+/* ===== Sidebar (浅米色) ===== */
+.side{background:var(--side);color:var(--ink);display:flex;flex-direction:column;border-right:1.5px solid var(--soft)}
+.brand{padding:18px 18px 14px;display:flex;align-items:center;border-bottom:1px solid var(--soft)}
+.brand-logo{width:150px;height:auto;max-height:52px;object-fit:contain;object-position:left center;display:block}
+
+/* 功能导航：首页/技术问答/竞品分析/内容生成 */
+.nav{padding:12px 12px 6px;display:flex;flex-direction:column;gap:3px}
+.nav a{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:9px;font-size:13px;font-weight:700;color:var(--ink);text-decoration:none;cursor:pointer;border:1px solid transparent}
+.nav a:hover{background:#fff}
+.nav a.on{background:#fff;color:var(--dark);border-color:var(--hair);box-shadow:2px 2px 0 rgba(42,45,41,.06)}
+.nav a .ni{width:20px;text-align:center;font-size:15px;flex-shrink:0;color:var(--green)}
+
+.subttl{padding:16px 18px 7px;font-size:11px;font-weight:800;letter-spacing:.05em;color:var(--muted);text-transform:uppercase}
+.hist{padding:0 12px;display:flex;flex-direction:column;gap:2px;overflow-y:auto}
+.hist a{font-size:12.5px;color:var(--muted);padding:8px 13px;border-radius:8px;text-decoration:none;display:flex;align-items:center;gap:6px;cursor:pointer;border:1px solid transparent}
+.hist a:hover{background:#fff;color:var(--ink)}
+.hist a.on{background:#fff;color:var(--dark);font-weight:700;border-color:var(--hair);box-shadow:2px 2px 0 rgba(42,45,41,.06)}
+.hist a .tt{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hist a .del{flex-shrink:0;width:18px;height:18px;line-height:16px;text-align:center;border-radius:5px;font-size:14px;color:var(--muted);background:transparent;border:none;cursor:pointer;opacity:0;transition:opacity .12s}
+.hist a:hover .del{opacity:.7}
+.hist a .del:hover{opacity:1;color:var(--coral);background:#faeee6}
+.hist .empty{font-size:12px;color:var(--muted);padding:6px 13px;opacity:.7}
+
+.side .spacer{flex:1}
+.side .foot{margin:12px;padding:11px 13px;background:var(--green-soft);border:1px solid #cadecf;border-radius:11px;font-size:11.5px;color:var(--green);line-height:1.5}
+.side .foot b{color:var(--dark)}
+
+/* ===== Main ===== */
+.main{display:flex;flex-direction:column;min-width:0;min-height:0;background:var(--paper)}
+.view{display:none;flex-direction:column;height:100%;min-height:0}
+.view.show{display:flex}
+
+/* HOME：欢迎态(state-welcome)/对话态(state-chat) 同页两态，#home 本身仍是 flex 容器，
+   内部用 .active 切换显示哪一态——发第一句话后欢迎态收起、对话态展开，不整页跳转 */
+#home{position:relative}
+.state-welcome{display:none;flex:1;overflow-y:auto}
+.state-welcome.active{display:block}
+.state-chat{display:none;flex:1;flex-direction:column;min-height:0}
+.state-chat.active{display:flex}
+.home-scroll{flex:1;overflow-y:auto}
+.hero{padding:56px 44px 24px;text-align:center;background:radial-gradient(1100px 320px at 50% -70%, var(--green-soft), transparent)}
+.hero .hi{font-size:12.5px;font-weight:800;color:var(--green);background:var(--green-soft);border:1.5px solid #cadecf;border-radius:20px;padding:4px 13px;display:inline-block}
+.hero h1{font-size:30px;line-height:1.24;margin:16px 0 10px;letter-spacing:-.01em}
+.hero h1 .u{color:var(--green);text-decoration:underline;text-decoration-color:var(--gold);text-underline-offset:5px;text-decoration-thickness:3px}
+.hero .sub{font-size:14px;color:var(--muted);max-width:560px;margin:0 auto;line-height:1.6}
+
+.bigbox{max-width:690px;margin:26px auto 0;background:#fff;border:2px solid var(--line);border-radius:16px;padding:16px;box-shadow:5px 6px 0 rgba(28,38,33,.08)}
+.bigbox textarea{width:100%;border:none;outline:none;font-size:15px;font-family:inherit;resize:none;height:56px;color:var(--ink);background:transparent;line-height:1.5}
+.bigbox textarea::placeholder{color:#9aa39e}
+.bigbox .bar{display:flex;align-items:center;gap:10px;margin-top:6px;padding-top:11px;border-top:1px solid var(--hair)}
+.bigbox .hint{font-size:11.5px;color:var(--muted)}
+.bigbox .go{margin-left:auto;background:var(--dark);color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:7px}
+.bigbox .go:disabled{opacity:.5;cursor:wait}
+
+.collab{max-width:690px;margin:26px auto 40px;background:#fff;border:1.5px solid var(--soft);border-radius:15px;padding:22px 24px;display:flex;gap:22px;align-items:center;box-shadow:4px 5px 0 rgba(42,45,41,.06)}
+.collab .txt{flex:1}
+.collab .kicker{font-size:12px;font-weight:800;color:var(--green);margin-bottom:8px}
+.collab h4{color:var(--ink);font-size:18px;line-height:1.3;margin-bottom:8px;letter-spacing:-.01em}
+.collab p{font-size:12.5px;line-height:1.6;color:var(--muted)}
+.collab .tags{flex-shrink:0;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.collab .tags span{font-size:12px;font-weight:700;color:var(--green);background:var(--green-soft);border:1px solid #d3e0d5;border-radius:9px;padding:8px 12px;text-align:center;white-space:nowrap}
+
+/* CHAT */
+.chattop{flex-shrink:0;padding:14px 24px;border-bottom:1.5px solid var(--soft);display:flex;align-items:center;gap:12px;background:var(--panel)}
+.chattop .ttl{font-weight:800;font-size:14.5px}
+.chattop .sub{font-size:11.5px;color:var(--muted)}
+.chattop .pill{margin-left:auto;font-size:11px;font-weight:700;color:var(--green);background:var(--green-soft);border:1.5px solid var(--green);border-radius:20px;padding:3px 11px;display:flex;align-items:center;gap:6px}
+.chattop .pill.degraded{color:var(--coral);border-color:var(--coral);background:#faeee6}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block}
+.pill.degraded .dot{background:var(--coral)}
+
+.stream{flex:1;min-height:0;overflow-y:auto;padding:22px 24px 8px;display:flex;flex-direction:column;gap:18px}
+.msg{display:flex;gap:11px;max-width:840px}
+.msg.me{align-self:flex-end;flex-direction:row-reverse}
+.av{width:34px;height:34px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;overflow:hidden}
+.av.ai-logo{width:54px;height:36px;border:1px solid var(--line);border-radius:13px;background:#fff;box-shadow:0 6px 14px rgba(7,53,31,.06)}
+.av.ai-logo img{width:46px;height:auto;display:block}
+.av.yazai{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:#fff;box-shadow:0 6px 14px rgba(7,53,31,.06);padding:2px}
+.av.yazai img{width:100%;height:100%;object-fit:contain;display:block}
+.bubble{border:1.5px solid var(--line);border-radius:13px;padding:12px 15px;font-size:13.5px;line-height:1.62;background:#fff;min-width:0}
+.msg.me .bubble{background:var(--ink);color:#fff;border-color:var(--ink)}
+.bubble p{margin:0 0 8px}.bubble p:last-child{margin:0}
+.bubble b{font-weight:800}
+.bubble h1,.bubble h2,.bubble h3{line-height:1.4;color:var(--ink);margin:14px 0 6px}
+.bubble h1:first-child,.bubble h2:first-child,.bubble h3:first-child{margin-top:0}
+.bubble h1{font-size:16.5px;font-weight:900}
+.bubble h2{font-size:15px;font-weight:900;padding-bottom:5px;border-bottom:1px solid var(--hair)}
+.bubble h3{font-size:13.5px;font-weight:800}
+.bubble ul,.bubble ol,.report-body ul,.report-body ol,.draft-card ul,.draft-card ol,.video-card ul,.video-card ol{margin:7px 0 10px;padding-left:20px}
+.bubble li,.report-body li,.draft-card li,.video-card li{margin:4px 0;line-height:1.58}
+.bubble .answer-p,.report-body .answer-p,.draft-card .answer-p,.video-card .answer-p{margin:0 0 9px}
+.bubble .answer-p:last-child,.report-body .answer-p:last-child,.draft-card .answer-p:last-child,.video-card .answer-p:last-child{margin-bottom:0}
+.answer-section-note{margin:10px 0;padding:10px 12px;border:1px solid var(--soft);border-radius:10px;background:var(--panel)}
+.bubble hr{border:none;border-top:1px dashed var(--soft);margin:12px 0}
+.msg.me .bubble h1,.msg.me .bubble h2,.msg.me .bubble h3{color:#fff}
+.msg.me .bubble h2{border-bottom-color:rgba(255,255,255,.2)}
+.msg.me .bubble hr{border-top-color:rgba(255,255,255,.2)}
+.modeflag{font-size:11px;font-weight:700;color:var(--green);margin-bottom:8px;display:inline-block;background:var(--green-soft);border:1px solid #cadecf;border-radius:6px;padding:2px 9px}
+.src{margin-top:10px;padding-top:9px;border-top:1px dashed var(--soft);display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.src .lbl{font-size:11px;font-weight:800;color:var(--muted)}
+.chip{font-size:11px;font-weight:600;color:var(--green);background:var(--green-soft);border:1px solid #cadecf;border-radius:6px;padding:2px 8px;font-family:ui-monospace,Menlo,monospace;word-break:break-all}
+.time{font-size:11px;color:var(--muted);margin-left:auto;display:flex;align-items:center;gap:5px;white-space:nowrap}
+.conflict{font-size:12px;color:var(--gold);margin-top:9px;padding:8px 11px;background:#faf4e7;border-left:3px solid var(--gold);border-radius:0 8px 8px 0;line-height:1.55}
+.cmp{width:100%;border-collapse:collapse;margin:8px 0 2px;font-size:12.5px}
+.cmp th,.cmp td{border:1px solid var(--soft);padding:7px 10px;text-align:left;vertical-align:top}
+.cmp th{background:var(--green-soft);font-weight:800}
+.miss{color:var(--gold);font-style:italic}
+.todo{margin-top:8px;font-size:11.5px;color:#8a6218;background:#fbf3e0;border:1px solid var(--gold);border-radius:7px;padding:6px 10px;line-height:1.5}
+.source-line{margin:6px 0;padding:7px 10px;border:1px solid #cadecf;border-radius:8px;background:var(--green-soft);font-size:12px;line-height:1.55;color:var(--ink)}
+.trace{margin-top:9px;font-size:11px;color:var(--muted)}
+.trace summary{cursor:pointer;font-weight:700}
+.trace code{background:var(--hair);padding:1px 5px;border-radius:4px;font-family:ui-monospace,Menlo,monospace}
+.typing{display:inline-flex;gap:3px;align-items:center}
+.typing i{width:6px;height:6px;border-radius:50%;background:var(--muted);animation:bl 1s infinite}
+.typing i:nth-child(2){animation-delay:.2s}.typing i:nth-child(3){animation-delay:.4s}
+@keyframes bl{0%,60%,100%{opacity:.25}30%{opacity:1}}
+
+.compose{flex-shrink:0;padding:13px 24px 16px;border-top:1.5px solid var(--soft);background:var(--panel)}
+.inputbar{display:flex;gap:10px;align-items:center;border:2px solid var(--line);border-radius:13px;padding:8px 8px 8px 15px;background:#fff}
+.inputbar textarea{flex:1;border:none;outline:none;font-size:13.5px;font-family:inherit;resize:none;height:24px;background:transparent;padding-top:3px}
+.send{width:38px;height:38px;border-radius:10px;background:var(--dark);color:#fff;border:none;font-size:17px;cursor:pointer;flex-shrink:0}
+.send:disabled{opacity:.5;cursor:wait}
+.mini-act{height:28px;padding:0 12px;border:1.5px solid var(--soft);border-radius:16px;font-size:12px;font-weight:700;color:var(--ink);background:#fff;cursor:pointer}
+.mini-act:hover{border-color:var(--green);color:var(--green)}
+
+/* ===== 竞品分析 / 内容生成：左右分栏 ===== */
+.split{flex:1;min-height:0;overflow-y:auto;display:grid;grid-template-columns:320px 1fr;gap:16px;padding:20px 24px}
+.split-left{display:flex;flex-direction:column;gap:14px;min-width:0}
+.split-right{min-width:0}
+.split-copy{font-size:12.5px;line-height:1.65;color:var(--muted);margin:0}
+.cfg-mini{display:grid;gap:8px;margin-top:2px}
+.cfg-mini div{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;border:1px solid var(--hair);border-radius:9px;background:var(--panel);font-size:11.5px;color:var(--muted)}
+.cfg-mini b{color:var(--ink);font-size:12px}
+.cfgcard{background:#fff;border:2px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px;box-shadow:3px 4px 0 rgba(28,38,33,.07);flex-shrink:0}
+.cfgcard label{font-size:12px;font-weight:700;color:var(--ink);display:flex;flex-direction:column;gap:5px}
+.cfgcard input,.cfgcard select{border:1.5px solid var(--soft);border-radius:9px;padding:8px 10px;font-size:13px;font-family:inherit;background:var(--panel);color:var(--ink)}
+.cfgcard .go{margin-top:2px;background:var(--dark);color:#fff;border:none;border-radius:9px;padding:10px;font-size:13.5px;font-weight:800;cursor:pointer}
+.cfgcard .go:disabled{opacity:.5;cursor:wait}
+.cfgcard .source-list{display:flex;flex-wrap:wrap;gap:6px}
+.cfgcard .source-list span{font-size:11px;font-weight:700;color:var(--green);background:var(--green-soft);border:1px solid #cadecf;border-radius:20px;padding:3px 9px}
+.mini-thread{flex:1;min-height:60px;overflow-y:auto;display:flex;flex-direction:column;gap:8px}
+.mini-q{font-size:12px;color:var(--ink);background:#fff;border:1px solid var(--hair);border-radius:9px;padding:8px 10px;line-height:1.5}
+.mini-q b{color:var(--green)}
+.reportcard{background:#fff;border:2px solid var(--line);border-radius:16px;padding:22px;min-height:100%;box-shadow:5px 6px 0 rgba(28,38,33,.07);font-size:13.5px;line-height:1.65}
+.reportcard .empty-hint{color:var(--muted);font-size:13px;text-align:center;padding:70px 20px}
+.modeswitch{display:flex;gap:8px;flex-shrink:0}
+.modeswitch button{height:32px;padding:0 13px;border:1.5px solid var(--soft);border-radius:20px;font-size:12.5px;font-weight:700;color:var(--ink);background:#fff;cursor:pointer}
+.modeswitch button.on{color:#fff;background:var(--dark);border-color:var(--dark)}
+
+/* 报告工具栏 + 标题区（竞品分析/内容生成右侧预览共用） */
+.report-toolbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px;padding-bottom:14px;border-bottom:1.5px solid var(--soft)}
+.report-toolbar .status{font-size:11px;font-weight:800;color:var(--green);background:var(--green-soft);border:1px solid #cadecf;border-radius:20px;padding:3px 11px;margin-right:8px}
+.report-toolbar .rmeta{font-size:11.5px;color:var(--muted)}
+.toolbar-actions{display:flex;gap:8px;flex-shrink:0}
+.toolbar-actions button{height:30px;padding:0 12px;border:1.5px solid var(--soft);border-radius:20px;font-size:12px;font-weight:700;color:var(--ink);background:#fff;cursor:pointer}
+.toolbar-actions button:hover{border-color:var(--green);color:var(--green)}
+.report-header{margin-bottom:16px}
+.report-header h2{font-size:19px;margin-bottom:6px;color:var(--ink);letter-spacing:-.01em}
+.report-header p{font-size:12.5px;color:var(--muted);line-height:1.6;margin:0}
+
+/* 竞品分析：核心结论摘要卡（insight-row）+ 能力矩阵 + 销售建议卡（takeaway） */
+.insight-row{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:14px 0 4px}
+.insight-row div{padding:12px 14px;border:1.5px solid var(--soft);border-radius:12px;background:var(--panel)}
+.insight-row span{display:block;margin-bottom:6px;font-size:11.5px;font-weight:800;color:var(--green)}
+.insight-row strong{display:block;font-size:14px;color:var(--ink);font-weight:800;line-height:1.4}
+.mini-chart-section{display:grid;grid-template-columns:minmax(0,1fr) minmax(220px,0.85fr);gap:14px;margin-top:18px}
+.chart-card.light,.takeaway-card{padding:14px;border:1.5px solid var(--soft);border-radius:13px;background:var(--panel)}
+.chart-card.light h3,.takeaway-card h3{font-size:13.5px;font-weight:800;color:var(--ink);margin:0 0 10px}
+.agent-matrix{display:grid;gap:5px}
+.matrix-row{display:grid;grid-template-columns:1.3fr 0.85fr 0.85fr 0.85fr;align-items:center;gap:6px;min-height:32px;padding:6px 9px;border:1px solid var(--soft);border-radius:9px;background:#fff;font-size:11px;color:var(--ink)}
+.matrix-row.matrix-head{background:var(--green-soft);font-weight:800;color:var(--green)}
+.matrix-row b{display:inline-flex;align-items:center;justify-content:center;min-height:20px;padding:0 6px;border-radius:20px;background:var(--green-soft);color:var(--green);font-size:10.5px;font-weight:700;text-align:center}
+.takeaway-card p{margin:0;font-size:12.5px;color:var(--ink);line-height:1.65}
+
+/* 富文本排版规则：报告正文/文案初稿卡片/事实来源卡片共用 */
+.report-body h1,.draft-card h1,.video-card h1,
+.report-body h2,.draft-card h2,.video-card h2,
+.report-body h3,.draft-card h3,.video-card h3{line-height:1.4;color:var(--ink);margin:14px 0 6px}
+.report-body h1:first-child,.draft-card h1:first-child,.video-card h1:first-child,
+.report-body h2:first-child,.draft-card h2:first-child,.video-card h2:first-child,
+.report-body h3:first-child,.draft-card h3:first-child,.video-card h3:first-child{margin-top:0}
+.report-body h1,.draft-card h1,.video-card h1{font-size:16.5px;font-weight:900}
+.report-body h2,.draft-card h2,.video-card h2{font-size:15px;font-weight:900;padding-bottom:5px;border-bottom:1px solid var(--hair)}
+.report-body h3,.draft-card h3,.video-card h3{font-size:13.5px;font-weight:800}
+.report-body hr,.draft-card hr,.video-card hr{border:none;border-top:1px dashed var(--soft);margin:12px 0}
+.report-body b,.draft-card b,.video-card b{font-weight:800}
+
+/* 视频模式：文案+分镜即时出稿；真实视频需点按钮另触发后端视频模型，轮询进度 */
+.video-output{margin-bottom:16px}
+.video-screen{position:relative;display:grid;place-items:center;aspect-ratio:16/9;border:2px solid var(--line);border-radius:14px;overflow:hidden;background:linear-gradient(135deg, rgba(47,52,47,.92), rgba(74,122,95,.66))}
+.video-screen:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 30% 25%, rgba(255,250,243,.28), transparent 26%),linear-gradient(90deg, transparent, rgba(255,255,255,.08), transparent);pointer-events:none}
+.video-screen video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000}
+.play-button{width:52px;height:52px;display:grid;place-items:center;border-radius:50%;color:var(--dark);background:rgba(255,255,255,.9);font-size:18px;box-shadow:0 10px 26px rgba(28,38,33,.18);cursor:pointer;border:none}
+.play-button:disabled{opacity:.6;cursor:wait}
+.video-caption{position:absolute;left:16px;bottom:14px;color:#fff;font-size:15px;font-weight:800;max-width:82%;line-height:1.4}
+.video-meta-row{display:flex;align-items:center;justify-content:space-between;margin:9px 2px 10px;font-size:12px;color:var(--muted)}
+.video-meta-row b{color:var(--ink)}
+.video-badge{margin:9px 2px 12px;font-size:11.5px;font-weight:700;color:var(--coral);background:#faeee6;border:1px solid var(--coral);border-radius:8px;padding:5px 10px;display:inline-block}
+.video-genrow{display:flex;align-items:center;gap:10px;margin:9px 2px 12px;flex-wrap:wrap}
+.video-genbtn{height:34px;padding:0 16px;border:none;border-radius:20px;font-size:12.5px;font-weight:800;color:#fff;background:var(--dark);cursor:pointer}
+.video-genbtn:disabled{opacity:.55;cursor:wait}
+.video-genstatus{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:7px}
+.video-genstatus.err{color:var(--coral)}
+.poster-card{padding:14px 16px;border:1.5px solid var(--soft);border-radius:12px;background:var(--panel);margin-bottom:14px}
+.poster-card h3{font-size:13.5px;font-weight:800;color:var(--ink);margin:0 0 8px}
+.poster-preview{position:relative;display:grid;place-items:center;min-height:220px;aspect-ratio:4/3;border:1.5px dashed var(--soft);border-radius:14px;background:linear-gradient(135deg,#fffefa,#eef5eb);overflow:hidden;color:var(--muted);font-size:12.5px;text-align:center;padding:18px}
+.poster-preview img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.poster-controls{display:flex;gap:8px;margin-top:10px;align-items:center;flex-wrap:wrap}
+.poster-controls input{flex:1;min-width:180px;height:34px;border:1.5px solid var(--soft);border-radius:18px;padding:0 12px;font-size:12.5px;background:#fff;font-family:inherit}
+.poster-status{font-size:12px;color:var(--muted)}
+.poster-status.err{color:var(--coral);font-weight:700}
+.progress-track{width:130px;height:6px;border-radius:6px;background:var(--hair);overflow:hidden}
+.progress-fill{height:100%;background:var(--green);border-radius:6px;transition:width .4s;animation:pgpulse 1.6s ease-in-out infinite}
+@keyframes pgpulse{0%,100%{opacity:.75}50%{opacity:1}}
+.storyboard{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.storyboard div{min-height:66px;padding:9px;border:1.5px solid var(--soft);border-radius:11px;background:var(--panel)}
+.storyboard span{font-size:11px;font-weight:800;color:var(--green)}
+.storyboard p{margin:6px 0 0;font-size:11.5px;color:var(--ink);line-height:1.42}
+
+/* 内容生成产物卡片：初稿正文 / 事实来源 / 待核实 */
+.draft-card{padding:18px;border:2px solid var(--line);border-radius:14px;background:#fff;box-shadow:3px 4px 0 rgba(28,38,33,.06);margin-bottom:14px}
+.video-card{padding:14px 16px;border:1.5px solid var(--soft);border-radius:12px;background:var(--panel);margin-bottom:14px}
+
+/* 内容生成左侧：多轮对话线程（紧凑气泡） */
+.promo-left{flex:1;min-height:0;display:flex;flex-direction:column;gap:12px}
+.promo-input-row{display:flex;flex-direction:column;gap:8px;flex-shrink:0}
+.promo-input-row textarea{min-height:78px;border:1.5px solid var(--soft);border-radius:9px;padding:9px 11px;font-size:13px;font-family:inherit;resize:vertical;color:var(--ink);background:var(--panel)}
+
+/* ===== 知识项目：销售知识库 / 运营素材库 ===== */
+.kbpage{flex:1;min-height:0;overflow-y:auto;display:grid;grid-template-columns:230px 1fr;gap:16px;padding:20px 24px}
+.kbfolder{display:flex;flex-direction:column;gap:8px}
+.kbfolder-ttl{font-size:11px;font-weight:800;letter-spacing:.05em;color:var(--muted);text-transform:uppercase;padding:0 4px 2px}
+.kbfrow{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;border:1.5px solid var(--soft);border-radius:10px;background:#fff;color:var(--ink);font-size:13px;font-weight:700;cursor:pointer;text-align:left}
+.kbfrow.on{border-color:var(--dark);background:var(--green-soft)}
+.kbfrow i{font-style:normal;font-weight:600;color:var(--muted);font-size:11.5px}
+.kbmain{display:flex;flex-direction:column;gap:14px;min-width:0}
+.kbfilter{display:flex;flex-wrap:wrap;gap:8px}
+.kbfilter button{height:30px;padding:0 12px;border:1.5px solid var(--soft);border-radius:20px;font-size:12px;font-weight:700;color:var(--ink);background:#fff;cursor:pointer}
+.kbfilter button.on{color:#fff;background:var(--dark);border-color:var(--dark)}
+.kbgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.kbcard{background:#fff;border:1.5px solid var(--soft);border-radius:13px;padding:15px;box-shadow:3px 4px 0 rgba(28,38,33,.05)}
+.kbcard>span{font-size:11px;font-weight:800;color:var(--green);background:var(--green-soft);border-radius:6px;padding:2px 8px}
+.kbcard h3{font-size:14.5px;margin:8px 0 6px;color:var(--ink)}
+.kbcard p{font-size:12.5px;color:var(--muted);line-height:1.55}
+.kbschedule{display:flex;flex-direction:column;gap:10px}
+.kbschedule div{border:1.5px solid var(--soft);border-radius:12px;padding:12px 14px;background:#fff}
+.kbschedule time{display:block;font-size:11px;font-weight:800;color:var(--green);margin-bottom:5px}
+.kbschedule strong{display:block;font-size:13px;color:var(--ink);margin-bottom:3px}
+.kbschedule span{font-size:11.5px;color:var(--muted)}
+.kbpage-sales{grid-template-columns:230px 1fr}
+.kbpage-promo{grid-template-columns:1fr 260px}
+.kbschedule-wrap{display:flex;flex-direction:column;gap:10px}
+
+::-webkit-scrollbar{width:10px}
+::-webkit-scrollbar-thumb{background:var(--soft);border-radius:10px;border:3px solid var(--paper)}
+
+/* ===== Final prototype alignment overrides ===== */
+:root{
+  --bg:#fffdf9; --panel:#fffefa; --card:#fff; --text:#0e3a28; --muted:#738076; --line:#f0e9df;
+  --sidebar-bg:#fbf6ee; --sidebar-line:#eee4d7; --sidebar-text:#173a2b; --sidebar-muted:#6d7469; --sidebar-active:rgba(255,255,255,.82);
+  --green:#1e6241; --green-dark:#07351f; --green-soft:#e5efe5; --shadow:0 18px 38px rgba(7,53,31,.07);
+  --ink:var(--text); --dark:var(--green-dark); --soft:var(--line); --hair:rgba(7,53,31,.06); --paper:var(--bg);
+}
+html,body{height:100%;overflow:hidden}
+body{margin:0;display:flex;background:var(--bg);color:var(--text);font-family:"PingFang SC",-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",ui-sans-serif,system-ui,sans-serif}
+.app{width:100vw;max-width:none;height:100vh;margin:0;border:0;border-radius:0;box-shadow:none;background:var(--bg);display:flex;overflow:hidden}
+.side{width:292px;height:100vh;flex:0 0 292px;padding:24px 18px 18px;background:var(--sidebar-bg);border-right:1px solid var(--sidebar-line)}
+.brand{padding:0;margin:0 0 18px;border-bottom:0}.brand-logo{width:168px;height:64px;max-height:none}
+.nav{padding:0;display:grid;gap:8px;margin-bottom:28px}.nav a{min-height:42px;display:flex;align-items:center;gap:12px;padding:0 10px;border:0;border-radius:8px;box-shadow:none;color:var(--sidebar-text);font-size:16px;font-weight:650;text-decoration:none}.nav a:hover,.nav a.on{background:var(--sidebar-active);border:0;box-shadow:none;color:var(--sidebar-text)}.nav a .ni{width:24px;color:var(--green);font-size:16px;text-align:center}
+.subttl,.side-title{padding:0 8px;margin:0 0 8px;color:var(--sidebar-muted);font-size:14px;font-weight:750;letter-spacing:0;text-transform:none}.side-title{display:flex;align-items:center;justify-content:space-between}.side-title button{width:28px;height:28px;border-radius:8px;color:var(--green);background:transparent;font-size:20px;line-height:1}.hist{padding:0;display:grid;gap:8px;overflow-y:auto}.hist a,.hist .empty{min-height:42px;display:flex;align-items:center;gap:12px;padding:0 10px;border-radius:8px;color:var(--sidebar-muted);font-size:16px;font-weight:600;text-decoration:none}.hist a:hover,.hist a.on{background:var(--sidebar-active);border:0;box-shadow:none;color:var(--sidebar-text)}.hist a .tt:before{content:"◷ ";color:var(--green)}.hist a .del{margin-left:auto}.spacer{flex:1}.foot{display:none}
+.profile{display:flex;align-items:center;gap:12px;margin-top:auto;padding:14px 4px 0}.avatar{width:36px;height:36px;display:grid;place-items:center;border-radius:50%;color:var(--card);background:var(--green);font-weight:800}.profile-name{font-weight:760;color:var(--sidebar-text)}.profile-role{margin-top:2px;color:var(--sidebar-muted);font-size:12px}
+.main{flex:1;min-width:0;height:100vh;display:flex;flex-direction:column;background:radial-gradient(circle at 52% 36%,rgba(255,255,255,.82),transparent 34%),linear-gradient(180deg,#fffefa 0%,#fffdf9 100%)}.view{height:100%;min-height:0}.home-scroll{height:100%;overflow:auto}
+.hero{width:min(980px,calc(100vw - 360px));margin:168px auto 0;padding:0;text-align:center;background:transparent}.hero .hi{display:none}.hero h1{margin:0;color:var(--green-dark);font-size:clamp(34px,4.2vw,54px);font-weight:520;line-height:1.2;letter-spacing:0}.hero h1 .u{color:inherit;text-decoration:none}.hero .sub{margin:16px auto 42px;color:var(--muted);font-size:16px;line-height:1.6;max-width:720px}
+.bigbox{min-height:146px;max-width:none;margin:0;padding:22px;border:1px solid var(--line);border-radius:28px;background:var(--card);box-shadow:var(--shadow);text-align:left}.bigbox textarea{height:64px;color:var(--text);font-size:16px;font-weight:680}.bigbox .bar{margin-top:14px;padding-top:0;border-top:0}.bigbox .hint{color:#9c9b91;font-size:14px;font-weight:650}.bigbox .go,.send{color:var(--card);background:var(--green-dark);border-radius:50%}.bigbox .go{width:42px;height:42px;padding:0;justify-content:center;font-size:0}.bigbox .go:after{content:"↑";font-size:20px}.home-upload{width:42px;height:42px;display:grid;place-items:center;border:1px solid var(--line);border-radius:50%;color:var(--green);background:var(--panel);font-size:22px;font-weight:650;cursor:pointer}.home-upload:hover{background:#fff;border-color:rgba(31,111,78,.24)}
+.quick-prompts{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin:28px auto 0}.quick-prompt{height:42px;padding:0 18px;border:1px solid var(--line);border-radius:999px;color:var(--green-dark);background:var(--card);font-size:14px;font-weight:760;cursor:pointer;white-space:nowrap}.quick-prompt:hover{background:#fff;border-color:rgba(31,111,78,.24)}
+.collab{width:min(720px,calc(100vw - 420px));min-height:134px;margin:96px auto 42px;padding:24px 30px;border:1px solid var(--line);border-radius:22px;background:var(--card);box-shadow:0 14px 30px rgba(7,53,31,.05);justify-content:space-between}.collab .kicker{color:var(--green);font-weight:800}.collab h4{margin:8px 0 6px;color:var(--text);font-size:20px;letter-spacing:0}.collab p{color:var(--muted);font-size:14px}.collab .tags{display:none}.mini-preview{position:relative;width:210px;height:94px;flex:0 0 auto}.preview-card{position:absolute;right:0;bottom:0;width:170px;height:70px;padding:12px;border:1px solid var(--line);border-radius:14px;background:var(--card);box-shadow:0 12px 26px rgba(7,53,31,.05)}.card-label{margin-bottom:10px;color:var(--green);font-size:12px;font-weight:800}.card-line{width:56%;height:8px;margin-top:7px;border-radius:999px;background:var(--green-soft)}.card-line.wide{width:88%}.float-chip{position:absolute;padding:7px 10px;border-radius:999px;color:var(--card);background:var(--green);font-size:12px;font-weight:780;box-shadow:0 8px 18px rgba(7,53,31,.08);white-space:nowrap}.chip-a{top:0;left:16px}.chip-b{top:22px;right:8px}.chip-c{bottom:10px;left:0}
+.chattop{padding:56px 64px 20px;border-bottom:0;background:transparent;align-items:flex-end}.chattop .ttl{color:var(--green-dark);font-size:34px;font-weight:620}.chattop .sub{margin-top:10px;color:var(--muted);font-size:15px;line-height:1.6}.chattop .pill{margin-left:auto;height:42px;padding:0 18px;border:0;border-radius:999px;color:#fff;background:var(--green-dark);font-size:14px;font-weight:760}.dot{background:#fff}
+.split{flex:1;min-height:0;overflow:auto;display:grid;grid-template-columns:360px minmax(0,1fr);gap:22px;padding:0 64px 56px}.cfgcard,.reportcard,.draft-card,.video-card,.mini-q,.kbfrow,.kbcard,.kbschedule div{border:1px solid var(--line);border-radius:22px;background:var(--card);box-shadow:0 14px 30px rgba(7,53,31,.04)}.cfgcard{position:sticky;top:0;padding:22px;gap:16px}.cfgcard input,.cfgcard select,.promo-input-row textarea{border:1px solid var(--line);border-radius:12px;background:#fffefa}.cfgcard .go,.promo-input-row .go{height:42px;padding:0 18px;border-radius:999px;color:#fff;background:var(--green-dark);font-weight:760}.cfg-mini div{border:1px solid var(--line);border-radius:14px;background:var(--panel)}.mini-thread{gap:10px}
+.reportcard{padding:26px;min-height:100%;font-size:14px;line-height:1.7}.report-toolbar{margin-bottom:24px;padding-bottom:0;border-bottom:0}.report-toolbar .status{height:26px;display:inline-flex;align-items:center;border:0;border-radius:999px;color:#38513d;background:#eef6ec}.report-toolbar .rmeta{margin-left:10px;color:var(--muted);font-size:13px}.toolbar-actions button{height:32px;border:1px solid var(--line);border-radius:999px;color:var(--green-dark);background:var(--panel);font-size:13px}
+.report-header{padding-bottom:22px;border-bottom:1px solid var(--line)}.report-header h2{margin:0;color:var(--green-dark);font-size:28px;font-weight:680;letter-spacing:0}.report-header p{max-width:760px;margin:10px 0 0;color:var(--muted);font-size:14px;line-height:1.7}.insight-row{margin:22px 0;gap:12px}.insight-row div{min-height:86px;padding:16px;border:1px solid var(--line);border-radius:16px;background:var(--panel)}.insight-row strong{color:var(--green-dark);font-size:16px}
+.cmp{margin:14px 0 2px;font-size:14px;border-collapse:collapse}.cmp th,.cmp td{border:1px solid var(--line);padding:12px 14px}.cmp th{background:#f4f8f2;color:var(--green-dark)}.mini-chart-section{gap:18px}.chart-card.light,.takeaway-card{border:1px solid var(--line);border-radius:18px;background:var(--panel);padding:18px}.matrix-row{border:1px solid var(--line);background:#fff;font-size:12px}
+.video-screen{border:1px solid var(--line);border-radius:18px;background:linear-gradient(135deg,rgba(7,53,31,.9),rgba(30,98,65,.68))}.storyboard div{border:1px solid var(--line);border-radius:14px;background:var(--panel)}
+.kbpage{flex:1;overflow:auto;padding:0 64px 56px;gap:22px}.kbpage-sales{grid-template-columns:260px 1fr}.kbpage-promo{grid-template-columns:1fr 280px}.kbfilter button{height:38px;border:1px solid var(--line);border-radius:999px;color:var(--green-dark);background:var(--card);font-size:14px}.kbfilter button.on{color:#fff;background:var(--green-dark)}.kbgrid{gap:18px}.kbcard{padding:20px;border-radius:18px}.kbcard h3{color:var(--green-dark);font-size:18px}.kbcard p{font-size:14px;line-height:1.7}
+.material-layout{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:22px;max-width:1120px;width:100%;margin:0 auto;align-items:start}.material-main,.schedule-panel,.folder-panel,.sales-main{border:1px solid var(--line);border-radius:22px;background:var(--card);box-shadow:0 14px 30px rgba(7,53,31,.04)}.material-main,.sales-main,.schedule-panel,.folder-panel{padding:22px}.asset-upload-card{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:18px;border:1px dashed #d9e2d8;border-radius:18px;background:var(--panel)}.asset-upload-card h2{margin:0 0 8px;color:var(--green-dark);font-size:20px}.asset-upload-card p{margin:0;color:var(--muted);font-size:14px}.pipeline-tabs,.sales-filter{display:flex;flex-wrap:wrap;gap:10px;margin:20px 0}.pipeline-tabs button,.sales-filter button{height:36px;padding:0 13px;border:1px solid var(--line);border-radius:999px;color:var(--green-dark);background:var(--card);font-size:13px;font-weight:760}.pipeline-tabs button.active,.pipeline-tabs button.on,.sales-filter button.active,.sales-filter button.on{color:#fff;background:var(--green-dark)}.asset-grid,.knowledge-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.asset-card,.knowledge-card{padding:16px;border:1px solid var(--line);border-radius:18px;background:#fff}.knowledge-card{background:var(--panel)}.asset-thumb{width:48px;height:48px;display:grid;place-items:center;margin-bottom:14px;border-radius:14px;color:#fff;background:var(--green);font-weight:800}.asset-thumb.video{background:#0e3a28}.asset-thumb.doc{color:var(--green-dark);background:var(--green-soft)}.asset-card span,.knowledge-card span{color:var(--green);font-size:12px;font-weight:800}.asset-card h3,.knowledge-card h3{margin:8px 0;color:var(--green-dark);font-size:17px;letter-spacing:0}.asset-card p,.knowledge-card p{margin:0 0 12px;color:#40534a;font-size:13px;line-height:1.65}.asset-card small{color:var(--muted);font-size:12px}.schedule-list{display:grid;gap:12px}.schedule-list div{padding:14px;border:1px solid var(--line);border-radius:16px;background:var(--panel)}.schedule-list time,.schedule-list strong,.schedule-list span{display:block}.schedule-list time{color:var(--green);font-size:12px;font-weight:800}.schedule-list strong{margin:7px 0 5px;color:var(--green-dark);font-size:14px}.schedule-list span{color:var(--muted);font-size:12px}.pipeline-summary{margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}.pipeline-summary h3{margin:0 0 12px;color:var(--green-dark);font-size:17px}.pipeline-summary p{display:flex;justify-content:space-between;margin:9px 0;color:#40534a;font-size:13px}.pipeline-summary span{color:var(--green);font-weight:760}.sales-layout{display:grid;grid-template-columns:320px minmax(0,1fr);gap:22px;max-width:1120px;width:100%;margin:0 auto;align-items:start}.folder-panel{display:grid;gap:10px}.folder-row{display:grid;grid-template-columns:38px 1fr auto;align-items:center;gap:12px;min-height:62px;padding:0 14px;border:1px solid var(--line);border-radius:16px;color:var(--green-dark);background:#fff;text-align:left}.folder-row.active,.folder-row.on{border-color:var(--green-dark);background:#f4faf3}.folder-row span{width:32px;height:32px;display:grid;place-items:center;border-radius:10px;color:#fff;background:var(--green);font-weight:800}.folder-row strong{font-size:16px}.folder-row em{color:var(--muted);font-size:12px;font-style:normal;font-weight:700}.sales-toolbar{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:18px}.sales-toolbar h2{margin:0 0 8px;color:var(--green-dark);font-size:24px}.sales-toolbar p{margin:0;color:var(--muted);font-size:14px}.knowledge-card div{display:flex;justify-content:space-between;gap:12px;padding-top:12px;border-top:1px solid var(--line);color:var(--muted);font-size:12px}.knowledge-card b{color:var(--green-dark)}.knowledge-card em{font-style:normal;text-align:right}
+.project-modal[hidden]{display:none}.project-modal{position:fixed;inset:0;z-index:20;display:grid;place-items:center;background:rgba(7,53,31,.18);backdrop-filter:blur(4px)}.project-dialog{width:min(420px,calc(100vw - 36px));padding:22px;border:1px solid var(--line);border-radius:22px;background:var(--card);box-shadow:0 24px 60px rgba(7,53,31,.16)}.project-dialog h3{margin:0 0 16px;color:var(--green-dark);font-size:22px}.project-dialog .form-block{margin-top:0}.project-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}
+.workspace{flex:1;min-width:0;height:100%;display:flex;flex-direction:column;background:transparent}.page-workspace{overflow:auto;padding:56px 64px}.page-header{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;max-width:1180px;width:100%;margin:0 auto 28px}.eyebrow{margin:0 0 10px;color:var(--green);font-size:14px;font-weight:800}.page-header h1{margin:0;color:var(--green-dark);font-size:34px;font-weight:620;letter-spacing:0}.page-subtitle{max-width:620px;margin:12px 0 0;color:var(--muted);font-size:15px;line-height:1.6}
+.primary-action,.secondary-action{height:42px;padding:0 18px;border-radius:999px;font-weight:760}.primary-action{color:#fff;background:var(--green-dark)}.secondary-action{border:1px solid var(--line);color:var(--green-dark);background:var(--card)}.workbench-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(330px,.75fr);gap:22px;max-width:1180px;width:100%;margin:0 auto 22px}.upload-card,.meta-card,.table-card{border:1px solid var(--line);border-radius:22px;background:var(--card);box-shadow:0 14px 30px rgba(7,53,31,.04);padding:22px}
+.upload-zone{display:grid;place-items:center;min-height:236px;padding:28px;border:1px dashed #d9e2d8;border-radius:18px;background:#fffefa;text-align:center}.upload-icon{width:48px;height:48px;display:grid;place-items:center;margin-bottom:14px;border-radius:50%;color:#fff;background:var(--green-dark);font-size:24px}.upload-zone h2,.card-heading h2{margin:0;color:var(--text);font-size:20px;letter-spacing:0}.upload-zone p{max-width:380px;margin:10px 0 18px;color:var(--muted);font-size:14px;line-height:1.6}
+.form-block{display:grid;gap:16px;margin-top:22px}.form-block.compact{margin-top:24px}label{display:grid;gap:8px;color:var(--text);font-size:14px;font-weight:760}input,textarea,select{width:100%;border:1px solid var(--line);border-radius:12px;color:var(--text);background:#fffefa;outline:none}input,select{height:42px;padding:0 12px}textarea{min-height:92px;padding:12px;resize:vertical;line-height:1.6}
+.card-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px}.card-heading span{color:var(--muted);font-size:13px;font-weight:650}.tag-grid{display:flex;flex-wrap:wrap;gap:10px}.tag-option{height:38px;padding:0 14px;border:1px solid var(--line);border-radius:999px;color:var(--green-dark);background:var(--card);font-weight:720}.tag-option.active{border-color:var(--green-dark);color:#fff;background:var(--green-dark)}.action-row{display:flex;justify-content:flex-end;gap:10px;margin-top:24px}
+.table-card{max-width:1180px;width:100%;margin:0 auto}.file-table{display:grid;gap:4px}.table-row{display:grid;grid-template-columns:1.8fr .7fr .7fr .8fr;gap:14px;align-items:center;min-height:48px;padding:0 12px;border-radius:12px;color:#31483a;font-size:14px}.table-row:not(.table-head):hover{background:#fffefa}.table-head{color:var(--muted);font-weight:800}.status.parsing{color:#1d5a3a;background:#e5efe5}.status.pending{color:#755a1b;background:#fff5da}.status.done{color:#38513d;background:#eef6ec}
+#splitComparison .split{display:block;overflow:auto;padding:0 64px 56px}
+#splitComparison .split-left{max-width:1180px;width:100%;margin:0 auto 22px;display:block;padding:18px;border:1px solid var(--line);border-radius:20px;background:var(--card);box-shadow:0 12px 26px rgba(7,53,31,.035)}
+#splitComparison .split-left .cfgcard{position:static;display:grid;grid-template-columns:1.25fr 1fr .8fr auto;align-items:end;gap:14px;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none}
+#splitComparison .split-copy,#splitComparison .cfg-mini,#splitComparison .mini-thread{display:none}
+#splitComparison .cfgcard label{margin:0}
+#splitComparison .cfgcard .go{min-width:126px;margin:0}
+#splitComparison .split-right{max-width:1180px;width:100%;margin:0 auto}
+#splitComparison .reportcard{min-height:auto}
+#home .hero{margin-top:104px}
+#home .hero h1{font-size:clamp(30px,3.5vw,46px);font-weight:540}
+#home .hero .sub{margin:10px auto 26px;font-size:15px}
+#home .bigbox{min-height:126px;padding:20px 22px;border-radius:24px}
+#home .bigbox textarea{height:48px;font-size:15px}
+#home .bigbox .bar{margin-top:12px}
+#home .collab{margin-top:56px}
+#splitPromo .split{grid-template-columns:minmax(360px,.92fr) minmax(0,1.08fr)}
+#splitPromo .promo-left{gap:12px;padding:18px;border:1px solid var(--line);border-radius:22px;background:var(--card);box-shadow:0 14px 30px rgba(7,53,31,.04)}
+#splitPromo .promo-source-card{order:3;position:static;padding:14px 16px;border-radius:16px;box-shadow:none}
+#splitPromo .promo-source-card .split-copy{font-size:12.5px}
+#splitPromo .modeswitch{order:1}
+#splitPromo .mini-thread{order:2;min-height:210px;max-height:300px;padding:4px 0;overflow:auto}
+#splitPromo .promo-input-row{order:4;padding:16px;border:1px solid var(--line);border-radius:22px;background:var(--card);box-shadow:0 14px 30px rgba(7,53,31,.04)}
+#splitPromo .promo-input-row textarea{min-height:88px;border:0;background:transparent;padding:0;font-size:14px;line-height:1.65;resize:none}
+#splitPromo .promo-input-row .go{align-self:flex-end;min-width:96px}
+#splitPromo .mini-q{max-width:92%;padding:12px 14px;border-radius:16px;box-shadow:none;font-size:13px;line-height:1.6}
+#splitPromo .mini-q.assistant{align-self:flex-start;background:#fff;border-color:var(--line)}
+#splitPromo .mini-q.me{align-self:flex-end;background:var(--green-dark);border-color:var(--green-dark);color:#fff}
+#splitPromo .mini-q.me b{color:#fff}
+.side-title button{display:grid;place-items:center;flex:0 0 24px;width:24px;height:24px;padding:0;border:1px solid rgba(31,111,78,.18);border-radius:999px;box-shadow:none;appearance:none;-webkit-appearance:none;color:rgba(26,104,71,.78);background:rgba(255,255,255,.58);font-family:inherit;font-size:16px;font-weight:650;line-height:1;cursor:pointer;transition:background .16s ease,border-color .16s ease,color .16s ease,transform .16s ease}
+.side-title button:hover{color:var(--green);border-color:rgba(31,111,78,.32);background:#fff;transform:none}
+.side-title button:active{background:rgba(31,111,78,.08);transform:scale(.96)}
+.side-title button:focus-visible{outline:2px solid rgba(31,111,78,.25);outline-offset:2px}
+.degraded-note{margin:0 0 16px;padding:12px 14px;border:1px solid #e7b99d;border-radius:14px;color:#9a4b22;background:#fff4ed;font-size:13px;line-height:1.6}
+#kbSales .kbpage,
+#kbPromo .kbpage{display:block;grid-template-columns:none;padding:0 64px 56px;overflow:auto}
+#kbSales .sales-layout,
+#kbPromo .material-layout{width:100%;max-width:1120px;margin:0 auto}
+#kbSales .sales-layout{grid-template-columns:320px minmax(0,1fr)}
+#kbPromo .material-layout{grid-template-columns:minmax(0,1fr) 330px}
+#kbSales .folder-panel,
+#kbSales .sales-main,
+#kbPromo .material-main,
+#kbPromo .schedule-panel{min-width:0}
+#kbSales .knowledge-card h3,
+#kbSales .knowledge-card p,
+#kbSales .knowledge-card div,
+#kbPromo .asset-card h3,
+#kbPromo .asset-card p{overflow-wrap:break-word;word-break:normal}
+.presales-page{gap:22px}
+.presales-functions{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;max-width:1180px;width:100%;margin:0 auto}
+.presales-card{min-height:178px;display:grid;align-content:start;gap:12px;padding:20px;border:1px solid var(--line);border-radius:20px;color:inherit;background:#fffdf9;box-shadow:0 16px 38px rgba(34,58,43,.055);text-align:left;transition:border-color .18s ease,box-shadow .18s ease,transform .18s ease,background .18s ease}
+.presales-card:hover{border-color:rgba(31,111,73,.24);transform:translateY(-2px)}
+.presales-card:focus-visible{outline:3px solid rgba(31,111,73,.18);outline-offset:3px}
+.presales-card.active-card{background:#f6fbf3;border-color:rgba(31,111,73,.2);box-shadow:0 18px 42px rgba(31,111,73,.09)}
+.presales-card h2{margin:0;color:var(--green-dark);font-size:22px;letter-spacing:0}
+.presales-card p{margin:0;color:var(--muted);line-height:1.65;font-weight:560}
+.presales-icon{position:relative;width:48px;height:48px;border-radius:16px;background:#f1f6ef}
+.presales-icon:before,.presales-icon:after{content:"";position:absolute}
+.search-icon:before{width:20px;height:20px;left:12px;top:10px;border:5px solid #65706b;border-radius:50%}
+.search-icon:after{width:18px;height:5px;left:27px;top:31px;border-radius:999px;background:#65706b;transform:rotate(45deg)}
+.target-icon:before{inset:10px;border:5px solid #f5a313;border-radius:50%}
+.target-icon:after{inset:20px;border-radius:50%;background:#f5a313}
+.script-icon:before{left:11px;top:12px;width:26px;height:22px;border:4px solid #65706b;border-radius:8px}
+.script-icon:after{left:18px;top:22px;width:14px;height:4px;border-radius:999px;background:#65706b;box-shadow:0 8px 0 #65706b}
+.checklist-icon:before{left:10px;top:10px;width:28px;height:28px;border:4px solid #24b58e;border-radius:10px}
+.checklist-icon:after{left:19px;top:23px;width:16px;height:8px;border-left:4px solid #24b58e;border-bottom:4px solid #24b58e;transform:rotate(-45deg)}
+.research-panel{display:grid;grid-template-columns:.92fr 1.08fr;gap:18px;align-items:stretch;max-width:1180px;width:100%;margin:0 auto}
+.research-input,.research-preview,.research-report{border:1px solid var(--line);border-radius:22px;background:#fffdf9;box-shadow:0 18px 44px rgba(34,58,43,.06)}
+.research-input{display:grid;gap:15px;padding:22px}
+.input-head{display:flex;align-items:baseline;justify-content:space-between;gap:14px}
+.input-head span,.preview-top span{color:var(--green);font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.input-head strong{color:var(--green-dark);font-size:20px}
+.research-input label{display:grid;gap:8px;color:var(--green-dark);font-size:13px;font-weight:780}
+.research-input input,.research-input textarea{width:100%;border:1px solid var(--line);border-radius:14px;padding:13px 14px;color:var(--green-dark);background:#fffdf9;font:inherit;font-weight:650;outline:none}
+.research-input textarea{min-height:94px;resize:vertical;line-height:1.65}
+.research-button{min-height:48px;border:0;border-radius:999px;color:#fffdf9;background:var(--green-dark);font-size:15px;font-weight:800;cursor:pointer}
+.research-actions{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center}
+.research-secondary{min-height:48px;padding:0 16px;border:1px solid var(--line);border-radius:999px;color:var(--green-dark);background:#fffdf9;font-size:14px;font-weight:780;cursor:pointer}
+.research-button:disabled,.research-secondary:disabled{opacity:.55;cursor:wait}
+.research-preview{display:grid;gap:16px;padding:20px;background:linear-gradient(135deg,rgba(231,239,229,.86),rgba(255,253,249,.98)),#fffdf9}
+.preview-top{display:flex;align-items:center;justify-content:space-between}
+.preview-top button{min-height:36px;padding:0 14px;border:1px solid var(--line);border-radius:999px;color:var(--green-dark);background:#fffdf9;font-weight:760;cursor:pointer}
+.research-summary-card{min-height:192px;display:grid;align-content:end;gap:10px;padding:22px;border-radius:20px;color:#fffdf9;background:linear-gradient(135deg,rgba(7,53,31,.96),rgba(31,111,73,.88)),var(--green-dark);box-shadow:0 18px 48px rgba(7,53,31,.16)}
+.research-summary-card span{width:max-content;padding:6px 11px;border-radius:999px;color:var(--green-dark);background:#e7efe5;font-size:12px;font-weight:820}
+.research-summary-card h2{margin:0;font-size:28px;line-height:1.18;letter-spacing:0;color:#fffdf9}
+.research-summary-card p{max-width:560px;margin:0;color:rgba(255,253,249,.76);line-height:1.7;font-weight:560}
+.preview-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.preview-grid div{display:grid;gap:4px;padding:16px;border:1px solid var(--line);border-radius:16px;background:rgba(255,253,249,.84)}
+.preview-grid strong{color:var(--green-dark);font-size:26px;line-height:1}
+.preview-grid span{color:var(--muted);font-size:13px;font-weight:720}
+.research-report{max-width:1180px;width:100%;margin:0 auto;padding:22px}
+.report-date{margin-left:10px;color:var(--muted);font-size:13px}
+.report-section{margin-top:24px}
+.report-section h3{margin:0 0 12px;color:var(--green-dark);font-size:18px;letter-spacing:0}
+.report-section p{margin:0;color:#40534a;font-size:14px;line-height:1.8}
+.presales-report-body{display:grid;gap:14px}
+.presales-report-body .report-body{font-size:14px;line-height:1.75}
+.presales-module-status{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 16px}
+.presales-module-status span{height:28px;display:inline-flex;align-items:center;padding:0 10px;border:1px solid var(--line);border-radius:999px;color:var(--green-dark);background:var(--panel);font-size:12px;font-weight:750}
+.presales-module-status span.done{color:#fff;background:var(--green)}
+.rich-table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border:1px solid var(--line);border-radius:16px;font-size:13px}
+.rich-table th,.rich-table td{padding:14px;border-bottom:1px solid var(--line);border-right:1px solid var(--line);text-align:left;vertical-align:top}
+.rich-table th{color:var(--green-dark);background:var(--panel);font-weight:800}
+.rich-table td{color:#40534a;line-height:1.55}
+.rich-table tr:last-child td{border-bottom:0}
+.rich-table th:last-child,.rich-table td:last-child{border-right:0}
+.clean-table th,.clean-table td{padding:12px 14px}
+@media (max-width:920px){body{overflow:auto}.app{height:auto;min-height:100vh;display:block;overflow:visible}.side{width:100%;height:auto;position:relative}.main{height:auto;min-height:100vh}.hero{width:calc(100vw - 36px);margin:64px auto 0}.collab{width:calc(100vw - 36px);margin-top:48px}.split,.workbench-grid,.kbpage,.presales-functions,.research-panel,.preview-grid{grid-template-columns:1fr;padding-left:20px;padding-right:20px}.chattop,.page-workspace{padding-left:20px;padding-right:20px}.page-header{display:block}}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- Sidebar -->
+  <aside class="side">
+    <div class="brand">
+      <img class="brand-logo" src="assets/yado-logo.png" alt="芽懂 Yado">
+    </div>
+
+    <nav class="nav" id="nav">
+      <a data-page="home" onclick="goPage('home')"><span class="ni">✦</span><span>首页</span></a>
+    </nav>
+
+    <div class="subttl">业务工作台</div>
+    <nav class="nav" id="navBiz">
+      <a data-page="sales-presales" onclick="goPage('sales-presales')"><span class="ni">◒</span><span>销售与售前</span></a>
+      <a data-page="promo" onclick="goPage('promo')"><span class="ni">✎</span><span>营销与传播</span></a>
+      <a data-page="tech-explain" onclick="goPage('tech-explain')"><span class="ni">◎</span><span>产品与技术解释</span></a>
+    </nav>
+
+    <div class="side-title"><span>知识空间</span><button class="project-add" aria-label="新增项目" title="新增知识项目" onclick="openProjectDialog()">+</button></div>
+    <nav class="nav" id="navKb">
+      <a data-page="research" onclick="goPage('research')"><span class="ni">▤</span><span>研发知识库</span></a>
+      <a data-page="promo-kb" onclick="goPage('promo-kb')"><span class="ni">□</span><span>运营素材库</span></a>
+      <a data-page="sales-kb" onclick="goPage('sales-kb')"><span class="ni">□</span><span>销售知识库</span></a>
+    </nav>
+
+    <div class="subttl">历史记录</div>
+    <div class="hist" id="hist"><div class="empty">还没有会话，发一条试试</div></div>
+
+    <div class="spacer"></div>
+    <div class="profile">
+      <div class="avatar">C</div>
+      <div>
+        <div class="profile-name">chloe chen</div>
+        <div class="profile-role">企业成员</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <section class="main">
+
+    <!-- VIEW: HOME —— 欢迎态 / 对话态，同一页面两个状态（贴合最终原型：发送后同页切换，非跳转独立页） -->
+    <div class="view show" id="home">
+      <div class="home-scroll state-welcome active" id="stateWelcome">
+        <div class="hero">
+          <h1>今天想提升哪项工作效率？</h1>
+          <p class="sub">基于企业私域知识，快速完成内容创作、销售支持和可信知识问答。</p>
+
+          <div class="bigbox">
+            <textarea id="homeInput" placeholder="输入你想完成的工作，例如：根据产品资料生成一版客户沟通话术，并保留引用来源"></textarea>
+            <div class="bar">
+              <button class="home-upload" aria-label="上传文件" title="上传文件" onclick="document.getElementById('uploadFile').click()">+</button>
+              <button class="go" id="homeGo" onclick="startFromHome()">发送 ↑</button>
+            </div>
+          </div>
+
+          <div class="collab">
+            <div class="txt">
+              <div class="kicker">为智慧芽团队定制 AI 协作空间</div>
+              <h4>减少重复沟通，让知识在团队间流动</h4>
+              <p>团队共同建设和调用可信知识，让知识持续流动与复用，减少重复查找和沟通误差。</p>
+            </div>
+            <div class="mini-preview">
+              <div class="preview-card main-card">
+                <div class="card-label">引用来源</div>
+                <div class="card-line wide"></div>
+                <div class="card-line"></div>
+              </div>
+              <div class="float-chip chip-a">销售话术</div>
+              <div class="float-chip chip-b">运营文案</div>
+              <div class="float-chip chip-c">研发审核</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="state-chat" id="stateChat">
+        <div class="chattop">
+          <div><div class="ttl">💬 对话</div><div class="sub">技术问答 / 竞品对比 / 宣传初稿，都在这条对话流里</div></div>
+          <div class="pill" id="statusPill"><span class="dot"></span> <span id="pillText">资料已就绪</span></div>
+        </div>
+        <div class="stream" id="stream"></div>
+        <div class="compose">
+          <div class="inputbar">
+            <textarea id="chatInput" placeholder="继续提问…"></textarea>
+            <button class="send" id="chatSend" onclick="send()">↑</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: 研发工作台（对齐 final prototype 静态页面） -->
+    <div class="view" id="researchDesk">
+      <main class="workspace page-workspace">
+        <section class="page-header">
+          <div>
+            <p class="eyebrow">研发工作台</p>
+            <h1>把研发资料沉淀成可复用知识</h1>
+            <p class="page-subtitle">上传文件并添加分类标签，系统会解析内容、生成摘要，并进入后续审核流程。</p>
+          </div>
+          <button class="primary-action" onclick="document.getElementById('uploadFile').click()">批量上传</button>
+        </section>
+
+        <section class="workbench-grid">
+          <section class="upload-card">
+            <div class="upload-zone">
+              <div class="upload-icon">↑</div>
+              <h2>上传研发文件</h2>
+              <p>支持 PDF、Word、PPT、Markdown、代码压缩包和网页链接。</p>
+              <input id="uploadFile" type="file" style="display:none">
+              <button class="secondary-action" onclick="document.getElementById('uploadFile').click()">选择文件</button>
+            </div>
+
+            <div class="form-block">
+              <label>
+                文件名称
+                <input type="text" value="TRIZ 技术矛盾分析说明.pdf">
+              </label>
+              <label>
+                资料说明
+                <textarea>用于帮助销售和运营理解 TRIZ 基础概念、应用场景和对外表达方式。</textarea>
+              </label>
+            </div>
+          </section>
+
+          <section class="meta-card">
+            <div class="card-heading">
+              <h2>分类标签</h2>
+              <span>必选 1 项</span>
+            </div>
+            <div class="tag-grid">
+              <button class="tag-option active" onclick="selectTag(this)">技术文档</button>
+              <button class="tag-option" onclick="selectTag(this)">论文</button>
+              <button class="tag-option" onclick="selectTag(this)">专利</button>
+              <button class="tag-option" onclick="selectTag(this)">项目材料</button>
+              <button class="tag-option" onclick="selectTag(this)">代码库</button>
+            </div>
+
+            <div class="form-block compact">
+              <label>
+                可见范围
+                <select>
+                  <option>销售和运营可见</option>
+                  <option>仅销售可见</option>
+                  <option>仅运营可见</option>
+                  <option>仅研发可见</option>
+                </select>
+              </label>
+              <label>
+                负责人
+                <input type="text" value="算法研发团队">
+              </label>
+            </div>
+
+            <div class="action-row">
+              <button class="secondary-action" onclick="saveResearchDraft()">保存草稿</button>
+              <button class="primary-action" onclick="submitUpload()">提交解析</button>
+            </div>
+          </section>
+        </section>
+
+        <section class="table-card">
+          <div class="card-heading">
+            <h2>最近上传</h2>
+            <span>等待解析与审核的研发资料</span>
+          </div>
+          <div class="file-table">
+            <div class="table-row table-head">
+              <span>文件</span>
+              <span>分类</span>
+              <span>状态</span>
+              <span>更新时间</span>
+            </div>
+            <div class="table-row">
+              <span>TRIZ 技术矛盾分析说明.pdf</span>
+              <span>技术文档</span>
+              <span><b class="status parsing">解析中</b></span>
+              <span>今天 11:32</span>
+            </div>
+            <div class="table-row">
+              <span>AI 辅助创新方法研究.md</span>
+              <span>论文</span>
+              <span><b class="status pending">待审核</b></span>
+              <span>昨天 18:06</span>
+            </div>
+            <div class="table-row">
+              <span>竞品技术路线调研.pptx</span>
+              <span>项目材料</span>
+              <span><b class="status done">已入库</b></span>
+              <span>昨天 15:24</span>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- VIEW: 产品与技术解释 -->
+    <div class="view" id="splitTechExplain">
+      <main class="workspace page-workspace compact-page">
+        <section class="page-header compact-header">
+          <div>
+            <p class="eyebrow">产品与技术解释</p>
+            <h1>把技术概念解释成业务听得懂的语言</h1>
+            <p class="page-subtitle">输入解释主题、目标受众和使用场景，芽懂会调用研发知识库与销售知识库生成可复核的标准解释。</p>
+          </div>
+          <button class="primary-action" onclick="runTechExplain()">生成解释</button>
+        </section>
+
+        <section class="research-panel">
+          <div class="research-input">
+            <div class="input-head">
+              <span>解释任务</span>
+              <strong>标准口径生成</strong>
+            </div>
+            <label>
+              解释主题
+              <input id="tech-topic" type="text" value="TRIZ 是什么？">
+            </label>
+            <label>
+              目标受众
+              <select id="tech-audience">
+                <option>销售与售前</option>
+                <option>市场与运营</option>
+                <option>客户业务负责人</option>
+                <option>研发新人</option>
+              </select>
+            </label>
+            <label>
+              使用场景
+              <select id="tech-scenario">
+                <option>内部培训</option>
+                <option>客户沟通</option>
+                <option>方案材料</option>
+                <option>FAQ 标准口径</option>
+              </select>
+            </label>
+            <label>
+              解释深度
+              <select id="tech-depth">
+                <option>通俗解释</option>
+                <option>标准解释</option>
+                <option>偏技术原理</option>
+              </select>
+            </label>
+            <button class="research-button" id="techExplainGo" onclick="runTechExplain()">生成解释</button>
+          </div>
+
+          <article class="research-report" id="techExplainReport">
+            <div class="report-toolbar">
+              <div>
+                <span class="status done">示例解释</span>
+                <span class="report-date">内部培训 · 通俗解释</span>
+              </div>
+              <div class="toolbar-actions">
+                <button onclick="copyReport('techExplainReport')">复制</button>
+                <button onclick="exportReport('techExplainReport','产品与技术解释')">导出</button>
+              </div>
+            </div>
+            <section class="report-section">
+              <h3>一句话解释</h3>
+              <p>TRIZ 可以理解为研发团队的系统化解题方法：先识别技术矛盾，再参考可复用的发明原理，最后形成需要验证的方案方向。</p>
+            </section>
+            <section class="report-section">
+              <h3>能力边界</h3>
+              <p>TRIZ 不是自动给出唯一正确答案，也不能替代实验验证、工程评审或专利法律判断。</p>
+            </section>
+          </article>
+        </section>
+      </main>
+    </div>
+
+    <!-- VIEW: 市场与产品洞察（左配置 + 右报告） -->
+    <div class="view" id="splitComparison">
+      <div class="chattop">
+        <div><div class="ttl">把竞品差异整理成可用材料</div><div class="sub">输入产品和竞品对象，芽懂会生成带表格、图表和销售建议的富文本报告。</div></div>
+        <button class="pill" onclick="runComparison()"><span class="dot"></span> <span>生成报告</span></button>
+      </div>
+      <div class="split">
+        <div class="split-left">
+          <div class="cfgcard">
+            <p class="split-copy">输入我方对象、竞品对象和使用场景，系统会把资料拆成对齐维度，生成可复核的销售/运营报告。</p>
+            <label>分析对象
+              <input id="cmpTarget" type="text" value="PatSnap Analytics 专利数据库 + AI Mode">
+            </label>
+            <label>对比竞品
+              <input id="cmpCompetitor" type="text" value="Clarivate、IPRally">
+            </label>
+            <label>输出用途
+              <select id="cmpPurpose">
+                <option>销售拜访材料</option>
+                <option>运营宣传素材</option>
+                <option>产品内部复盘</option>
+              </select>
+            </label>
+            <button class="go" id="cmpGo" onclick="runComparison()">生成报告 ↑</button>
+            <div class="cfg-mini">
+              <div><span>默认维度</span><b>定位 / 场景 / 差异化</b></div>
+              <div><span>引用规则</span><b>逐格带来源</b></div>
+              <div><span>缺失处理</span><b>未找到不脑补</b></div>
+            </div>
+          </div>
+          <div class="mini-thread">
+            <div class="mini-q"><b>历史：</b>竞品优势对比</div>
+            <div class="mini-q"><b>历史：</b>制造业场景分析</div>
+            <div class="mini-q"><b>历史：</b>销售攻防话术</div>
+          </div>
+        </div>
+        <div class="split-right">
+          <div class="reportcard" id="cmpReport">
+            <div class="report-toolbar">
+              <div><span class="status">富文本预览</span><span class="rmeta">PatSnap Analytics AI Mode vs Clarivate / IPRally</span></div>
+              <div class="toolbar-actions"><button onclick="copyReport('cmpReport')">复制</button><button onclick="exportReport('cmpReport','市场与产品洞察报告')">导出</button></div>
+            </div>
+            <div class="report-header">
+              <h2>Analytics AI Mode 市场与产品洞察摘要</h2>
+              <p>面向销售团队，快速说明 PatSnap Analytics 在 AI Mode 加持下，相比 Clarivate 和 IPRally 在专利检索、专利解读、竞争情报和报告交付上的差异。</p>
+            </div>
+            <div class="insight-row">
+              <div><span>核心差异</span><strong>数据库能力 + AI 分析工作流</strong></div>
+              <div><span>销售切入</span><strong>从检索到可复核报告的一站式输出</strong></div>
+            </div>
+            <div class="report-body">
+              <h2>对比表</h2>
+              <table class="cmp"><tr><th>维度</th><th>PatSnap Analytics + AI Mode</th><th>Clarivate</th><th>IPRally</th></tr><tr><td>核心定位</td><td>专利数据库与 AI 分析助手结合</td><td>全球 IP 情报、数据库与专业服务</td><td>AI 原生专利检索、审查与分类</td></tr><tr><td>适合场景</td><td>专利检索、专利解读、竞争情报、布局分析、可追溯报告</td><td>专业检索、专利情报、组合管理、IP 服务</td><td>AI 检索、专利审查、分类、无效与 FTO 辅助</td></tr><tr><td>差异化表达</td><td>让非专业用户也能基于数据库产出可复核分析材料</td><td>数据资产深、全球覆盖广、服务体系成熟</td><td>检索交互轻、AI 匹配体验强、上手快</td></tr></table>
+            </div>
+            <div class="mini-chart-section">
+              <div class="chart-card light">
+                <h3>分析能力覆盖矩阵</h3>
+                <div class="agent-matrix">
+                  <div class="matrix-row matrix-head"><span>能力</span><span>Analytics AI</span><span>Clarivate</span><span>IPRally</span></div>
+                  <div class="matrix-row"><span>专利检索与解读</span><b>AI Mode</b><b>数据库/服务</b><b>AI 检索</b></div>
+                  <div class="matrix-row"><span>竞争情报分析</span><b>报告生成</b><b>情报资产</b><b>检索辅助</b></div>
+                  <div class="matrix-row"><span>专利布局建议</span><b>AI 分析</b><b>组合管理</b><b>-</b></div>
+                </div>
+              </div>
+              <div class="takeaway-card">
+                <h3>建议销售话术</h3>
+                <p>如果客户关注权威数据资产和成熟专家服务，可以重点对比 Clarivate；如果客户关注 AI 原生检索体验，可以对比 IPRally。Analytics AI Mode 的切入点是把专利数据库能力变成可对话、可追溯、可交付的分析工作流。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: 销售与售前 -->
+    <div class="view" id="splitSales">
+      <main class="workspace page-workspace compact-page presales-page">
+        <section class="page-header compact-header">
+          <div>
+            <p class="eyebrow">销售与售前</p>
+            <h1>把客户背景变成可执行的拜访方案</h1>
+            <p class="page-subtitle">输入客户名称、行业、目标岗位和拜访目的，芽懂会结合销售知识库、公开信息和内部资料生成深度调研、痛点判断、话术脚本与行动清单。</p>
+          </div>
+          <button class="primary-action" onclick="document.getElementById('mode-customer').focus()">开始调研</button>
+        </section>
+
+        <section class="presales-functions" aria-label="选择销售与售前功能">
+          <button class="presales-card active-card" type="button" data-mode="research">
+            <div class="presales-icon search-icon"></div>
+            <h2>深度调研</h2>
+            <p>自动搜索公司背景、财报、新闻、专利动态和内部历史案例，快速形成客户画像与拜访摘要。</p>
+          </button>
+          <button class="presales-card" type="button" data-mode="pain">
+            <div class="presales-icon target-icon"></div>
+            <h2>痛点分析</h2>
+            <p>结合行业与岗位，定位研发负责人、产品经理或 IP 团队最可能关注的效率、成本和风险问题。</p>
+          </button>
+          <button class="presales-card" type="button" data-mode="script">
+            <div class="presales-icon script-icon"></div>
+            <h2>话术脚本</h2>
+            <p>生成开场白、价值主张、异议处理和案例引入话术，让销售与售前沟通更一致。</p>
+          </button>
+          <button class="presales-card" type="button" data-mode="action">
+            <div class="presales-icon checklist-icon"></div>
+            <h2>行动清单</h2>
+            <p>输出拜访前准备、现场追问、会后跟进和资料发送建议，帮助机会推进不断档。</p>
+          </button>
+        </section>
+
+        <section class="research-panel" id="presales-workspace">
+          <div class="research-input">
+            <div class="input-head">
+              <span id="mode-kicker">深度调研任务</span>
+              <strong id="mode-title">客户拜访准备</strong>
+            </div>
+            <label>
+              目标客户
+              <input id="mode-customer" type="text" value="海外 Engineering 研发团队 / 智造企业">
+            </label>
+            <label>
+              拜访目标
+              <input id="mode-goal" type="text" value="识别研发情报分析痛点，准备产品价值沟通">
+            </label>
+            <label>
+              关注方向
+              <textarea id="mode-focus">公司背景、新闻动态、专利布局、技术方向、现有流程痛点、潜在决策人关注点</textarea>
+            </label>
+            <div class="research-actions">
+              <button class="research-button" id="mode-action" onclick="runPresales()">生成调研结果</button>
+              <button class="research-secondary" id="mode-full-action" onclick="runPresales('full')">完整报告</button>
+            </div>
+          </div>
+
+          <div class="research-preview">
+            <div class="preview-top">
+              <span id="preview-kicker">Research Preview</span>
+              <button onclick="exportReport('presalesReport','销售与售前拜访报告')">导出方案</button>
+            </div>
+            <div class="research-summary-card">
+              <span>已完成</span>
+              <h2 id="preview-title">Engineering 客户拜访简报</h2>
+              <p id="preview-copy">系统已整合公司背景、公开新闻、专利动态、内部客户案例和销售知识库，形成可用于售前沟通的调研摘要。</p>
+            </div>
+            <div class="preview-grid">
+              <div>
+                <strong id="metric-one">4 类</strong>
+                <span id="metric-one-label">输出材料</span>
+              </div>
+              <div>
+                <strong id="metric-two">8 条</strong>
+                <span id="metric-two-label">潜在痛点</span>
+              </div>
+              <div>
+                <strong id="metric-three">3 组</strong>
+                <span id="metric-three-label">推荐话术</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <article class="research-report" id="presalesReport">
+          <div class="report-toolbar">
+            <div>
+              <span class="status done">调研报告</span>
+              <span class="report-date">客户拜访前 30 分钟简报</span>
+            </div>
+            <div class="toolbar-actions">
+              <button onclick="copyReport('presalesReport')">复制</button>
+              <button onclick="exportReport('presalesReport','销售与售前拜访报告')">导出</button>
+            </div>
+          </div>
+          <div class="presales-module-status" id="presalesModuleStatus">
+            <span class="done">深度调研</span>
+            <span>痛点分析</span>
+            <span>话术脚本</span>
+            <span>行动清单</span>
+          </div>
+          <section class="report-section">
+            <h3>一、客户背景摘要</h3>
+            <p>客户所在团队关注研发效率、技术路线判断和创新情报获取，公开信息显示其持续投入工程研发与专利布局。建议从“减少研发情报收集时间”和“让技术洞察更快进入决策”切入。</p>
+          </section>
+          <section class="report-section">
+            <h3>二、推荐沟通路径</h3>
+            <table class="rich-table clean-table">
+              <thead>
+                <tr>
+                  <th>阶段</th>
+                  <th>销售动作</th>
+                  <th>可调用资料</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>开场</td>
+                  <td>确认当前研发情报收集方式和跨团队协作成本</td>
+                  <td>行业痛点摘要、客户案例</td>
+                </tr>
+                <tr>
+                  <td>价值展开</td>
+                  <td>说明 Analytics / Engineering 场景下的分析效率提升</td>
+                  <td>产品能力卡、竞品差异点</td>
+                </tr>
+                <tr>
+                  <td>会后跟进</td>
+                  <td>发送定制化方案、案例摘要和下一步演示计划</td>
+                  <td>方案模板、FAQ、话术脚本</td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+        </article>
+      </main>
+    </div>
+
+    <!-- VIEW: 营销与传播（左多轮对话 + 右内容预览） -->
+    <div class="view" id="splitPromo">
+      <div class="chattop">
+        <div><div class="ttl">把知识变成可发布内容</div><div class="sub">用对话方式生成传播文案或 30 秒短视频方案，并保留可追溯的知识来源。</div></div>
+        <button class="pill" onclick="resetPromoStudio()"><span class="dot"></span> <span>新建内容</span></button>
+      </div>
+      <div class="split">
+        <div class="split-left promo-left">
+          <div class="modeswitch" id="promoModeSwitch">
+            <button class="on" onclick="setPromoSub(this,'传播文案')">传播文案</button>
+            <button onclick="setPromoSub(this,'短视频')">短视频</button>
+          </div>
+          <div class="cfgcard promo-source-card">
+            <p class="split-copy">你想生成什么内容？可以告诉我目标受众、发布渠道和希望强调的产品能力。</p>
+            <div class="source-list">
+              <span>运营素材库</span>
+              <span>销售知识库</span>
+              <span>Analytics AI</span>
+            </div>
+          </div>
+          <div class="mini-thread" id="promoThread"></div>
+          <div class="promo-input-row">
+            <textarea id="promoInput" placeholder="例如：写一条 Analytics AI Mode 的推文"></textarea>
+            <button class="go" id="promoGo" onclick="runPromo()">生成 ↑</button>
+          </div>
+        </div>
+        <div class="split-right">
+          <div class="reportcard" id="promoReport">
+            <div class="report-toolbar">
+              <div><span class="status">生成结果</span><span class="rmeta">30 秒视频方案 · 可生成示例镜头</span></div>
+              <div class="toolbar-actions"><button onclick="copyReport('promoReport')">复制</button><button onclick="exportReport('promoReport','营销与传播结果')">下载</button></div>
+            </div>
+            <div class="video-output">
+              <div class="video-screen"><button class="play-button" onclick="setPromoSub(document.querySelector('#promoModeSwitch button:nth-child(2)'),'短视频')">▶</button><div class="video-caption">让专利分析进入 AI Mode</div></div>
+              <div class="video-meta-row"><span>脚本预览</span><b>30s</b></div>
+              <div class="storyboard">
+                <div><span>01</span><p>痛点开场</p></div>
+                <div><span>02</span><p>AI Mode 提问</p></div>
+                <div><span>03</span><p>检索与解读</p></div>
+                <div><span>04</span><p>竞争情报报告</p></div>
+              </div>
+            </div>
+            <article class="draft-card">
+              <h2>视频配套文案</h2>
+              <p>面对海量专利数据，企业 IP 团队需要的不只是找到结果，而是快速理解技术方向、竞争格局和布局机会。</p>
+              <p>Analytics AI Mode 让专利检索、专利解读和竞争情报分析进入自然语言交互流程，把复杂专利信息转化为可复核、可交付的业务材料。</p>
+              <h3>自动生成字幕</h3>
+              <ul><li>专利数据太多，洞察太慢？</li><li>用 Analytics AI Mode，直接提问并获得可追溯分析。</li><li>从检索结果，到竞争洞察，到报告交付。</li></ul>
+            </article>
+            <section class="video-card">
+              <h3>视频资产</h3>
+              <p>当前能力：可提交一个示例镜头视频任务；完整 30 秒成片、字幕烧录和旁白合成需要后续接入视频编排链路。</p>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: 销售知识库 -->
+    <div class="view" id="kbSales">
+      <div class="chattop">
+        <div><div class="ttl">沉淀可复用的销售知识</div><div class="sub">按产品线管理销售话术、客户案例、FAQ、竞品攻防和解决方案材料，供内容生成和销售问答调用。</div></div>
+        <button class="pill" onclick="startKbUpload('sales')"><span class="dot"></span> <span>上传销售资料</span></button>
+      </div>
+      <div class="kbpage">
+        <section class="sales-layout">
+          <aside class="folder-panel">
+            <div class="card-heading"><h2>知识分类</h2><span>除 INNO</span></div>
+            <button class="folder-row active" onclick="filterKbFolder('sales','数据库',this)"><span>一</span><strong>数据库</strong><em>42 条</em></button>
+            <button class="folder-row" onclick="filterKbFolder('sales','Eureka',this)"><span>二</span><strong>Eureka</strong><em>36 条</em></button>
+            <button class="folder-row" onclick="filterKbFolder('sales','Chemical&amp;Bio',this)"><span>三</span><strong>Chemical&amp;Bio</strong><em>24 条</em></button>
+            <button class="folder-row" onclick="filterKbFolder('sales','Open API',this)"><span>四</span><strong>Open API</strong><em>18 条</em></button>
+          </aside>
+          <section class="sales-main">
+            <div class="sales-toolbar">
+              <div>
+                <h2>数据库</h2>
+                <p>Analytics、Bio、Chemical 等数据库产品的销售材料集合。</p>
+              </div>
+              <div class="toolbar-actions"><button onclick="addKbQuick('sales','销售话术')">新增话术</button><button onclick="addKbQuick('sales','FAQ')">导入 FAQ</button></div>
+            </div>
+            <div class="sales-filter">
+              <button class="active" onclick="filterKb('sales','全部',this)">全部</button>
+              <button onclick="filterKb('sales','销售话术',this)">销售话术</button>
+              <button onclick="filterKb('sales','客户案例',this)">客户案例</button>
+              <button onclick="filterKb('sales','FAQ',this)">FAQ</button>
+              <button onclick="filterKb('sales','竞品攻防',this)">竞品攻防</button>
+              <button onclick="filterKb('sales','方案材料',this)">方案材料</button>
+            </div>
+            <section class="knowledge-list" id="salesKbGrid">
+              <article class="knowledge-card"><span>销售话术</span><h3>Analytics AI Mode 开场介绍</h3><p>适用于首次拜访企业 IP 负责人，强调专利数据库与 AI 分析工作流。</p><div><b>适用对象</b><em>企业 IP / 研发管理者</em></div></article>
+              <article class="knowledge-card"><span>FAQ</span><h3>客户问：AI Mode 的结果可以追溯吗？</h3><p>回答需强调来源引用、结果可复核、报告可交付。</p><div><b>适用场景</b><em>产品演示 / 技术确认</em></div></article>
+              <article class="knowledge-card"><span>竞品攻防</span><h3>Clarivate 对比口径</h3><p>对方强在全球 IP 情报资产和成熟服务，Analytics AI Mode 重点强调自然语言入口和分析交付效率。</p><div><b>适用阶段</b><em>竞品比较 / 采购评估</em></div></article>
+              <article class="knowledge-card"><span>客户案例</span><h3>制造业客户专利布局分析</h3><p>客户使用数据库检索与分析能力识别技术空白点，并形成研发决策材料。</p><div><b>适用内容</b><em>方案页 / 宣传文案</em></div></article>
+            </section>
+          </section>
+        </section>
+      </div>
+    </div>
+
+    <!-- VIEW: 运营素材库 -->
+    <div class="view" id="kbPromo">
+      <div class="chattop">
+        <div><div class="ttl">沉淀社媒素材与运营排期</div><div class="sub">上传历史社媒素材、文案和活动安排，按产线分类管理，后续可直接用于内容生成。</div></div>
+        <button class="pill" onclick="startKbUpload('promo')"><span class="dot"></span> <span>上传素材</span></button>
+      </div>
+      <div class="kbpage">
+        <section class="material-layout">
+          <section class="material-main">
+            <div class="asset-upload-card">
+              <div><h2>上传历史素材</h2><p>支持图片、视频、PPT、公众号文案、LinkedIn 帖子、活动排期表。</p></div>
+              <button class="secondary-action" onclick="startKbUpload('promo')">选择文件</button>
+            </div>
+            <div class="pipeline-tabs">
+              <button class="active" onclick="filterKb('promo','全部',this)">全部</button>
+              <button onclick="filterKb('promo','IP Search',this)">IP Search</button>
+              <button onclick="filterKb('promo','IP Drafting',this)">IP Drafting</button>
+              <button onclick="filterKb('promo','Engineering',this)">Engineering</button>
+              <button onclick="filterKb('promo','Life Sciences',this)">Life Sciences</button>
+              <button onclick="filterKb('promo','Materials',this)">Materials</button>
+            </div>
+            <section class="asset-grid" id="promoKbGrid">
+              <article class="asset-card"><div class="asset-thumb">AI</div><span>IP Search</span><h3>Analytics AI Mode 公众号首图</h3><p>用于专利检索、专利解读相关传播。</p><small>图片 · 2026/07/08</small></article>
+              <article class="asset-card"><div class="asset-thumb video">▶</div><span>IP Drafting</span><h3>专利撰写流程介绍视频</h3><p>可复用为活动预热视频或销售转发素材。</p><small>视频 · 2026/07/05</small></article>
+              <article class="asset-card"><div class="asset-thumb doc">文</div><span>Life Sciences</span><h3>LS 行业解决方案推文</h3><p>面向生物医药客户的行业场景文案。</p><small>文案 · 2026/07/01</small></article>
+              <article class="asset-card"><div class="asset-thumb doc">表</div><span>Materials</span><h3>材料领域活动排期</h3><p>包含 webinar、社媒发文和销售跟进节奏。</p><small>排期 · 2026/06/28</small></article>
+            </section>
+          </section>
+          <aside class="schedule-panel">
+            <div class="card-heading"><h2>运营排期</h2><span>本月重点</span></div>
+            <div class="schedule-list">
+              <div><time>07/12</time><strong>IP Search AI Mode 推文</strong><span>公众号 / LinkedIn</span></div>
+              <div><time>07/16</time><strong>Engineering 客户案例视频</strong><span>官网活动页</span></div>
+              <div><time>07/20</time><strong>Life Sciences Webinar 预热</strong><span>社媒 + 销售转发</span></div>
+              <div><time>07/25</time><strong>Materials 行业洞察长图</strong><span>公众号</span></div>
+            </div>
+            <div class="pipeline-summary">
+              <h3>产线素材覆盖</h3>
+              <p><b>IP Search</b><span>32 条</span></p>
+              <p><b>IP Drafting</b><span>18 条</span></p>
+              <p><b>Engineering</b><span>21 条</span></p>
+              <p><b>Life Sciences</b><span>16 条</span></p>
+              <p><b>Materials</b><span>12 条</span></p>
+            </div>
+          </aside>
+        </section>
+      </div>
+    </div>
+
+  </section>
+</div>
+
+<div class="project-modal" id="projectModal" hidden>
+  <div class="project-dialog">
+    <h3>新增知识项目</h3>
+    <div class="form-block">
+      <label>项目名称<input id="projectName" type="text" placeholder="例如：Bio 销售知识库"></label>
+      <label>项目类型<select id="projectKind"><option value="sales">销售知识库</option><option value="promo">运营素材库</option></select></label>
+    </div>
+    <div class="project-actions">
+      <button class="secondary-action" onclick="closeProjectDialog()">取消</button>
+      <button class="primary-action" onclick="confirmProject()">创建</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// 能力标签（仅用于把后端返回的 mode 显示成中文，前端不让用户选）
+const MODE_LABEL = { qa:"💬 技术问答", comparison:"⚔️ 竞品对比", promo:"✍️ 营销与传播", presales:"🤝 销售与售前", tech_explain:"🧭 产品与技术解释" };
+// —— 会话持久化（localStorage）——
+// 一个 session = 一次"新对话"下的多轮问答。刷新不丢，点侧栏条目可回看。
+const LS_KEY = "yadong.sessions.v1";
+let sessions = [];          // [{id, title, ts, mode, msgs:[{role:"me"|"ai", html}]}]
+let currentId = null;       // 当前会话 id；null 表示尚未开始
+
+// —— 功能页 ——
+// 首页是"欢迎态/对话态"同一页面两个状态（贴合原型）：发第一句话前是欢迎态大标题+
+// 居中输入框；发出后大标题收起、页面变成对话态，技术问答就是这个对话态本身的产出
+// （Agent 自选 mode:null，不是独立导航项）。竞品分析/内容生成走独立分栏界面。
+// 销售知识库/运营素材库是静态骨架页，无 API 调用。
+let currentPage = "home";    // 当前高亮的导航项 key，覆盖所有页面类型
+let currentPresalesMode = "research";
+const presalesDone = { research: true, pain: false, script: false, action: false };
+
+function loadSessions(){
+  try { sessions = JSON.parse(localStorage.getItem(LS_KEY)) || []; }
+  catch(e){ sessions = []; }
+}
+function saveSessions(){
+  try { localStorage.setItem(LS_KEY, JSON.stringify(sessions)); } catch(e){}
+}
+function curSession(){ return sessions.find(s => s.id === currentId); }
+
+function fillHomePrompt(text){
+  const input = document.getElementById("homeInput");
+  input.value = `${text}  `;
+  input.focus();
+  input.setSelectionRange(input.value.length, input.value.length);
+}
+
+const PRESALES_MODE_CONTENT = {
+  research: {
+    kicker: "深度调研任务",
+    title: "客户拜访准备",
+    customer: "海外 Engineering 研发团队 / 智造企业",
+    goal: "识别研发情报分析痛点，准备产品价值沟通",
+    focus: "公司背景、新闻动态、专利布局、技术方向、现有流程痛点、潜在决策人关注点",
+    action: "生成调研结果",
+    previewKicker: "Research Preview",
+    previewTitle: "Engineering 客户拜访简报",
+    previewCopy: "系统已整合公司背景、公开新闻、专利动态、内部客户案例和销售知识库，形成可用于售前沟通的调研摘要。",
+    metrics: ["4 类", "输出材料", "8 条", "潜在痛点", "3 组", "推荐话术"]
+  },
+  pain: {
+    kicker: "痛点分析任务",
+    title: "定位客户核心关注点",
+    customer: "研发负责人 / IP 负责人 / 产品负责人",
+    goal: "判断客户在研发情报、技术洞察和知识复用上的真实痛点",
+    focus: "行业压力、岗位 KPI、现有工具限制、跨团队沟通成本、竞品替代风险",
+    action: "生成痛点分析",
+    previewKicker: "Pain Point Preview",
+    previewTitle: "决策人关注点地图",
+    previewCopy: "系统会把公开信息、行业特征和历史客户案例转化为可验证的痛点假设，方便销售在拜访中逐步确认。",
+    metrics: ["5 类", "痛点来源", "6 个", "追问方向", "2 级", "优先级"]
+  },
+  script: {
+    kicker: "话术脚本任务",
+    title: "生成可直接使用的沟通脚本",
+    customer: "制造业研发团队 / 海外市场客户",
+    goal: "围绕客户痛点生成开场、价值主张、异议处理和案例引入",
+    focus: "开场白、价值主张、竞品攻防、客户案例、下一步推进话术",
+    action: "生成话术脚本",
+    previewKicker: "Script Preview",
+    previewTitle: "销售沟通脚本",
+    previewCopy: "系统会基于销售知识库和已审核资料生成分阶段话术，帮助销售和售前保持一致表达。",
+    metrics: ["4 段", "沟通阶段", "9 条", "备选话术", "3 个", "异议处理"]
+  },
+  action: {
+    kicker: "行动清单任务",
+    title: "安排拜访前后动作",
+    customer: "重点机会客户 / POC 前客户",
+    goal: "明确拜访前准备、现场确认、会后跟进和资料发送节奏",
+    focus: "会前准备、现场追问、资料包发送、CRM 记录、下一步演示安排",
+    action: "生成行动清单",
+    previewKicker: "Action Preview",
+    previewTitle: "售前推进清单",
+    previewCopy: "系统会把调研结论转成可执行的行动项，让机会推进不依赖个人记忆和临时沟通。",
+    metrics: ["3 阶段", "推进流程", "12 项", "行动任务", "1 份", "资料包"]
+  }
+};
+
+function setPresalesMode(mode, activeCard){
+  const data = PRESALES_MODE_CONTENT[mode];
+  if (!data) return;
+  currentPresalesMode = mode;
+  document.querySelectorAll(".presales-card").forEach(item => item.classList.remove("active-card"));
+  activeCard?.classList.add("active-card");
+  document.getElementById("mode-kicker").textContent = data.kicker;
+  document.getElementById("mode-title").textContent = data.title;
+  document.getElementById("mode-customer").value = data.customer;
+  document.getElementById("mode-goal").value = data.goal;
+  document.getElementById("mode-focus").value = data.focus;
+  document.getElementById("mode-action").textContent = data.action;
+  document.getElementById("preview-kicker").textContent = data.previewKicker;
+  document.getElementById("preview-title").textContent = data.previewTitle;
+  document.getElementById("preview-copy").textContent = data.previewCopy;
+  document.getElementById("metric-one").textContent = data.metrics[0];
+  document.getElementById("metric-one-label").textContent = data.metrics[1];
+  document.getElementById("metric-two").textContent = data.metrics[2];
+  document.getElementById("metric-two-label").textContent = data.metrics[3];
+  document.getElementById("metric-three").textContent = data.metrics[4];
+  document.getElementById("metric-three-label").textContent = data.metrics[5];
+}
+
+function updatePresalesStatus(activeMode){
+  const labels = [
+    ["research", "深度调研"],
+    ["pain", "痛点分析"],
+    ["script", "话术脚本"],
+    ["action", "行动清单"]
+  ];
+  const el = document.getElementById("presalesModuleStatus");
+  if (!el) return;
+  el.innerHTML = labels.map(([mode, label]) => {
+    const done = presalesDone[mode] || activeMode === "full";
+    return `<span class="${done ? "done" : ""}">${esc(label)}</span>`;
+  }).join("");
+}
+
+function presalesModeName(mode){
+  return ({ research:"深度调研", pain:"痛点分析", script:"话术脚本", action:"行动清单", full:"完整报告" })[mode] || "深度调研";
+}
+
+document.querySelectorAll(".presales-card").forEach(card => {
+  card.addEventListener("click", () => setPresalesMode(card.dataset.mode, card));
+});
+
+function esc(s){ return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+// —— 视图切换 ——
+// 每个导航 key 对应的 view 元素 id；home 是万能入口，tech/comparison/promo 是明确能力页
+const VIEW_BY_PAGE = {
+  home: "home",
+  research: "researchDesk",
+  "sales-presales": "splitSales",
+  "tech-explain": "splitTechExplain",
+  comparison: "splitComparison", promo: "splitPromo",
+  "sales-kb": "kbSales", "promo-kb": "kbPromo",
+};
+const ALL_VIEWS = Object.values(VIEW_BY_PAGE).filter((v, i, a) => a.indexOf(v) === i);
+const stream = document.getElementById("stream");
+
+function showView(id){
+  ALL_VIEWS.forEach(v => document.getElementById(v).classList.toggle("show", v === id));
+}
+// 首页内部两态切换："welcome"=欢迎态大标题+居中输入框，"chat"=对话态消息流
+function showHomeState(state){
+  document.getElementById("stateWelcome").classList.toggle("active", state === "welcome");
+  document.getElementById("stateChat").classList.toggle("active", state === "chat");
+}
+function goChat(){ showView("home"); showHomeState("chat"); }
+
+// 高亮侧栏导航项（按 currentPage）
+function markNav(){
+  document.querySelectorAll("#nav a, #navBiz a, #navKb a").forEach(a =>
+    a.classList.toggle("on", a.dataset.page === currentPage));
+}
+
+// 点击侧栏导航：home 走欢迎态/对话态同页两态；comparison/promo 走独立分栏；知识库走静态骨架
+function goPage(key){
+  currentPage = key;
+  markNav();
+  showView(VIEW_BY_PAGE[key]);
+
+  if (key === "home"){ newChat(); return; }
+  if (key === "promo"){
+    promoThread = [];                       // 每次进入内容生成页起新对话
+    renderPromoThread();
+    document.getElementById("promoReport").innerHTML = defaultPromoPreview();
+  }
+  if (key !== "promo" && videoPollTimer){   // 离开内容生成页时停掉未完成的视频轮询，避免后台空转
+    clearInterval(videoPollTimer); videoPollTimer = null;
+  }
+  // comparison / promo / 知识库骨架页：无需 chat 状态
+  document.querySelectorAll(".hist a").forEach(x => x.classList.remove("on"));
+}
+
+function newChat(){
+  currentId = null;                       // 下一句发送时开新 session
+  currentPage = "home";
+  stream.innerHTML = "";
+  showView("home");
+  showHomeState("welcome");
+  document.querySelectorAll(".hist a").forEach(x => x.classList.remove("on"));
+  markNav();
+  document.getElementById("homeInput").value = "";
+  document.getElementById("homeInput").focus();
+}
+
+function startFromHome(){
+  const q = document.getElementById("homeInput").value.trim();
+  if (!q) return;
+  document.getElementById("chatInput").value = q;
+  goChat();
+  send();
+}
+
+// —— 侧栏历史：一条 = 一个 session ——
+function renderHist(){
+  const h = document.getElementById("hist");
+  h.innerHTML = "";
+  if (!sessions.length){ h.innerHTML = '<div class="empty">还没有会话，发一条试试</div>'; return; }
+  sessions.forEach(s => {
+    const a = document.createElement("a");
+    if (s.id === currentId) a.classList.add("on");
+    a.onclick = () => openSession(s.id);
+
+    const tt = document.createElement("span");
+    tt.className = "tt";
+    tt.textContent = "💬 " + s.title;
+    tt.title = s.title;
+
+    const del = document.createElement("button");
+    del.className = "del";
+    del.textContent = "×";
+    del.title = "删除此会话";
+    del.onclick = (e) => { e.stopPropagation(); deleteSession(s.id); };
+
+    a.appendChild(tt);
+    a.appendChild(del);
+    h.appendChild(a);
+  });
+}
+
+// 删除一条历史会话；若删的是当前会话则回到首页新对话
+function deleteSession(id){
+  sessions = sessions.filter(s => s.id !== id);
+  saveSessions();
+  if (id === currentId){
+    newChat();          // 回首页欢迎态、清空
+  } else {
+    renderHist();
+  }
+}
+
+function openSession(id){
+  const s = sessions.find(x => x.id === id);
+  if (!s) return;
+  currentId = id;
+  currentPage = "home";
+  stream.innerHTML = "";
+  s.msgs.forEach(m => bubble(m.role, m.html));
+  goChat();
+  markNav();
+  renderHist();
+  stream.scrollTop = stream.scrollHeight;
+}
+
+function bubble(who, inner){
+  const wrap = document.createElement("div");
+  wrap.className = "msg" + (who === "me" ? " me" : "");
+  const av = who === "me"
+    ? '<div class="av yazai"><img src="assets/yazai.png" alt="芽仔"></div>'
+    : '<div class="av ai-logo"><img src="assets/yado-logo.png" alt="YADO"></div>';
+  wrap.innerHTML = av + `<div class="bubble">${inner}</div>`;
+  stream.appendChild(wrap);
+  stream.scrollTop = stream.scrollHeight;
+  return wrap.querySelector(".bubble");
+}
+
+// 把一条消息追加进当前 session 并持久化。role: "me" | "ai"
+function recordMsg(role, html){
+  let s = curSession();
+  if (!s){
+    s = { id: "s" + Date.now(), title: "", ts: Date.now(), msgs: [] };
+    sessions.unshift(s);
+    currentId = s.id;
+  }
+  if (role === "me" && !s.title) s.title = html.replace(/<[^>]+>/g, "").slice(0, 40);
+  s.msgs.push({ role, html });
+  saveSessions();
+  renderHist();
+}
+
+function renderInline(s){
+  return esc(s)
+    .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
+    .replace(/`([^`]+)`/g, '<span class="chip">$1</span>');
+}
+
+function renderTableBlock(block){
+  const rows = block.trim().split("\n").filter(r => r.trim().startsWith("|"));
+  if (rows.length < 2) return null;
+  let out = '<table class="cmp">';
+  let bodyRows = 0;
+  rows.forEach((r, i) => {
+    if (/^\|[\s\-:|]+\|$/.test(r.trim())) return;
+    const cells = r.split("|").slice(1, -1).map(c => c.trim());
+    const tag = bodyRows === 0 && i === 0 ? "th" : "td";
+    out += "<tr>" + cells.map(c => {
+      let cell = renderInline(c);
+      if (/未.*找到|未在|待核实/.test(c)) cell = `<span class="miss">${cell}</span>`;
+      return `<${tag}>${cell}</${tag}>`;
+    }).join("") + "</tr>";
+    bodyRows += 1;
+  });
+  return out + "</table>";
+}
+
+function renderListBlock(lines, ordered){
+  const tag = ordered ? "ol" : "ul";
+  const items = lines.map(line => {
+    const text = ordered
+      ? line.replace(/^\s*\d+[.、)]\s*/, "")
+      : line.replace(/^\s*[-*]\s*/, "");
+    const cls = /待核实|未找到|未在已召回资料/.test(text) ? ' class="miss"' : "";
+    return `<li${cls}>${renderInline(text)}</li>`;
+  }).join("");
+  return `<${tag}>${items}</${tag}>`;
+}
+
+// markdown 标题/列表/段落/表格 + 来源/待核实提示 → 清晰块级排版
+function renderText(text){
+  const raw = (text || "").trim();
+  if (!raw) return "";
+  const blocks = raw.split(/\n{2,}/).map(b => b.trim()).filter(Boolean);
+  return blocks.map(block => {
+    if (/^\s*\|.*\|\s*$/m.test(block)){
+      const table = renderTableBlock(block);
+      if (table) return table;
+    }
+    if (/^---+$/.test(block)) return "<hr>";
+    const h = block.match(/^(#{1,3})\s+(.+)$/);
+    if (h && !block.includes("\n")){
+      const level = Math.min(3, h[1].length);
+      return `<h${level}>${renderInline(h[2])}</h${level}>`;
+    }
+    const lines = block.split("\n").map(x => x.trim()).filter(Boolean);
+    if (lines.length && lines.every(x => /^\d+[.、)]\s+/.test(x))){
+      return renderListBlock(lines, true);
+    }
+    if (lines.length && lines.every(x => /^[-*]\s+/.test(x))){
+      return renderListBlock(lines, false);
+    }
+    if (/^⚠/.test(block) || /^另有资料表述不同/.test(block)){
+      return `<div class="conflict">${renderInline(block.replace(/^⚠\s*/, "⚠ "))}</div>`;
+    }
+    if (/待核实|未在已召回资料|未找到/.test(block)){
+      return `<div class="todo">${renderInline(block)}</div>`;
+    }
+    if (/^(来源|source)[：:]/i.test(block) || /来源[：:]/.test(block)){
+      return `<div class="source-line">${renderInline(block).replace(/\n/g, "<br>")}</div>`;
+    }
+    return `<p class="answer-p">${renderInline(block).replace(/\n/g, "<br>")}</p>`;
+  }).join("");
+}
+
+// —— 销售与售前：4 个模块可单独生成，也可汇总成一份完整拜访报告 ——
+async function runPresales(forceMode){
+  const taskMode = forceMode || currentPresalesMode;
+  const customer = document.getElementById("mode-customer").value.trim();
+  const goal = document.getElementById("mode-goal").value.trim();
+  const focus = document.getElementById("mode-focus").value.trim();
+  if (!customer || !goal) return;
+
+  const moduleName = presalesModeName(taskMode);
+  const message = [
+    `任务模块：${moduleName}`,
+    `目标客户：${customer}`,
+    `拜访目标：${goal}`,
+    `关注方向：${focus}`,
+    taskMode === "full"
+      ? "请生成完整客户拜访售前报告，包含深度调研、痛点分析、话术脚本和行动清单。"
+      : `请先生成「${moduleName}」模块，同时保留事实来源和资料缺口。`
+  ].join("；");
+
+  const primaryBtn = document.getElementById("mode-action");
+  const fullBtn = document.getElementById("mode-full-action");
+  const report = document.getElementById("presalesReport");
+  primaryBtn.disabled = true;
+  fullBtn.disabled = true;
+  report.innerHTML = `<div class="empty-hint"><span class="typing"><i></i><i></i><i></i></span> 正在整合内部知识、live 资料与外部情报缺口…</div>`;
+
+  try {
+    const r = await fetch("/api/chat", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ message, mode: "presales" })
+    });
+    const data = await r.json();
+    if (data.error){ report.innerHTML = "⚠ " + esc(data.error); return; }
+
+    if (taskMode === "full"){
+      Object.keys(presalesDone).forEach(k => presalesDone[k] = true);
+    } else {
+      presalesDone[taskMode] = true;
+    }
+    const { head, lead } = splitHeadAndBody(data.text);
+    document.getElementById("preview-title").textContent = head || `${customer} ${moduleName}`;
+    document.getElementById("preview-copy").textContent = data.degraded
+      ? "当前结果包含降级或资料缺口提示，请优先补充客户外部情报后再用于正式拜访。"
+      : "已根据内部知识、上传资料和可用外部情报生成，可继续切换模块补齐完整售前报告。";
+    document.getElementById("metric-one").textContent = taskMode === "full" ? "4 类" : "1 类";
+    document.getElementById("metric-one-label").textContent = "已生成模块";
+    document.getElementById("metric-two").textContent = String(data.structured?.missing_items?.length || 0);
+    document.getElementById("metric-two-label").textContent = "待核实项";
+    document.getElementById("metric-three").textContent = String(data.structured?.citations?.length || 0);
+    document.getElementById("metric-three-label").textContent = "引用来源";
+
+    let html = `<div class="report-toolbar">
+        <div><span class="status done">${esc(moduleName)}</span><span class="report-date">${esc(customer)} · ${esc(goal)}</span></div>
+        <div class="toolbar-actions"><button onclick="copyReport('presalesReport')">复制</button><button onclick="exportReport('presalesReport','销售与售前拜访报告')">导出</button></div>
+      </div>
+      <div class="presales-module-status" id="presalesModuleStatus"></div>
+      ${data.degraded ? `<div class="degraded-note">当前为降级结果：${esc(data.degraded_reason || "未能完成检索/生成链路，展示兜底内容。")}</div>` : ""}
+      <div class="presales-report-body">
+        ${lead ? `<div class="report-header"><h2>${esc(head || moduleName)}</h2><p>${esc(lead)}</p></div>` : ""}
+        <div class="report-body">${renderText(data.text)}</div>
+      </div>`;
+
+    if (data.retrieval){
+      const titles = (data.retrieval.titles || []).map(x => `<span>${esc(x)}</span>`).join("");
+      const external = data.retrieval.external && !data.retrieval.external.available
+        ? `<div class="todo">外部搜索状态：${esc(data.retrieval.external.reason || "未接入外部搜索")}</div>` : "";
+      html += `<details class="trace" open><summary>🔎 已检索资料（${esc(data.retrieval.source || "unknown")} · 召回 ${esc(data.retrieval.count || 0)} 条）</summary><div class="source-list" style="margin-top:8px">${titles}</div>${external}</details>`;
+    }
+    if (data.trace && data.trace.length){
+      const steps = data.trace.map(t => `<code>${esc(t.tool)}</code>`).join(" → ");
+      html += `<details class="trace"><summary>🔎 执行轨迹（${data.trace.length} 步工具调用）</summary><div style="margin-top:6px">${steps}</div></details>`;
+    }
+    report.innerHTML = html;
+    updatePresalesStatus(taskMode);
+  } catch (e) {
+    report.innerHTML = "请求失败：" + esc(String(e));
+  } finally {
+    primaryBtn.disabled = false;
+    fullBtn.disabled = false;
+  }
+}
+
+async function send(){
+  const typed = document.getElementById("chatInput").value.trim();
+  if (!typed) return;
+
+  const meHtml = esc(typed);
+  bubble("me", meHtml);
+  recordMsg("me", meHtml);                 // 存问题（也会新建 session）
+  document.getElementById("chatInput").value = "";
+  const sendBtn = document.getElementById("chatSend");
+  const homeGo = document.getElementById("homeGo");
+  sendBtn.disabled = true; homeGo.disabled = true;
+  const loading = bubble("ai", '<span class="typing"><i></i><i></i><i></i></span> 正在挑料、裁决冲突、组织答案…');
+
+  try {
+    const r = await fetch("/api/chat", {              // 不带 mode → 由 Agent 自选技术问答/竞品对比/宣传生成
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ message: typed })
+    });
+    const data = await r.json();
+
+    const pill = document.getElementById("statusPill");
+    if (data.degraded){
+      pill.classList.add("degraded");
+      document.getElementById("pillText").textContent = "降级演示 · 预置结果";
+    } else {
+      pill.classList.remove("degraded");
+      document.getElementById("pillText").textContent = "资料已就绪";
+    }
+
+    if (data.error){
+      const errHtml = "⚠ " + esc(data.error);
+      loading.innerHTML = errHtml; recordMsg("ai", errHtml); return;
+    }
+
+    let html = "";
+    if (data.mode && MODE_LABEL[data.mode]) html += `<span class="modeflag">${MODE_LABEL[data.mode]}</span><br>`;
+    html += renderText(data.text);
+    if (data.trace && data.trace.length){
+      const steps = data.trace.map(t => `<code>${esc(t.tool)}</code>`).join(" → ");
+      html += `<details class="trace"><summary>🔎 执行轨迹（${data.trace.length} 步工具调用）</summary><div style="margin-top:6px">${steps}</div></details>`;
+    }
+    loading.innerHTML = html;
+    recordMsg("ai", html);                 // 存回复
+    stream.scrollTop = stream.scrollHeight;
+  } catch (e) {
+    const errHtml = "请求失败：" + esc(String(e));
+    loading.innerHTML = errHtml; recordMsg("ai", errHtml);
+  } finally {
+    sendBtn.disabled = false; homeGo.disabled = false;
+  }
+}
+
+// 从 Agent 返回的 markdown 里，把第一个二级/三级标题当"标题"，随后一段当"摘要"，
+// 剩余原文整体渲染进正文——不臆造摘要文字，只是重新摆放已有内容的视觉位置。
+function splitHeadAndBody(text){
+  const m = text.match(/^(#{2,3})\s+(.+)$/m);
+  if (!m) return { head: "", lead: "", body: text };
+  const head = m[2].trim();
+  const afterHeadIdx = m.index + m[0].length;
+  const rest = text.slice(afterHeadIdx).replace(/^\n+/, "");
+  const leadEnd = rest.search(/\n{2,}/);
+  const lead = (leadEnd === -1 ? rest : rest.slice(0, leadEnd)).replace(/\n/g, " ").trim();
+  return { head, lead, body: text };
+}
+
+// 从正文里摘出一个 "## 标题" 到下一个 "## " 之前的整段内容（含标题行本身一起去掉），
+// 返回 {content, rest}；rest = 去掉这段之后剩下的正文（用于正文区不重复渲染）。
+function extractSection(text, heading){
+  const re = new RegExp(`^##\\s*${heading}\\s*$`, "m");
+  const m = text.match(re);
+  if (!m) return { content: "", rest: text };
+  const start = m.index;
+  const afterHeadIdx = start + m[0].length;
+  const next = text.slice(afterHeadIdx).search(/^##\s+/m);
+  const end = next === -1 ? text.length : afterHeadIdx + next;
+  const content = text.slice(afterHeadIdx, end).trim();
+  const rest = (text.slice(0, start) + text.slice(end)).trim();
+  return { content, rest };
+}
+
+// "## 核心结论" 固定两条 "- 核心差异：..." / "- 销售切入：..." → insight-row 摘要卡
+function renderInsightRow(content){
+  const diff = content.match(/[-*]\s*核心差异[：:]\s*(.+)/);
+  const angle = content.match(/[-*]\s*销售切入[：:]\s*(.+)/);
+  if (!diff && !angle) return "";
+  return `<div class="insight-row">
+      ${diff ? `<div><span>核心差异</span><strong>${esc(diff[1].trim())}</strong></div>` : ""}
+      ${angle ? `<div><span>销售切入</span><strong>${esc(angle[1].trim())}</strong></div>` : ""}
+    </div>`;
+}
+
+// —— 产品与技术解释（明确工作台：硬编码调用 tech_explain skill）——
+async function runTechExplain(){
+  const topic = document.getElementById("tech-topic").value.trim();
+  const audience = document.getElementById("tech-audience").value;
+  const scenario = document.getElementById("tech-scenario").value;
+  const depth = document.getElementById("tech-depth").value;
+  if (!topic) return;
+
+  const message = `解释主题：${topic}；目标受众：${audience}；使用场景：${scenario}；解释深度：${depth}；知识来源：研发知识库、销售知识库。请输出一句话解释、通俗解释、核心原理、业务价值、适用场景、能力边界、FAQ 和知识来源。`;
+  const btn = document.getElementById("techExplainGo");
+  const report = document.getElementById("techExplainReport");
+  btn.disabled = true;
+  report.innerHTML = '<div class="empty-hint"><span class="typing"><i></i><i></i><i></i></span> 正在调用研发知识库与销售知识库，生成标准解释…</div>';
+
+  try {
+    const r = await fetch("/api/chat", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ message, mode: "tech_explain" })
+    });
+    const data = await r.json();
+    if (data.error){ report.innerHTML = "⚠ " + esc(data.error); return; }
+
+    let html = `<div class="report-toolbar">
+        <div><span class="status done">产品与技术解释</span><span class="report-date">${esc(audience)} · ${esc(scenario)} · ${esc(depth)}</span></div>
+        <div class="toolbar-actions"><button onclick="copyReport('techExplainReport')">复制</button><button onclick="exportReport('techExplainReport','产品与技术解释')">导出</button></div>
+      </div>
+      ${data.degraded ? `<div class="degraded-note">当前为降级结果：${esc(data.degraded_reason || "未能完成检索/生成链路，展示兜底内容。")}</div>` : ""}
+      <div class="report-body">${renderText(data.text)}</div>`;
+    if (data.retrieval){
+      const titles = (data.retrieval.titles || []).map(x => `<span>${esc(x)}</span>`).join("");
+      html += `<details class="trace" open><summary>🔎 已检索资料（${esc(data.retrieval.source || "unknown")} · 召回 ${esc(data.retrieval.count || 0)} 条）</summary><div class="source-list" style="margin-top:8px">${titles}</div></details>`;
+    }
+    if (data.trace && data.trace.length){
+      const steps = data.trace.map(t => `<code>${esc(t.tool)}</code>`).join(" → ");
+      html += `<details class="trace"><summary>🔎 执行轨迹（${data.trace.length} 步工具调用）</summary><div style="margin-top:6px">${steps}</div></details>`;
+    }
+    report.innerHTML = html;
+  } catch (e) {
+    report.innerHTML = "请求失败：" + esc(String(e));
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// —— 竞品分析（独立分栏，一次性生成报告，不进对话流/不持久化）——
+async function runComparison(){
+  const target = document.getElementById("cmpTarget").value.trim();
+  const competitor = document.getElementById("cmpCompetitor").value.trim();
+  const purpose = document.getElementById("cmpPurpose").value;
+  if (!target || !competitor) return;
+
+  const message = `对比对象：${target}；对比竞品：${competitor}；输出用途：${purpose}。请生成市场与产品洞察报告。`;
+  const btn = document.getElementById("cmpGo");
+  const report = document.getElementById("cmpReport");
+  btn.disabled = true;
+  report.innerHTML = '<div class="empty-hint"><span class="typing"><i></i><i></i><i></i></span> 正在挑料、裁决冲突、组织对比报告…</div>';
+
+  try {
+    const r = await fetch("/api/chat", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ message, mode: "comparison" })
+    });
+    const data = await r.json();
+    if (data.error){ report.innerHTML = "⚠ " + esc(data.error); return; }
+
+    // 依次摘出「核心结论」「建议销售话术」两段，剩下的正文（含对比表）走 report-body；
+    // 摘不出来时（Agent 没按格式产出）两块都不显示，不拿假数据填占位。
+    let rest = data.text;
+    const insight = extractSection(rest, "核心结论"); rest = insight.rest;
+    const takeaway = extractSection(rest, "建议销售话术"); rest = takeaway.rest;
+    const { head, lead } = splitHeadAndBody(rest);
+
+    let html = `<div class="report-toolbar">
+        <div><span class="status">富文本预览</span><span class="rmeta">${esc(target)} vs ${esc(competitor)}</span></div>
+        <div class="toolbar-actions"><button onclick="copyReport('cmpReport')">复制</button><button onclick="exportReport('cmpReport','市场与产品洞察报告')">导出</button></div>
+      </div>
+      ${data.degraded ? `<div class="degraded-note">当前为降级结果：${esc(data.degraded_reason || "未能完成检索/生成链路，展示预置兜底内容。")}</div>` : ""}
+      <div class="report-header">
+        <h2>${esc(head || (target + " 市场与产品洞察"))}</h2>
+        ${lead ? `<p>${esc(lead)}</p>` : ""}
+      </div>
+      ${renderInsightRow(insight.content)}
+      <div class="report-body">${renderText(rest)}</div>`;
+    if (takeaway.content){
+      html += `<div class="mini-chart-section" style="grid-template-columns:1fr">
+          <div class="takeaway-card"><h3>建议销售话术</h3><p>${renderText(takeaway.content)}</p></div>
+        </div>`;
+    }
+    if (data.retrieval){
+      const titles = (data.retrieval.titles || []).map(x => `<span>${esc(x)}</span>`).join("");
+      html += `<details class="trace" open><summary>🔎 已检索资料（${esc(data.retrieval.source || "unknown")} · 召回 ${esc(data.retrieval.count || 0)} 条）</summary><div class="source-list" style="margin-top:8px">${titles}</div></details>`;
+    }
+    if (data.trace && data.trace.length){
+      const steps = data.trace.map(t => `<code>${esc(t.tool)}</code>`).join(" → ");
+      html += `<details class="trace"><summary>🔎 执行轨迹（${data.trace.length} 步工具调用）</summary><div style="margin-top:6px">${steps}</div></details>`;
+    }
+    report.innerHTML = html;
+  } catch (e) {
+    report.innerHTML = "请求失败：" + esc(String(e));
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function copyReport(id){
+  const el = document.getElementById(id);
+  navigator.clipboard?.writeText(el.innerText || "").catch(() => {});
+}
+
+async function exportReport(id, title){
+  const el = document.getElementById(id);
+  const content = el?.innerText || "";
+  if (!content.trim()) return;
+  const r = await fetch("/api/export", {
+    method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({ title, content })
+  });
+  const data = await r.json();
+  if (data.download_url) window.location.href = data.download_url;
+}
+
+async function submitUpload(){
+  const fileInput = document.getElementById("uploadFile");
+  const file = fileInput.files && fileInput.files[0];
+  if (!file){ fileInput.click(); return; }
+  const fields = document.querySelectorAll("#researchDesk .form-block input, #researchDesk .form-block textarea, #researchDesk .form-block select");
+  const fd = new FormData();
+  fd.append("file", file);
+  fd.append("description", fields[1]?.value || "");
+  fd.append("visibility", fields[2]?.value || "销售和运营可见");
+  fd.append("owner", fields[3]?.value || "算法研发团队");
+  const btn = document.querySelector("#researchDesk .primary-action[onclick='submitUpload()']");
+  if (btn) btn.disabled = true;
+  try {
+    const r = await fetch("/api/upload", { method:"POST", body: fd });
+    const data = await r.json();
+    if (data.error) throw new Error(data.error);
+    await loadKb();
+    alert(data.message || "上传成功");
+  } catch(e) {
+    alert("上传失败：" + String(e.message || e));
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+let uploadTargetKind = null;
+
+function startKbUpload(kind){
+  uploadTargetKind = kind;
+  const fileInput = document.getElementById("uploadFile");
+  fileInput.value = "";
+  fileInput.click();
+}
+
+async function submitKbUpload(file, kind){
+  const fd = new FormData();
+  fd.append("file", file);
+  fd.append("kind", kind);
+  fd.append("category", kind === "promo" ? "上传素材" : "销售资料");
+  fd.append("description", file.name);
+  fd.append("visibility", "销售和运营可见");
+  fd.append("owner", kind === "promo" ? "运营团队" : "销售团队");
+  try {
+    const r = await fetch("/api/upload", { method:"POST", body: fd });
+    const data = await r.json();
+    if (data.error) throw new Error(data.error);
+    await loadKb();
+    goPage(kind === "promo" ? "promo-kb" : "sales-kb");
+  } catch(e) {
+    alert("上传失败：" + String(e.message || e));
+  }
+}
+
+function selectTag(btn){
+  btn?.parentElement?.querySelectorAll(".tag-option").forEach(x => x.classList.toggle("active", x === btn));
+}
+
+function saveResearchDraft(){
+  const name = document.querySelector("#researchDesk .form-block input")?.value || "未命名资料";
+  const desc = document.querySelector("#researchDesk .form-block textarea")?.value || "";
+  localStorage.setItem("yadong.researchDraft.v1", JSON.stringify({ name, desc, ts: Date.now() }));
+  alert("草稿已保存到本地");
+}
+
+function renderKbGrid(id, items){
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (id === "promoKbGrid"){
+    el.innerHTML = (items || []).map((x, i) => {
+      const cls = (x.category || "").includes("Drafting") || (x.title || "").includes("视频") ? "video" : ((x.category || "").includes("Life") || (x.category || "").includes("Materials") ? "doc" : "");
+      const mark = cls === "video" ? "▶" : (cls === "doc" ? "文" : "AI");
+      return `<article class="asset-card"><div class="asset-thumb ${cls}">${mark}</div><span>${esc(x.category || "素材")}</span><h3>${esc(x.title || "")}</h3><p>${esc(x.body || "")}</p><small>${esc(x.category || "素材")} · ${esc(x.updated_at || "今天")}</small></article>`;
+    }).join("");
+    return;
+  }
+  el.innerHTML = (items || []).map(x =>
+    `<article class="knowledge-card"><span>${esc(x.category || "知识")}</span><h3>${esc(x.title || "")}</h3><p>${esc(x.body || "")}</p><div><b>适用对象</b><em>${esc(x.product || "团队复用")}</em></div></article>`
+  ).join("");
+}
+
+let kbCache = { sales: [], promo: [] };
+let projectCache = [];
+
+async function loadKb(){
+  try {
+    const r = await fetch("/api/kb");
+    const data = await r.json();
+    kbCache = data.kb || { sales: [], promo: [] };
+    projectCache = data.projects || [];
+    renderProjectNav();
+    renderKbGrid("salesKbGrid", kbCache.sales || []);
+    renderKbGrid("promoKbGrid", kbCache.promo || []);
+  } catch(e) {}
+}
+
+function renderProjectNav(){
+  const nav = document.getElementById("navKb");
+  if (!nav) return;
+  nav.querySelectorAll("[data-custom-project]").forEach(x => x.remove());
+  (projectCache || []).filter(p => !["运营素材库", "销售知识库"].includes(p.name)).forEach(p => {
+    const page = p.kind === "promo" ? "promo-kb" : "sales-kb";
+    const a = document.createElement("a");
+    a.dataset.page = page;
+    a.dataset.customProject = p.id;
+    a.onclick = () => { goPage(page); setTimeout(() => filterKbFolder(p.kind, p.name), 0); };
+    a.innerHTML = `<span class="ni">□</span><span>${esc(p.name)}</span>`;
+    nav.appendChild(a);
+  });
+}
+
+function openProjectDialog(){
+  const modal = document.getElementById("projectModal");
+  modal.hidden = false;
+  setTimeout(() => document.getElementById("projectName")?.focus(), 0);
+}
+
+function closeProjectDialog(){
+  document.getElementById("projectModal").hidden = true;
+  document.getElementById("projectName").value = "";
+}
+
+async function confirmProject(){
+  const name = document.getElementById("projectName").value.trim();
+  const kind = document.getElementById("projectKind").value;
+  if (!name) return;
+  const r = await fetch("/api/kb", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ project: true, name, kind })
+  });
+  const data = await r.json();
+  if (data.error){ alert(data.error); return; }
+  closeProjectDialog();
+  await loadKb();
+  goPage(kind === "promo" ? "promo-kb" : "sales-kb");
+  setTimeout(() => filterKbFolder(kind, name), 0);
+}
+
+async function addKbQuick(kind, category){
+  const title = prompt(category === "FAQ" ? "请输入 FAQ 标题" : "请输入话术标题", category === "FAQ" ? "客户问：" : "新销售话术");
+  if (!title) return;
+  const body = prompt("请输入内容", category === "FAQ" ? "问题回答要点，可继续上传资料补充。" : "话术内容，可继续上传资料补充。");
+  await fetch("/api/kb", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ kind, item: { category, title, body: body || "新知识条目已创建，可继续上传资料补充内容。", product: "数据库" } })
+  });
+  await loadKb();
+}
+
+function filterKb(kind, value, btn){
+  const list = kbCache[kind] || [];
+  const filtered = value === "全部" ? list : list.filter(x => x.category === value || x.product === value);
+  renderKbGrid(kind === "sales" ? "salesKbGrid" : "promoKbGrid", filtered);
+  btn?.parentElement?.querySelectorAll("button").forEach(b => {
+    b.classList.toggle("on", b === btn);
+    b.classList.toggle("active", b === btn);
+  });
+}
+
+function filterKbFolder(kind, value, btn){
+  const list = kbCache[kind] || [];
+  const filtered = value === "数据库" ? list : list.filter(x => (x.product || "").includes(value) || (x.title || "").includes(value) || (x.category || "").includes(value));
+  renderKbGrid(kind === "sales" ? "salesKbGrid" : "promoKbGrid", filtered);
+  btn?.parentElement?.querySelectorAll("button").forEach(b => {
+    b.classList.toggle("on", b === btn);
+    b.classList.toggle("active", b === btn);
+  });
+}
+
+// —— 内容生成（左侧多轮对话，每轮生成右侧内容预览；对话本身不写入首页历史）——
+let promoSub = "传播文案";
+let promoThread = [];   // [{role:"me"|"ai", text}] 仅存在于本次页面会话内，切走即清空
+function setPromoSub(btn, sub){
+  promoSub = sub;
+  document.querySelectorAll("#promoModeSwitch button").forEach(b => b.classList.toggle("on", b === btn));
+  const input = document.getElementById("promoInput");
+  if (sub === "短视频") input.placeholder = "例如：生成一条 30 秒活动预热视频方案，面向企业 IP 负责人";
+  else input.placeholder = "例如：写一条 Analytics AI Mode 的推文";
+}
+
+function resetPromoStudio(){
+  promoSub = "传播文案";
+  document.querySelectorAll("#promoModeSwitch button").forEach((b, i) => b.classList.toggle("on", i === 0));
+  promoThread = [];
+  renderPromoThread();
+  document.getElementById("promoInput").value = "";
+  document.getElementById("promoInput").placeholder = "例如：写一条 Analytics AI Mode 的推文";
+  document.getElementById("promoReport").innerHTML = defaultPromoPreview();
+}
+function renderPromoThread(){
+  const el = document.getElementById("promoThread");
+  if (!promoThread.length){
+    el.innerHTML = `
+      <div class="mini-q assistant"><b>芽懂：</b>你想生成传播文案还是 30 秒短视频方案？可以告诉我目标受众、发布渠道和希望强调的产品能力。</div>
+      <div class="mini-q me"><b>运营：</b>帮我生成一个活动预热视频脚本，面向企业 IP 负责人，强调 Analytics AI Mode 的专利检索、专利解读和竞争情报分析。</div>
+      <div class="mini-q assistant"><b>芽懂：</b>已调用运营素材库和销售知识库，可生成 30 秒视频方案、字幕和发布配文，并提交一个示例镜头视频任务。</div>`;
+    return;
+  }
+  el.innerHTML = promoThread.map(m =>
+    `<div class="mini-q ${m.role === "me" ? "me" : "assistant"}"><b>${m.role === "me" ? "你" : "芽懂"}：</b>${esc(m.text)}</div>`
+  ).join("");
+  el.scrollTop = el.scrollHeight;
+}
+
+// 把营销传播产物渲染成结构化产物卡片：传播文案走 draft-card 富文本；
+// 视频模式：先出分镜大纲（即时，来自 Agent），真实视频要点「生成视频」按钮
+// 才触发后端配置的视频模型调用（示例镜头，不做多镜头拼接/字幕烧录，如实标注）。
+let lastPromoText = "";          // 供海报增强能力读取当前内容产物
+let lastPromoVideoText = "";     // 供 startVideoGeneration 读取 Agent 产物里的提示词段
+let videoPollTimer = null;
+
+function defaultPromoPreview(){
+  return `<div class="report-toolbar">
+      <div><span class="status">生成结果</span><span class="rmeta">30 秒视频方案 · 可生成示例镜头</span></div>
+      <div class="toolbar-actions"><button onclick="copyReport('promoReport')">复制</button><button onclick="exportReport('promoReport','营销与传播结果')">下载</button></div>
+    </div>
+    <div class="video-output">
+      <div class="video-screen"><button class="play-button">▶</button><div class="video-caption">让专利分析进入 AI Mode</div></div>
+      <div class="video-meta-row"><span>脚本预览</span><b>30s</b></div>
+      <div class="storyboard">
+        <div><span>01</span><p>痛点开场</p></div>
+        <div><span>02</span><p>AI Mode 提问</p></div>
+        <div><span>03</span><p>检索与解读</p></div>
+        <div><span>04</span><p>竞争情报报告</p></div>
+      </div>
+    </div>
+    <article class="draft-card">
+      <h2>视频配套文案</h2>
+      <p>面对海量专利数据，企业 IP 团队需要的不只是找到结果，而是快速理解技术方向、竞争格局和布局机会。</p>
+      <p>Analytics AI Mode 让专利检索、专利解读和竞争情报分析进入自然语言交互流程，把复杂专利信息转化为可复核、可交付的业务材料。</p>
+      <h3>自动生成字幕</h3>
+      <ul><li>专利数据太多，洞察太慢？</li><li>用 Analytics AI Mode，直接提问并获得可追溯分析。</li><li>从检索结果，到竞争洞察，到报告交付。</li></ul>
+    </article>
+    <section class="video-card">
+      <h3>视频资产</h3>
+      <p>当前能力：可提交一个示例镜头视频任务；完整 30 秒成片、字幕烧录和旁白合成需要后续接入视频编排链路。</p>
+    </section>`;
+}
+
+function renderPromoOutput(text, sub){
+  lastPromoText = text;
+  let html = `<div class="report-toolbar">
+      <div><span class="status">生成结果</span><span class="rmeta">${esc(sub)}${sub === "短视频" ? " · 30 秒方案 + 示例镜头" : ""}</span></div>
+      <div class="toolbar-actions"><button onclick="copyReport('promoReport')">复制</button><button onclick="exportReport('promoReport','营销与传播结果')">下载</button></div>
+    </div>`;
+
+  if (sub === "短视频"){
+    lastPromoVideoText = text;
+    const outline = [...text.matchAll(/^\d+\.\s*\*\*(.+?)\*\*[:：]?\s*(.*)$/gm)].slice(0, 4);
+    html += `<div class="video-output" id="videoOutput">
+        <div class="video-screen" id="videoScreen"><button class="play-button" id="videoGenTrigger" onclick="startVideoGeneration()">▶</button><div class="video-caption">${esc(outline[0]?.[1] || "视频脚本预览")}</div></div>
+        <div class="video-meta-row"><span>30 秒方案已生成</span><b>30s</b></div>
+        <div class="video-genrow" id="videoGenRow">
+          <button class="video-genbtn" id="videoGenBtn" onclick="startVideoGeneration()">生成示例镜头</button>
+          <span class="video-genstatus" id="videoGenStatus"></span>
+        </div>
+        <div class="video-badge">⚠️ 当前仅生成一个示例镜头，不含多镜头拼接/字幕烧录/旁白合成；以下为 30 秒完整方案，供后续编排成片。</div>
+        <div class="storyboard">${
+          (outline.length ? outline : [["", "开场", ""]]).map((o, i) =>
+            `<div><span>${String(i + 1).padStart(2, "0")}</span><p>${esc(o[1] || "")}</p></div>`
+          ).join("")
+        }</div>
+      </div>
+      <div class="draft-card">${renderText(text)}</div>
+      <section class="video-card">
+        <h3>视频资产</h3>
+        <p>当前后端会从「视频生成提示词」中提取一个英文镜头描述，提交给已配置的视频模型并轮询状态。</p>
+      </section>`;
+  } else {
+    html += `<div class="draft-card">${renderText(text)}</div>${renderPosterCard(sub)}`;
+  }
+  return html;
+}
+
+function renderPosterCard(sub){
+  return `<section class="poster-card">
+      <h3>配图/海报增强</h3>
+      <div class="poster-preview" id="posterPreview">根据当前${esc(sub)}生成一张可配套展示的营销海报；不会自动触发，点击后才调用图片模型。</div>
+      <div class="poster-controls">
+        <input id="posterInstruction" type="text" placeholder="可选：更科技感 / 活动海报 / 少一点人物 / 更像产品发布图">
+        <button class="video-genbtn" id="posterGenBtn" onclick="startPosterGeneration()">生成配图</button>
+        <span class="poster-status" id="posterStatus"></span>
+      </div>
+    </section>`;
+}
+
+async function startPosterGeneration(){
+  const btn = document.getElementById("posterGenBtn");
+  const status = document.getElementById("posterStatus");
+  const preview = document.getElementById("posterPreview");
+  const instruction = document.getElementById("posterInstruction")?.value || "";
+  if (!lastPromoText || !btn || !status || !preview) return;
+  btn.disabled = true;
+  status.classList.remove("err");
+  status.innerHTML = '<span class="typing"><i></i><i></i><i></i></span> 正在生成…';
+  try {
+    const r = await fetch("/api/image/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: lastPromoText, instruction })
+    });
+    const data = await r.json();
+    if (data.error) throw new Error(data.error);
+    preview.textContent = "";
+    const img = document.createElement("img");
+    img.src = data.image_url;
+    img.alt = "生成的内容配图";
+    preview.appendChild(img);
+    status.textContent = "✓ 已生成，可继续输入修改要求后重新生成";
+    btn.textContent = "重新生成";
+  } catch(e) {
+    status.classList.add("err");
+    status.textContent = "⚠ " + String(e.message || e);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function startVideoGeneration(){
+  if (videoPollTimer) return;   // 已有一次生成在跑，不重复触发
+  const btn = document.getElementById("videoGenBtn");
+  const trigger = document.getElementById("videoGenTrigger");
+  const status = document.getElementById("videoGenStatus");
+  btn.disabled = true; if (trigger) trigger.disabled = true;
+  status.classList.remove("err");
+  status.innerHTML = '<span class="typing"><i></i><i></i><i></i></span> 提交生成任务…';
+
+  try {
+    const r = await fetch("/api/video/start", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: lastPromoVideoText })
+    });
+    const data = await r.json();
+    if (data.error){
+      status.classList.add("err");
+      status.textContent = "⚠ " + data.error;
+      btn.disabled = false; if (trigger) trigger.disabled = false;
+      return;
+    }
+    pollVideoStatus(data.task_id, status, btn, trigger);
+  } catch (e) {
+    status.classList.add("err");
+    status.textContent = "请求失败：" + String(e);
+    btn.disabled = false; if (trigger) trigger.disabled = false;
+  }
+}
+
+function pollVideoStatus(taskId, status, btn, trigger){
+  let elapsed = 0;
+  status.innerHTML = '<div class="progress-track"><div class="progress-fill" style="width:35%"></div></div> 生成中…（单镜头通常需 1-5 分钟）';
+  videoPollTimer = setInterval(async () => {
+    elapsed += 5;
+    try {
+      const r = await fetch(`/api/video/status/${encodeURIComponent(taskId)}`);
+      const data = await r.json();
+      if (data.status === "succeed"){
+        clearInterval(videoPollTimer); videoPollTimer = null;
+        status.innerHTML = "✓ 生成完成";
+        const screen = document.getElementById("videoScreen");
+        if (screen && data.video_url) {
+          screen.textContent = "";
+          const video = document.createElement("video");
+          video.src = data.video_url;
+          video.controls = true;
+          video.autoplay = true;
+          video.muted = true;
+          video.loop = true;
+          screen.appendChild(video);
+        } else if (screen) {
+          screen.innerHTML = `<div class="video-caption" style="position:static;color:#fff;max-width:88%;text-align:center">${esc(data.message || "视频模型已返回生成结果，未检测到可播放 URL。")}</div>`;
+        }
+        const row = document.getElementById("videoGenRow");
+        if (row) row.innerHTML = `<span class="video-genstatus">✓ 已生成${data.video_url ? "，见上方播放画面" : "，模型返回说明已展示"}</span>`;
+      } else if (data.status === "failed"){
+        clearInterval(videoPollTimer); videoPollTimer = null;
+        status.classList.add("err");
+        status.textContent = "⚠ 生成失败：" + (data.message || "未知错误");
+        btn.disabled = false; if (trigger) trigger.disabled = false;
+      } else {
+        const pct = Math.min(90, 35 + elapsed);
+        status.innerHTML = `<div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div> 生成中…已等待 ${elapsed}s`;
+      }
+    } catch (e) {
+      // 单次轮询失败不中断，等下一轮重试
+    }
+  }, 5000);
+}
+
+async function runPromo(){
+  const typed = document.getElementById("promoInput").value.trim();
+  if (!typed) return;
+
+  promoThread.push({ role: "me", text: typed });
+  renderPromoThread();
+  document.getElementById("promoInput").value = "";
+
+  const message = `内容形式：${promoSub}。${typed}`;
+  const btn = document.getElementById("promoGo");
+  const report = document.getElementById("promoReport");
+  btn.disabled = true;
+  report.innerHTML = '<div class="empty-hint"><span class="typing"><i></i><i></i><i></i></span> 正在检索知识库、挑选素材并组织初稿…</div>';
+
+  try {
+    const r = await fetch("/api/chat", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ message, mode: "promo" })
+    });
+    const data = await r.json();
+    if (data.error){
+      report.innerHTML = "⚠ " + esc(data.error);
+      promoThread.push({ role: "ai", text: "生成失败：" + data.error });
+      renderPromoThread();
+      return;
+    }
+
+    let html = (data.degraded ? `<div class="degraded-note">当前为降级结果：${esc(data.degraded_reason || "未能完成检索/生成链路，展示预置兜底内容。")}</div>` : "") + renderPromoOutput(data.text, promoSub);
+    if (data.retrieval){
+      const titles = (data.retrieval.titles || []).map(x => `<span>${esc(x)}</span>`).join("");
+      html += `<details class="trace" open><summary>🔎 已检索知识库（召回 ${esc(data.retrieval.count || 0)} 条资料）</summary><div class="source-list" style="margin-top:8px">${titles}</div></details>`;
+    }
+    if (data.trace && data.trace.length){
+      const steps = data.trace.map(t => `<code>${esc(t.tool)}</code>`).join(" → ");
+      html += `<details class="trace"><summary>🔎 执行轨迹（${data.trace.length} 步工具调用）</summary><div style="margin-top:6px">${steps}</div></details>`;
+    }
+    report.innerHTML = html;
+    promoThread.push({ role: "ai", text: data.retrieval ? `已先检索知识库并召回 ${data.retrieval.count || 0} 条资料，生成结果见右侧预览。` : "已生成，见右侧预览。" });
+    renderPromoThread();
+  } catch (e) {
+    report.innerHTML = "请求失败：" + esc(String(e));
+    promoThread.push({ role: "ai", text: "请求失败：" + String(e) });
+    renderPromoThread();
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// —— 启动：恢复历史会话 ——
+loadSessions();
+renderHist();
+markNav();          // 初始高亮「首页」
+loadKb();
+
+document.getElementById("uploadFile")?.addEventListener("change", e => {
+  const file = e.target.files && e.target.files[0];
+  if (file && uploadTargetKind){
+    const kind = uploadTargetKind;
+    uploadTargetKind = null;
+    submitKbUpload(file, kind);
+    return;
+  }
+  const nameInput = document.querySelector("#researchDesk .form-block input");
+  if (file && nameInput) nameInput.value = file.name;
+});
+
+document.getElementById("chatInput").addEventListener("keydown", e => {
+  if (e.key === "Enter" && !e.shiftKey){ e.preventDefault(); send(); }
+});
+document.getElementById("homeInput").addEventListener("keydown", e => {
+  if (e.key === "Enter" && !e.shiftKey){ e.preventDefault(); startFromHome(); }
+});
+</script>
+</body>
+</html>
