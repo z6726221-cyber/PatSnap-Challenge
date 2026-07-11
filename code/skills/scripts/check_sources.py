@@ -22,6 +22,12 @@ import sys
 # --- 匹配规则（宽松，面向中文答案文本） ---
 URI_PAT = re.compile(r"viking://[^\s，。）)\]】]+")
 URL_PAT = re.compile(r"https?://[^\s，。）)\]】]+")
+# presales 场景的本地/外部情报来源 scheme（非黑盒检索的 viking://，但同样可溯源）：
+# kb://<kind>/<id> 内部知识库、external-intel/<n> 或 external-intel/gap 外部情报（含缺口标注）、
+# uploads/<filename> 当前任务附件、public-demo://... 情报适配层兜底占位。
+OTHER_SOURCE_PAT = re.compile(
+    r"(?:kb://|external-intel/|uploads/|public-demo://)[^\s，。）)\]】]*"
+)
 # 时间：2026-06、2026-06-01、2026/6、"截至 2026"、ISO 等
 TIME_PAT = re.compile(r"(20\d{2}[-/年.]\s?\d{1,2}([-/月.]\s?\d{1,2})?|截至\s*20\d{2}|时间未知|日期未知)")
 # 诚实缺失标注
@@ -55,6 +61,9 @@ def _find_fake_source_labels(text: str):
                 continue
             if token.startswith("viking://") or token.startswith("http://") or token.startswith("https://"):
                 continue
+            if token.startswith("kb://") or token.startswith("external-intel/") \
+                    or token.startswith("uploads/") or token.startswith("public-demo://"):
+                continue
             if _ALLOWED_NON_URI_LABEL.match(token):
                 continue
             fakes.append(token)
@@ -77,16 +86,18 @@ def check(text: str) -> int:
 
     uris = URI_PAT.findall(text)
     urls = URL_PAT.findall(text)
+    others = OTHER_SOURCE_PAT.findall(text)
     times = TIME_PAT.findall(text)
     honest = HONEST_PAT.findall(text)
     fact_hints = FACT_HINT_PAT.findall(text)
 
-    n_sources = len(uris) + len(urls)
+    n_sources = len(uris) + len(urls) + len(others)
 
     # 规则1：有事实信号却完全没有来源 → 告警
     if fact_hints and n_sources == 0:
         warnings.append(
-            f"检测到 {len(fact_hints)} 处事实性表述，但未发现任何来源（viking:// 或 http 链接）。"
+            f"检测到 {len(fact_hints)} 处事实性表述，但未发现任何来源"
+            "（viking://、http 链接，或 kb:// / external-intel/ / uploads/ / public-demo:// 等本地来源）。"
             "按检索四步 SOP 第④步，事实点应绑来源。"
         )
 
@@ -115,7 +126,7 @@ def check(text: str) -> int:
 
     # --- 报告 ---
     print("=== check_sources.py 产物校验 ===")
-    print(f"来源(viking://): {len(uris)}  外部链接(http): {len(urls)}  "
+    print(f"来源(viking://): {len(uris)}  外部链接(http): {len(urls)}  本地来源(kb/external-intel/uploads): {len(others)}  "
           f"时间标注: {len(times)}  诚实缺失标注: {len(honest)}  事实信号: {len(fact_hints)}  "
           f"疑似虚假来源标注: {len(fake_labels)}")
 

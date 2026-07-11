@@ -50,6 +50,14 @@ class TestFindFakeSourceLabels(unittest.TestCase):
                       "来源：read_material(viking://x)"]:
             self.assertEqual(cs._find_fake_source_labels(label), [], label)
 
+    def test_presales_local_source_schemes_not_flagged(self):
+        # 回归：patsnap-presales 用 kb:// / external-intel/ / uploads/ / public-demo://
+        # 这几种非 viking:// 的本地来源，之前被误判为"疑似虚假来源标注"
+        for label in ["来源：kb://sales/1", "来源：external-intel/0",
+                      "来源：external-intel/gap", "来源：uploads/客户会议纪要.pdf",
+                      "来源：public-demo://unknown"]:
+            self.assertEqual(cs._find_fake_source_labels(label), [], label)
+
 
 class TestCheckReturnCode(unittest.TestCase):
     def test_fake_label_triggers_warning_exit_code(self):
@@ -59,6 +67,11 @@ class TestCheckReturnCode(unittest.TestCase):
 
     def test_real_uri_with_time_passes(self):
         text = "结论：Eureka 支持 12 种语言。（来源：`viking://resources/a.md`，更新时间：2026-06-20）"
+        self.assertEqual(cs.check(text), 0)
+
+    def test_presales_kb_and_external_intel_source_passes(self):
+        text = ("客户切换成本较高。来源：kb://sales/1，更新时间：2026-07-10\n"
+                "外部新闻显示该公司扩大了研发团队规模。来源：external-intel/0，更新时间：2026-07-01")
         self.assertEqual(cs.check(text), 0)
 
 

@@ -11,12 +11,14 @@ import agent_runtime as ar
 
 
 class TestListSkills(unittest.TestCase):
-    def test_lists_three_generation_skills(self):
+    def test_lists_all_generation_skills(self):
         skills = ar.list_skills()
         names = {s["name"] for s in skills}
         self.assertIn("patsnap-tech-qa", names)
         self.assertIn("patsnap-compare", names)
         self.assertIn("patsnap-promo", names)
+        self.assertIn("patsnap-presales", names)
+        self.assertIn("patsnap-tech-explain", names)
         # 每个都要有非空 description（给 Agent 判断用）
         for s in skills:
             self.assertTrue(s["description"].strip())

@@ -112,7 +112,7 @@ def load_skill_prompt(skill_name):
 SELECT_SKILL_TOOL = {
     "type": "function", "function": {
         "name": "select_skill",
-        "description": "根据用户问题，从可选 skill 里选一个最合适的并加载它。这是你的第一步：先想清楚这是技术问答、竞品对比、还是宣传生成，再选对应 skill。工具会返回该 skill 的完整操作说明（Workflow/Output Contract/Boundaries），你之后严格照它执行。",
+        "description": "根据用户问题，从可选 skill 里选一个最合适的并加载它。这是你的第一步：先想清楚这是技术问答、竞品对比、宣传生成、销售与售前，还是产品与技术解释，再选对应 skill。工具会返回该 skill 的完整操作说明（Workflow/Output Contract/Boundaries），你之后严格照它执行。",
         "parameters": {"type": "object", "properties": {
             "skill_name": {"type": "string", "description": "要加载的 skill 名，取自可选 skill 列表的 name 字段"},
         }, "required": ["skill_name"]}}}
@@ -125,7 +125,7 @@ def run_agent_auto(case_dir, max_turns=8, verbose=True):
 
 
 def run_agent_auto_with_case(case, max_turns=8, verbose=True):
-    """Agent 自主选 skill：system 只给三个 skill 的 name+description，
+    """Agent 自主选 skill：system 给 skills/ 目录下全部 skill 的 name+description，
     Agent 先 select_skill 选能力（后端回传该 skill 全文），再用 case 工具执行。
     接收一个已构建好的 Case（fixture case 文件夹或真实检索 live 目录皆可）。
     返回 (最终产物, 轨迹, 被选中的 skill 名)。"""

@@ -2,7 +2,7 @@
 name: SOUL
 description: >-
   「芽懂」的语言人格层——术语规范（恒定注入，统一口径）+ 风格底线（轻量，指向 style 语料）。
-  三个生成 skill（tech-qa / compare / promo）在生成任何内容前先读本文件校准术语。
+  五个生成 skill（tech-qa / compare / promo / presales / tech-explain）在生成任何内容前先读本文件校准术语。
 type: soul
 updated_at: 2026-07-09
 ---
