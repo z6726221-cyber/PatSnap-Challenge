@@ -77,10 +77,10 @@
 
 测试和演示 case：
 
-- `code/sample_retrieval/case-*`：基础样例。
-- `code/sample_retrieval/e2e-*`：端到端测试 fixture。
-- `code/sample_retrieval/mock_external/`：外部公开信息检索的可提交模拟 fixture。
 - `code/sample_retrieval/live/`：只给黑盒检索实时写入使用。
+- `code/sample_retrieval/mock_external/`：外部公开信息检索的可提交模拟 fixture。
+- `code/fixtures/retrieval_cases/`：基础 demo/单测 fixture。
+- `code/e2e/fixtures/`：端到端测试 fixture。
 
 资料格式说明见：
 
@@ -108,11 +108,12 @@
 │   │   ├── video_client.py      # 视频生成客户端
 │   │   ├── fallback.json        # 降级结果
 │   │   └── tests/               # 单元测试
+│   ├── fixtures/
+│   │   └── retrieval_cases/     # 基础 demo/单测 fixture
 │   ├── e2e/
+│   │   ├── fixtures/            # E2E fixture
 │   │   └── run_e2e.py           # 真实 API 端到端测试 runner
 │   ├── sample_retrieval/
-│   │   ├── case-*               # 基础样例
-│   │   ├── e2e-*                # E2E fixture
 │   │   ├── mock_external/       # 外部公开信息模拟 fixture
 │   │   └── live/                # 黑盒检索实时输出目录
 │   ├── skills/
@@ -161,6 +162,7 @@ VIDEO_API_KEY=replace-with-key
 
 # 外部公开信息搜索：可选
 # 未配置时，销售与售前会把外部信息标为缺口/待核实，不假装联网。
+# Demo 可设置 EXTERNAL_SEARCH_ENDPOINT=mock，读取 code/sample_retrieval/mock_external/。
 EXTERNAL_SEARCH_ENDPOINT=
 EXTERNAL_SEARCH_API_KEY=
 ```
@@ -261,7 +263,7 @@ code/e2e/reports/<timestamp>/
 ## 开发约定
 
 1. 改页面、skill、后端 API 后，同步更新 README。
-2. 不要把测试 fixture 写进 `code/sample_retrieval/live/`；外部公开信息模拟资料放进 `code/sample_retrieval/mock_external/` 或 `e2e-*` case。
+2. 不要把测试 fixture 写进 `code/sample_retrieval/live/`；内部检索 demo fixture 放进 `code/fixtures/retrieval_cases/`，E2E fixture 放进 `code/e2e/fixtures/`，外部公开信息模拟资料放进 `code/sample_retrieval/mock_external/`。
 3. 新增工作台时，需要同时补：
    - 前端页面入口。
    - 后端 `mode -> skill` 映射。

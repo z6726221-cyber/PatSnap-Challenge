@@ -52,7 +52,7 @@ class TestAutoSkillLoop(unittest.TestCase):
         cli = self._fake_cli(scripted)
         with mock.patch.object(ar, "LLMClient", return_value=cli):
             text, trace, selected = ar.run_agent_auto(
-                os.path.join(ar.SAMPLE_DIR, "case-compare-lang"), verbose=False)
+                os.path.join(ar.FIXTURE_DIR, "case-compare-lang"), verbose=False)
         self.assertEqual(selected, "patsnap-compare")
         self.assertIn("对比表", text)
         # trace 里第一步应是 select_skill
@@ -68,7 +68,7 @@ class TestAutoSkillLoop(unittest.TestCase):
         cli = self._fake_cli(scripted)
         with mock.patch.object(ar, "LLMClient", return_value=cli):
             text, trace, selected = ar.run_agent_auto(
-                os.path.join(ar.SAMPLE_DIR, "case-eureka-lang"), verbose=False)
+                os.path.join(ar.FIXTURE_DIR, "case-eureka-lang"), verbose=False)
         self.assertIn("error", trace[0]["result"])
         self.assertIsNone(selected)
 

@@ -16,7 +16,7 @@
 （检索包本来就不含这些元信息）。
 
 也就是说：**检索侧不需要额外适配，可以直接把 OpenViking 的检索结果包原样
-放进 case 文件夹**。解析器会先尝试识别"命中资源明细"小节；识别不到时（比如
+放进 `live/` 或 fixture case 文件夹**。解析器会先尝试识别"命中资源明细"小节；识别不到时（比如
 文件本身就是下面这种带 frontmatter 的理想格式）会退回整文件单条解析。两种
 格式共存不冲突——如果检索侧未来能顺手带上 authority/topic 这类元信息，仍
 建议按理想格式给，可以让冲突裁决更准确。
@@ -57,14 +57,17 @@ sample_retrieval/
   `live/.gitkeep` 和 `live/README.md`，用于保留目录和说明；检索系统运行时
   生成的 `.md` 仍被 `.gitignore` 排除。
 
-以下的 `case-xxx/` 假样例目录结构和 `question.txt`，只用于本地测试/回归
-（`run_all.py`、单测），跟 live 真实链路无关，检索侧不需要管这部分。
+基础 demo/单测 fixture 已移到 `code/fixtures/retrieval_cases/`，E2E fixture 已移到
+`code/e2e/fixtures/`。它们使用 `question.txt + md` 的 case 结构，只用于本地
+测试/回归，跟 `live/` 真实链路无关，检索侧不需要管这部分。
 
 ## 外部公开信息模拟：mock_external 目录
 
 销售与售前会尝试合并三类资料：`live/` 黑盒召回、内部知识库、外部公开信息。
 真实外部搜索由 `backend/external_search.py` 通过 `EXTERNAL_SEARCH_ENDPOINT`
 接入；未配置时会返回 `external-intel/gap`，要求报告把外部客户事实标为待核实。
+如果需要本地 Demo 外部情报，可显式设置 `EXTERNAL_SEARCH_ENDPOINT=mock`，此时
+后端会读取 `sample_retrieval/mock_external/`，但空配置不会自动使用模拟资料。
 
 为了让仓库里能看见“外部检索模拟资料”的形态，`sample_retrieval/mock_external/`
 提交了可公开的 demo fixture：
@@ -80,19 +83,19 @@ sample_retrieval/
 这些资料使用 `public-demo://...` source，用于 Demo、E2E 和评审说明；不要把真实
 客户外部搜索结果直接提交到这里。
 
-## 假样例回归目录结构（仅供本地测试，非生产链路）
+## Fixture 回归目录结构（仅供本地测试，非生产链路）
 
 ```
-sample_retrieval/
-├── case-eureka-lang/          # 一次检索 = 一个 case 文件夹
-│   ├── question.txt           # 用户的原始问题（一行）
-│   ├── 01-xxx.md              # 召回的资料 1（带 frontmatter）
-│   ├── 02-xxx.md              # 召回的资料 2
-│   └── ...                    # 按相关度排序，序号越小越相关
-├── case-compare-lang/
-│   └── ...
-└── case-semantic-search/
-    └── ...
+code/
+├── fixtures/retrieval_cases/
+│   ├── case-eureka-lang/       # 基础 demo/单测 fixture
+│   │   ├── question.txt        # 用户的原始问题（一行）
+│   │   ├── 01-xxx.md           # 召回的资料 1（带 frontmatter）
+│   │   └── 02-xxx.md
+│   └── case-compare-lang/
+└── e2e/fixtures/
+    ├── presales-engineering/   # 端到端 fixture
+    └── tech-explain-triz/
 ```
 
 ## 每份资料 md 的格式

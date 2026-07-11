@@ -28,7 +28,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 BACKEND = ROOT / "backend"
-SAMPLE = ROOT / "sample_retrieval"
+FIXTURE = ROOT / "e2e" / "fixtures"
 WEB = ROOT / "web" / "index.html"
 REPORT_ROOT = ROOT / "e2e" / "reports"
 sys.path.insert(0, str(BACKEND))
@@ -89,7 +89,7 @@ def write_case_report(report_dir: Path, name: str, payload: dict) -> None:
 CASES = [
     {
         "name": "skill_presales",
-        "case": "e2e-presales-engineering",
+        "case": "presales-engineering",
         "skill": "patsnap-presales",
         "mode": "presales",
         "required": ["客户背景", "潜在痛点", "沟通话术", "行动清单", "本次方案依据", "公开信息", "企业知识", "AI 推断"],
@@ -97,7 +97,7 @@ CASES = [
     },
     {
         "name": "skill_promo_video",
-        "case": "e2e-promo-video-analytics",
+        "case": "promo-video-analytics",
         "skill": "patsnap-promo",
         "mode": "promo",
         "required": ["30秒", "字幕", "发布配文", "事实来源", "视频生成提示词"],
@@ -105,7 +105,7 @@ CASES = [
     },
     {
         "name": "skill_tech_explain",
-        "case": "e2e-tech-explain-triz",
+        "case": "tech-explain-triz",
         "skill": "patsnap-tech-explain",
         "mode": "tech_explain",
         "required": ["一句话解释", "通俗解释", "核心原理", "业务价值", "能力边界", "FAQ", "知识来源", "AI 类比"],
@@ -117,7 +117,7 @@ CASES = [
 def run_skill_cases(report_dir: Path) -> list[CheckResult]:
     results: list[CheckResult] = []
     for cfg in CASES:
-        case_dir = SAMPLE / cfg["case"]
+        case_dir = FIXTURE / cfg["case"]
         text, trace = run_agent(cfg["skill"], str(case_dir), verbose=False)
         check = score_text(cfg["name"], text, cfg["required"], cfg.get("forbidden"))
         results.append(check)
@@ -132,7 +132,7 @@ def run_skill_cases(report_dir: Path) -> list[CheckResult]:
 
 
 def run_auto_skill_case(report_dir: Path) -> CheckResult:
-    text, trace, selected = run_agent_auto(str(SAMPLE / "e2e-auto-compare"), verbose=False)
+    text, trace, selected = run_agent_auto(str(FIXTURE / "auto-compare"), verbose=False)
     check = score_text(
         "skill_auto_compare",
         text,
@@ -212,7 +212,7 @@ def run_http_smoke(report_dir: Path, port: int) -> list[CheckResult]:
         details = [f"/api/cases 缺少：{', '.join(missing)}"] if missing else []
         results.append(CheckResult("http_cases", ok, details, 100 if ok else 60))
 
-        payload = {"message": "解释主题：TRIZ 是什么？", "mode": "tech_explain", "case": "e2e-tech-explain-triz"}
+        payload = {"message": "解释主题：TRIZ 是什么？", "mode": "tech_explain", "case": "tech-explain-triz"}
         out = http_json(base + "/api/chat", payload)
         check = score_text("http_chat_tech_explain", out.get("text", ""), CASES[2]["required"], CASES[2]["forbidden"])
         if out.get("degraded"):

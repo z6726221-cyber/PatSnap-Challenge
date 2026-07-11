@@ -165,7 +165,8 @@ def parse_materials_from_file(text: str, filename: str) -> list:
 def load_case(case_dir: str) -> Case:
     """读一个 case 文件夹：question.txt 必需；md 资料按 score 降序（score 相同按文件名）。
 
-    用于假样例演示与回归测试（sample_retrieval/case-xxx/）。真实检索场景见 load_live()。
+    用于 fixture 演示与回归测试（fixtures/retrieval_cases 或 e2e/fixtures）。
+    真实检索场景见 load_live()。
     """
     q_path = os.path.join(case_dir, "question.txt")
     if not os.path.exists(q_path):

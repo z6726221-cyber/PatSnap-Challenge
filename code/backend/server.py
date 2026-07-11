@@ -6,7 +6,7 @@
 
 接口：
   GET  /                  → 返回前端 index.html
-  GET  /api/cases         → 列出可选的样例 case（前端下拉用）
+  GET  /api/cases         → 列出可选的 fixture case（前端/E2E 回归用）
   POST /api/chat          → body {mode, case} → {text, trace, degraded}
 """
 import os
@@ -25,8 +25,12 @@ from local_store import add_kb, add_project, add_upload, export_text, list_kb, l
 from video_client import VideoClient
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-SAMPLE_DIR = os.path.join(HERE, "..", "sample_retrieval")
-LIVE_DIR = os.path.join(SAMPLE_DIR, "live")
+RETRIEVAL_DIR = os.path.join(HERE, "..", "sample_retrieval")
+LIVE_DIR = os.path.join(RETRIEVAL_DIR, "live")
+CASE_DIRS = [
+    os.path.join(HERE, "..", "fixtures", "retrieval_cases"),
+    os.path.join(HERE, "..", "e2e", "fixtures"),
+]
 WEB_DIR = os.path.join(HERE, "..", "web")
 
 # patsnap-promo 视频模式产物末尾固定带的一段：
@@ -132,8 +136,8 @@ def _fallback(mode: str, message: str = "") -> dict:
     return data.get(mode, data["qa"])
 
 
-# —— 假样例回归通道：按问题挑最相关的预置 case 文件夹 ——
-# 仅供测试/回归用（显式传 case 或 mode 时）。真实提问走 live 目录，见 handle_chat。
+# —— fixture 回归通道：按问题挑最相关的预置 case 文件夹 ——
+# 仅供测试/回归用（显式传 case 时）。真实提问走 live 目录，见 handle_chat。
 
 def _char_overlap(a: str, b: str) -> int:
     """极简中文相关度：共享的 2-gram 数量。无第三方分词依赖。"""
@@ -152,6 +156,18 @@ def pick_case(message: str) -> str:
         if score > best_score:
             best, best_score = c["case"], score
     return best if best else cases[0]["case"]
+
+
+def resolve_case_dir(case_name: str) -> str:
+    """只从 fixture 目录解析显式 case，避免误读 sample_retrieval/live 运行时资料。"""
+    clean = os.path.basename(str(case_name or "").strip())
+    if not clean or clean != str(case_name or "").strip():
+        raise FileNotFoundError(f"未知 case: {case_name}")
+    for base in CASE_DIRS:
+        candidate = os.path.join(base, clean)
+        if os.path.isdir(candidate) and os.path.exists(os.path.join(candidate, "question.txt")):
+            return candidate
+    raise FileNotFoundError(f"未知 case: {case_name}")
 
 
 def _has_live_material() -> bool:
@@ -305,7 +321,7 @@ def handle_chat(body: dict) -> dict:
     """真实提问：读检索侧写到 sample_retrieval/live/ 的实时资料 + 用户问题 → Agent
     自主选 skill 并执行。live/ 里没有资料（检索还没跑过）时直接降级，不再用假样例兜底。
 
-    显式传 case（供测试/回归）时走假样例 case 文件夹通道，行为不变。
+    显式传 case（供测试/回归）时走 fixture case 文件夹通道，行为不变。
     mode 是 Agent 选出来的（不是后端预判），仅用于前端展示能力标签与选降级档。"""
     message = (body.get("message") or "").strip()
     explicit_case = body.get("case")
@@ -317,7 +333,7 @@ def handle_chat(body: dict) -> dict:
     retrieval = None
     try:
         if explicit_case:
-            case_dir = os.path.join(SAMPLE_DIR, explicit_case)
+            case_dir = resolve_case_dir(explicit_case)
             if explicit_mode:
                 text, trace = run_agent(mode_to_skill(explicit_mode), case_dir, verbose=False)
                 mode = explicit_mode
@@ -395,15 +411,17 @@ def handle_image_generate(body: dict) -> dict:
 
 
 def list_cases() -> list:
-    if not os.path.isdir(SAMPLE_DIR):
-        return []
     out = []
-    for name in sorted(os.listdir(SAMPLE_DIR)):
-        d = os.path.join(SAMPLE_DIR, name)
-        if os.path.isdir(d) and os.path.exists(os.path.join(d, "question.txt")):
-            with open(os.path.join(d, "question.txt"), encoding="utf-8") as f:
-                q = f.read().strip()
-            out.append({"case": name, "question": q})
+    for base in CASE_DIRS:
+        if not os.path.isdir(base):
+            continue
+        group = os.path.basename(os.path.normpath(base))
+        for name in sorted(os.listdir(base)):
+            d = os.path.join(base, name)
+            if os.path.isdir(d) and os.path.exists(os.path.join(d, "question.txt")):
+                with open(os.path.join(d, "question.txt"), encoding="utf-8") as f:
+                    q = f.read().strip()
+                out.append({"case": name, "question": q, "group": group})
     return out
 
 

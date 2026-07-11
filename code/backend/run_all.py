@@ -15,13 +15,13 @@ HERE = os.path.dirname(__file__)
 LOG = os.path.join(HERE, "run_logs")
 os.makedirs(LOG, exist_ok=True)
 CHECK = os.path.join(HERE, "..", "skills", "scripts", "check_sources.py")
-SAMPLE = os.path.join(HERE, "..", "sample_retrieval")
+FIXTURES = os.path.join(HERE, "..", "fixtures", "retrieval_cases")
 
 # (skill 名, case 文件夹) —— 资料由检索侧给定，这里用样例 case
 CASES = [
-    ("patsnap-tech-qa", os.path.join(SAMPLE, "case-eureka-lang")),
-    ("patsnap-compare", os.path.join(SAMPLE, "case-compare-lang")),
-    ("patsnap-promo", os.path.join(SAMPLE, "case-promo-search")),
+    ("patsnap-tech-qa", os.path.join(FIXTURES, "case-eureka-lang")),
+    ("patsnap-compare", os.path.join(FIXTURES, "case-compare-lang")),
+    ("patsnap-promo", os.path.join(FIXTURES, "case-promo-search")),
 ]
 
 # live 通道验证：借一份已有的 OpenViking 原始检索包样例，模拟"检索侧刚写完
@@ -29,7 +29,7 @@ CASES = [
 # 检索接入链路（不是假样例 case 文件夹）本身没坏。写到临时目录，不碰真正的
 # sample_retrieval/live/（那是留给真实检索系统写的，不该被本地验证脚本污染）。
 LIVE_SKILL = "patsnap-tech-qa"
-LIVE_SOURCE_MD = os.path.join(SAMPLE, "case-algo-q3-eng", "01-raw-retrieval.md")
+LIVE_SOURCE_MD = os.path.join(FIXTURES, "case-algo-q3-eng", "01-raw-retrieval.md")
 LIVE_QUESTION = "算法团队2026 Q3的工作规划是什么，重点方向和风险点有哪些？"
 
 

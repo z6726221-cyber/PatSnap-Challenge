@@ -2,7 +2,7 @@
 Agent 运行时 —— 让一个真实的 Agent 加载我方生成类 skill，基于"已召回的资料"生成产物。
 
 新架构（检索侧已由另一位同学完成）：
-  用户问题 + 检索召回的资料（case 文件夹）  →  本运行时  →  生成产物（问答/竞品/宣传）
+  用户问题 + 检索召回的资料（fixture case 或 live 目录）  →  本运行时  →  生成产物（问答/竞品/宣传）
 
 流程：
   1. 读取指定 skill 的 SKILL.md + 它引用的 references，拼成 system prompt
@@ -22,7 +22,7 @@ from loader import load_case
 from case_tools import CaseTools, TOOLS
 
 SKILLS_DIR = os.path.join(os.path.dirname(__file__), "..", "skills")
-SAMPLE_DIR = os.path.join(os.path.dirname(__file__), "..", "sample_retrieval")
+FIXTURE_DIR = os.path.join(os.path.dirname(__file__), "..", "fixtures", "retrieval_cases")
 SOUL_PATH = os.path.join(SKILLS_DIR, "SOUL.md")
 
 # 所有模式共享的行为底线：不编造、只信工具返回的资料、标"待核实"。
@@ -119,7 +119,7 @@ SELECT_SKILL_TOOL = {
 
 
 def run_agent_auto(case_dir, max_turns=8, verbose=True):
-    """Agent 自主选 skill，case 来自假样例 case 文件夹（case-xxx/question.txt + md）。
+    """Agent 自主选 skill，case 来自 fixture case 文件夹（case-xxx/question.txt + md）。
     返回 (最终产物, 轨迹, 被选中的 skill 名)。"""
     return run_agent_auto_with_case(load_case(case_dir), max_turns=max_turns, verbose=verbose)
 
@@ -127,7 +127,7 @@ def run_agent_auto(case_dir, max_turns=8, verbose=True):
 def run_agent_auto_with_case(case, max_turns=8, verbose=True):
     """Agent 自主选 skill：system 只给三个 skill 的 name+description，
     Agent 先 select_skill 选能力（后端回传该 skill 全文），再用 case 工具执行。
-    接收一个已构建好的 Case（假样例 case 文件夹或真实检索 live 目录皆可）。
+    接收一个已构建好的 Case（fixture case 文件夹或真实检索 live 目录皆可）。
     返回 (最终产物, 轨迹, 被选中的 skill 名)。"""
     cli = LLMClient()
     tools_obj = CaseTools(case)
@@ -206,12 +206,12 @@ def run_agent_auto_with_case(case, max_turns=8, verbose=True):
 
 
 def run_agent(skill_name, case_dir, max_turns=8, verbose=True):
-    """加载 skill + 假样例 case 文件夹，让 Agent 生成产物。返回 (最终产物, 轨迹)。"""
+    """加载 skill + fixture case 文件夹，让 Agent 生成产物。返回 (最终产物, 轨迹)。"""
     return run_agent_with_case(skill_name, load_case(case_dir), max_turns=max_turns, verbose=verbose)
 
 
 def run_agent_with_case(skill_name, case, max_turns=8, verbose=True):
-    """加载 skill + 已构建好的 Case（假样例或真实检索 live 目录皆可），让 Agent 生成产物。
+    """加载 skill + 已构建好的 Case（fixture 或真实检索 live 目录皆可），让 Agent 生成产物。
     返回 (最终产物, 轨迹)。"""
     cli = LLMClient()
     tools_obj = CaseTools(case)
@@ -266,7 +266,7 @@ def run_agent_with_case(skill_name, case, max_turns=8, verbose=True):
 if __name__ == "__main__":
     import sys
     skill = sys.argv[1] if len(sys.argv) > 1 else "patsnap-tech-qa"
-    case_dir = sys.argv[2] if len(sys.argv) > 2 else "../sample_retrieval/case-eureka-lang"
+    case_dir = sys.argv[2] if len(sys.argv) > 2 else "../fixtures/retrieval_cases/case-eureka-lang"
     print(f"=== skill: {skill} ===\n=== case: {case_dir} ===\n")
     answer, trace = run_agent(skill, case_dir)
     print("\n" + "=" * 60 + "\n最终产物:\n" + "=" * 60)
