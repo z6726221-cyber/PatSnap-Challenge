@@ -105,6 +105,7 @@ def add_upload(filename, content: bytes, description="", visibility="销售和�
         "filename": clean,
         "disk_name": disk_name,
         "description": description.strip(),
+        "category": category or ("上传素材" if kind == "promo" else "研发资料"),
         "visibility": visibility,
         "owner": owner,
         "status": "已入库",
