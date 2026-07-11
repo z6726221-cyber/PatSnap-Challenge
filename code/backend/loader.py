@@ -186,7 +186,10 @@ def load_case(case_dir: str) -> Case:
 
 
 def _list_md(live_dir: str) -> list:
-    return sorted(n for n in os.listdir(live_dir) if n.endswith(".md"))
+    return sorted(
+        n for n in os.listdir(live_dir)
+        if n.endswith(".md") and not n.startswith(".") and not n.lower().startswith("readme")
+    )
 
 
 def _read_live_snapshot(live_dir: str) -> list:

@@ -445,6 +445,116 @@ body{overflow:hidden;background:var(--bg)}
 .page-workspace .kbpage{padding:0;overflow:visible}
 #researchUploadRows{display:grid;gap:4px}
 .empty-list{grid-column:1/-1;min-height:120px;display:grid;place-items:center;padding:24px;border:1px dashed var(--line);border-radius:18px;color:var(--muted);background:var(--panel);font-size:14px}
+.marketing-taskbar{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:18px;align-items:center;max-width:1180px;width:100%;margin:0 auto 18px;padding:12px;border:1px solid var(--line);border-radius:18px;background:#fffdf9;box-shadow:0 14px 34px rgba(34,58,43,.045)}
+.marketing-tabs{display:flex;gap:8px;padding:4px;border:1px solid var(--line);border-radius:12px;background:#fffefb}
+.marketing-tabs button{min-width:98px;height:36px;border:0;border-radius:9px;color:var(--green-dark);background:transparent;font-weight:760;cursor:pointer}
+.marketing-tabs button.active,.marketing-tabs button.on{color:#fffdf9;background:var(--green)}
+.task-title{display:flex;gap:16px;align-items:center;min-width:0;color:var(--muted);font-weight:650}
+.task-title strong{color:var(--green-dark);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.status.editable{color:var(--green);background:#e7efe5;font-weight:760}
+.task-actions{display:flex;gap:10px}
+.task-actions button{min-height:38px;padding:0 16px;border:1px solid var(--line);border-radius:10px;color:var(--green-dark);background:#fffdf9;font-weight:760;cursor:pointer}
+.task-actions button.solid{color:#fffdf9;background:var(--green)}
+.marketing-studio{display:grid;grid-template-columns:300px minmax(0,1fr) 300px;gap:18px;max-width:1180px;width:100%;margin:0 auto;align-items:start}
+.campaign-settings,.copy-preview-card,.video-preview-card,.publish-panel{border:1px solid var(--line);border-radius:20px;background:#fffdf9;box-shadow:0 16px 38px rgba(34,58,43,.045)}
+.campaign-settings,.publish-panel{display:grid;gap:16px;padding:18px}
+.campaign-settings h2,.publish-panel h2{margin:0;color:var(--green-dark);font-size:20px}
+.campaign-settings label{display:grid;gap:8px}
+.campaign-settings label span,.setting-row span{color:var(--green-dark);font-size:13px;font-weight:760}
+.campaign-settings textarea{min-height:136px;padding:14px;border:1px solid var(--line);border-radius:13px;color:var(--sidebar-text);background:#fffefb;line-height:1.75;font-weight:560}
+.setting-row{display:grid;gap:8px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.setting-row strong{color:var(--sidebar-text);font-size:15px;line-height:1.45}
+.tag-set{display:flex;flex-wrap:wrap;gap:8px}
+.tag-set span{padding:7px 10px;border:1px solid var(--line);border-radius:999px;color:var(--green);background:#fffefb;font-size:12px;font-weight:760}
+.campaign-preview{display:grid;gap:16px;min-width:0}
+.campaign-preview .marketing-panel{display:none!important}
+.campaign-preview .marketing-panel.active{display:grid!important}
+.hidden{display:none!important}
+.copy-preview-card{gap:16px;padding:24px}
+.preview-head{display:flex;justify-content:space-between;gap:16px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.preview-head h2{margin:10px 0 0;color:var(--green-dark);font-size:30px;line-height:1.18}
+.preview-head button,.source-trace-card button{min-height:36px;padding:0 14px;border:1px solid var(--line);border-radius:999px;color:var(--green);background:#fffdf9;font-weight:760;cursor:pointer}
+.copy-preview-card h3{margin:8px 0 0;color:var(--green);font-size:22px}
+.copy-preview-card p,.copy-preview-card blockquote{margin:0;color:var(--muted);line-height:1.82;font-weight:560}
+.copy-preview-card blockquote{padding:12px 14px;border-left:3px solid var(--green);border-radius:10px;background:#f6fbf3}
+.copy-preview-card footer{display:flex;flex-wrap:wrap;gap:18px;padding-top:12px;border-top:1px solid var(--line);color:var(--muted);font-size:13px;font-weight:650}
+.video-preview-card{gap:14px;padding:18px}
+.video-stage{position:relative;min-height:300px;display:grid;place-items:center;overflow:hidden;border-radius:18px;color:#fffdf9;background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.13),transparent 28%),linear-gradient(135deg,rgba(7,53,31,.98),rgba(31,111,73,.9))}
+.video-stage:before{content:"";position:absolute;inset:34px;border:1px solid rgba(255,255,255,.12);border-radius:50%}
+.video-brand{position:absolute;top:22px;left:24px;font-size:24px;font-weight:860;letter-spacing:.03em}
+.video-stage h3{position:relative;z-index:1;margin:0;max-width:560px;font-size:34px;line-height:1.18;text-align:center;color:#fffdf9}
+.video-stage h3 span{display:inline-block;padding:4px 10px;border-radius:10px;color:var(--green-dark);background:#fbf8ef}
+.video-stage b{position:absolute;right:18px;bottom:16px;padding:4px 8px;border-radius:999px;background:rgba(7,53,31,.42)}
+.video-script-card{display:grid;gap:8px;padding:16px;border:1px solid var(--line);border-radius:16px;background:#fffefb}
+.video-script-card h3{margin:0;color:var(--green-dark);font-size:16px}
+.video-script-card p{margin:0 0 8px;color:var(--muted);line-height:1.65;font-size:14px;font-weight:560}
+.publish-panel article{display:grid;gap:8px;padding:12px;border:1px solid var(--line);border-radius:14px;background:#fffefb}
+.publish-panel article div{display:flex;justify-content:space-between;gap:12px;align-items:center}
+.publish-panel strong{color:var(--green-dark)}
+.publish-panel p,.source-trace-card p{margin:0;color:var(--muted);line-height:1.65;font-size:14px;font-weight:560}
+.tag-set.small span{padding:5px 8px}
+.source-trace-card{display:grid;gap:10px;padding:14px;border:1px solid rgba(31,111,73,.18);border-radius:16px;background:#f6fbf3}
+.source-trace-card h3{margin:0;color:var(--green-dark);font-size:17px}
+.presales-briefing{grid-template-columns:360px minmax(0,1fr);align-items:start}
+.presales-briefing .research-input{position:sticky;top:24px}
+.short-textarea{min-height:112px}
+.briefing-board{display:grid;gap:14px;padding:18px;border:1px solid var(--line);border-radius:22px;background:#fffdf9;box-shadow:0 18px 44px rgba(34,58,43,.055)}
+.briefing-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.briefing-head h2{margin:10px 0 0;color:var(--green-dark);font-size:26px;line-height:1.22}
+.briefing-head button{min-height:38px;padding:0 16px;border:1px solid var(--line);border-radius:999px;color:var(--green-dark);background:#fffdf9;font-weight:760;cursor:pointer}
+.briefing-source-note{padding:12px 14px;border:1px solid rgba(31,111,73,.16);border-radius:14px;color:var(--green-dark);background:#f6fbf3;font-weight:700}
+.briefing-sections{display:grid;border:1px solid rgba(31,111,73,.14);border-radius:16px;overflow:hidden}
+.briefing-sections section{display:grid;grid-template-columns:150px 1fr;gap:18px;padding:16px;border-bottom:1px solid var(--line);background:#fffdf9}
+.briefing-sections section:last-child{border-bottom:0}
+.briefing-sections h3,.briefing-sources h3{margin:0;color:var(--green-dark);font-size:17px}
+.briefing-sections p,.briefing-sections li{margin:0;color:var(--muted);line-height:1.7;font-weight:560}
+.briefing-sections ul{display:grid;gap:8px;margin:0;padding-left:18px}
+.briefing-path{display:grid;gap:8px}
+.briefing-path span{display:grid;grid-template-columns:74px 1fr;gap:12px;padding:10px 12px;border-radius:12px;background:#f8f5ee;color:var(--muted);font-weight:560}
+.briefing-path b{color:var(--green)}
+.briefing-sources{display:grid;gap:12px;padding:14px;border:1px solid rgba(31,111,73,.14);border-radius:16px;background:#fbf8f1}
+.briefing-sources-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.briefing-sources-head span{padding:6px 10px;border:1px solid rgba(31,111,73,.16);border-radius:999px;color:var(--green);background:#fffdf9;font-size:12px;font-weight:820}
+.source-list-compact{display:grid;gap:8px}
+.source-list-compact div{display:grid;grid-template-columns:92px 1fr auto;gap:12px;align-items:center;min-height:44px;padding:8px 10px;border:1px solid var(--line);border-radius:12px;background:#fffdf9}
+.source-list-compact span{width:max-content;padding:5px 9px;border-radius:999px;color:var(--green);background:#e7efe5;font-size:12px;font-weight:800}
+.source-list-compact strong{color:var(--sidebar-text);font-size:13px;line-height:1.45}
+.source-list-compact button{min-height:30px;padding:0 10px;border:1px solid rgba(31,111,73,.2);border-radius:9px;color:var(--green);background:#fffdf9;font-size:12px;font-weight:760}
+.product-explain-page{gap:22px}
+.tech-explain-layout{display:grid;grid-template-columns:minmax(280px,360px) minmax(0,1fr);gap:22px;max-width:1180px;width:100%;margin:0 auto;align-items:start}
+.tech-prompt-card,.tech-report-board{border:1px solid var(--line);border-radius:22px;background:#fffdf9;box-shadow:0 18px 44px rgba(34,58,43,.055)}
+.tech-prompt-card{display:grid;gap:18px;padding:22px}
+.tech-prompt-card h2{margin:0;color:var(--green-dark);font-size:24px}
+.tech-prompt-card label{display:grid;gap:10px}
+.tech-prompt-card label span,.select-row span{color:var(--green-dark);font-size:14px;font-weight:760}
+.prompt-textarea{width:100%;min-height:190px;resize:vertical;padding:18px;border:1px solid rgba(31,111,73,.32);border-radius:14px;color:var(--green-dark);background:#fffefb;font:inherit;font-size:17px;line-height:1.85;font-weight:580;outline:none}
+.select-row{display:grid;grid-template-columns:92px 1fr auto;gap:12px;align-items:center;min-height:50px;padding:0 14px;border:1px solid var(--line);border-radius:12px;background:#fffefb}
+.select-row select{height:48px;padding:0;border:0;background:transparent;color:var(--sidebar-text);font-size:15px;font-weight:650;appearance:none}
+.select-row em{color:var(--muted);font-style:normal;font-size:18px}
+.generate-explain{min-height:58px;border:0;border-radius:14px;color:#fffdf9;background:var(--green-dark);font-size:18px;font-weight:820;box-shadow:0 14px 30px rgba(7,53,31,.15);cursor:pointer}
+.tech-report-board{padding:22px}
+.tech-report-head{display:flex;align-items:center;gap:16px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.tech-report-head h2{margin:0;color:var(--green-dark);font-size:28px;line-height:1.2}
+.tech-source-note{display:flex;align-items:center;gap:10px;margin:14px 0;padding:12px 14px;border:1px solid rgba(31,111,73,.2);border-radius:12px;color:var(--green);background:#f5fbf2}
+.tech-source-note span{font-size:18px}
+.tech-source-note strong{font-size:15px}
+.tech-explain-sections{overflow:hidden;border:1px solid var(--line);border-radius:16px;background:#fffefb}
+.tech-row{display:grid;grid-template-columns:118px 1fr;gap:24px;padding:18px;border-bottom:1px solid var(--line)}
+.tech-row:last-child{border-bottom:0}
+.tech-label{width:max-content;height:max-content;padding:7px 12px;border-radius:8px;color:var(--green);background:#e9f2e6;font-size:13px;font-weight:820}
+.tech-label.orange{color:#b96b16;background:#fff2dc}
+.tech-row h3{margin:0 0 8px;color:var(--green-dark);font-size:19px}
+.tech-row p{margin:0;color:var(--muted);line-height:1.72;font-weight:560}
+.tech-source-table{display:grid;margin-top:14px;overflow:hidden;border:1px solid rgba(31,111,73,.24);border-radius:16px;background:#f7fcf4}
+.tech-source-title,.source-row{display:grid;grid-template-columns:120px minmax(0,1fr) minmax(150px,.7fr) auto;gap:12px;align-items:center;padding:12px 14px;border-bottom:1px solid rgba(31,111,73,.16)}
+.tech-source-title{grid-template-columns:1fr auto;color:var(--green-dark);font-weight:800}
+.tech-source-title h3{margin:0;font-size:17px}
+.tech-source-title span{padding:5px 9px;border:1px solid rgba(31,111,73,.16);border-radius:999px;color:var(--green);background:#fffdf9;font-size:12px}
+.source-row:last-child{border-bottom:0}
+.source-row span{width:max-content;padding:5px 9px;border-radius:999px;color:var(--green);background:#e7efe5;font-size:12px;font-weight:800}
+.source-row strong{color:var(--sidebar-text);font-size:13px}
+.source-row em{color:var(--muted);font-size:12px;font-style:normal}
+.source-row button{min-height:30px;padding:0 10px;border:1px solid rgba(31,111,73,.2);border-radius:9px;color:var(--green);background:#fffdf9;font-size:12px;font-weight:760}
 @media (max-width:920px){body{overflow:auto}.app{height:auto;min-height:100vh;display:block;overflow:visible}.side{width:100%;height:auto;position:relative}.main{height:auto;min-height:100vh}.hero{width:calc(100vw - 36px);margin:64px auto 0}.collab{width:calc(100vw - 36px);margin-top:48px}.split,.workbench-grid,.kbpage,.presales-functions,.research-panel,.preview-grid{grid-template-columns:1fr;padding-left:20px;padding-right:20px}.chattop,.page-workspace{padding-left:20px;padding-right:20px}.page-header{display:block}}
 </style>
 </head>
@@ -664,74 +774,106 @@ body{overflow:hidden;background:var(--bg)}
 
     <!-- VIEW: 产品与技术解释 -->
     <div class="view" id="splitTechExplain">
-      <main class="workspace page-workspace compact-page">
+      <main class="workspace page-workspace compact-page product-explain-page">
         <section class="page-header compact-header">
           <div>
             <p class="eyebrow">产品与技术解释</p>
-            <h1>把技术概念解释成业务听得懂的语言</h1>
-            <p class="page-subtitle">输入解释主题、目标受众和使用场景，芽懂会调用研发知识库与销售知识库生成可复核的标准解释。</p>
+            <h1>把复杂产品与技术讲清楚</h1>
+            <p class="page-subtitle">基于企业知识，为不同受众生成准确、易懂、可追溯的产品与技术说明。</p>
           </div>
-          <button class="primary-action" onclick="runTechExplain()">生成解释</button>
         </section>
 
-        <section class="research-panel">
-          <div class="research-input">
-            <div class="input-head">
-              <span>解释任务</span>
-              <strong>标准口径生成</strong>
-            </div>
+        <section class="tech-explain-layout">
+          <aside class="tech-prompt-card">
+            <h2>产品解释任务</h2>
             <label>
-              解释主题
-              <input id="tech-topic" type="text" value="TRIZ 是什么？">
+              <span>想解释什么？</span>
+              <textarea id="tech-task" class="prompt-textarea">请面向没有技术背景的销售新人，解释 TRIZ 的核心原理、适用场景和能力边界，并举一个简单的研发案例。</textarea>
             </label>
-            <label>
-              目标受众
+
+            <div class="select-row">
+              <span>目标受众</span>
               <select id="tech-audience">
-                <option>销售与售前</option>
+                <option>销售 / 售前</option>
                 <option>市场与运营</option>
                 <option>客户业务负责人</option>
                 <option>研发新人</option>
               </select>
-            </label>
-            <label>
-              使用场景
+              <em>⌄</em>
+            </div>
+
+            <div class="select-row">
+              <span>使用场景</span>
               <select id="tech-scenario">
                 <option>内部培训</option>
                 <option>客户沟通</option>
                 <option>方案材料</option>
                 <option>FAQ 标准口径</option>
               </select>
-            </label>
-            <label>
-              解释深度
+              <em>⌄</em>
+            </div>
+
+            <div class="select-row">
+              <span>解释深度</span>
               <select id="tech-depth">
                 <option>通俗解释</option>
                 <option>标准解释</option>
                 <option>偏技术原理</option>
               </select>
-            </label>
-            <button class="research-button" id="techExplainGo" onclick="runTechExplain()">生成解释</button>
-          </div>
-
-          <article class="research-report" id="techExplainReport">
-            <div class="report-toolbar">
-              <div>
-                <span class="status done">示例解释</span>
-                <span class="report-date">内部培训 · 通俗解释</span>
-              </div>
-              <div class="toolbar-actions">
-                <button onclick="copyReport('techExplainReport')">复制</button>
-                <button onclick="exportReport('techExplainReport','产品与技术解释')">导出</button>
-              </div>
+              <em>⌄</em>
             </div>
-            <section class="report-section">
-              <h3>一句话解释</h3>
-              <p>TRIZ 可以理解为研发团队的系统化解题方法：先识别技术矛盾，再参考可复用的发明原理，最后形成需要验证的方案方向。</p>
-            </section>
-            <section class="report-section">
-              <h3>能力边界</h3>
-              <p>TRIZ 不是自动给出唯一正确答案，也不能替代实验验证、工程评审或专利法律判断。</p>
-            </section>
+
+            <button class="generate-explain" id="techExplainGo" onclick="runTechExplain()">✦ 生成解释</button>
+          </aside>
+
+          <article class="tech-report-board" id="techExplainReport">
+            <header class="tech-report-head">
+              <span class="status done">已生成</span>
+              <h2>TRIZ 产品与技术解释</h2>
+            </header>
+            <div class="tech-source-note">
+              <span>ⓘ</span>
+              <strong>本次已调用：研发知识库、销售知识库｜共引用 3 条知识</strong>
+            </div>
+            <div class="tech-explain-sections">
+              <section class="tech-row">
+                <span class="tech-label">产品事实</span>
+                <div>
+                  <h3>一句话解释</h3>
+                  <p>TRIZ 是一套从大量创新案例中总结出的系统化解决问题方法。</p>
+                </div>
+              </section>
+              <section class="tech-row">
+                <span class="tech-label">技术原理</span>
+                <div>
+                  <h3>核心原理</h3>
+                  <p>识别技术矛盾，匹配可参考的创新原理，再结合具体工程问题形成方案。</p>
+                </div>
+              </section>
+              <section class="tech-row">
+                <span class="tech-label">业务价值</span>
+                <div>
+                  <h3>业务价值与适用场景</h3>
+                  <p>帮助研发团队减少完全依赖灵感的试错，更系统地寻找创新方向；适合技术攻关、方案优化和内部创新培训。</p>
+                </div>
+              </section>
+              <section class="tech-row">
+                <span class="tech-label orange">AI 类比</span>
+                <div>
+                  <h3>能力边界</h3>
+                  <p>TRIZ 提供结构化创新思路，但不能自动保证技术方案可行，最终仍需工程验证。</p>
+                </div>
+              </section>
+            </div>
+            <div class="tech-source-table">
+              <div class="tech-source-title">
+                <h3>知识来源与引用追溯</h3>
+                <span>来源可查</span>
+              </div>
+              <div class="source-row"><span>研发知识库</span><strong>TRIZ 方法论介绍</strong><em>支持 “核心原理”</em><button>查看引用</button></div>
+              <div class="source-row"><span>研发知识库</span><strong>技术创新方法培训材料</strong><em>支持 “业务价值”</em><button>查看引用</button></div>
+              <div class="source-row"><span>销售知识库</span><strong>客户常见问题与解释口径</strong><em>支持 “一句话解释”</em><button>查看引用</button></div>
+            </div>
           </article>
         </section>
       </main>
@@ -814,43 +956,20 @@ body{overflow:hidden;background:var(--bg)}
     <!-- VIEW: 销售与售前 -->
     <div class="view" id="splitSales">
       <main class="workspace page-workspace compact-page presales-page">
-        <section class="page-header compact-header">
+        <section class="page-header compact-header presales-hero">
           <div>
             <p class="eyebrow">销售与售前</p>
             <h1>把客户背景变成可执行的拜访方案</h1>
-            <p class="page-subtitle">输入客户名称、行业、目标岗位和拜访目的，芽懂会结合销售知识库、公开信息和内部资料生成深度调研、痛点判断、话术脚本与行动清单。</p>
+            <p class="page-subtitle">输入客户信息和拜访目标，结合公开信息与企业知识，快速生成客户调研、潜在痛点、沟通话术和行动建议。</p>
           </div>
-          <button class="primary-action" onclick="document.getElementById('mode-customer').focus()">开始调研</button>
+          <button class="primary-action" onclick="runPresales()">生成拜访方案</button>
         </section>
 
-        <section class="presales-functions" aria-label="选择销售与售前功能">
-          <button class="presales-card active-card" type="button" data-mode="research">
-            <div class="presales-icon search-icon"></div>
-            <h2>深度调研</h2>
-            <p>自动搜索公司背景、财报、新闻、专利动态和内部历史案例，快速形成客户画像与拜访摘要。</p>
-          </button>
-          <button class="presales-card" type="button" data-mode="pain">
-            <div class="presales-icon target-icon"></div>
-            <h2>痛点分析</h2>
-            <p>结合行业与岗位，定位研发负责人、产品经理或 IP 团队最可能关注的效率、成本和风险问题。</p>
-          </button>
-          <button class="presales-card" type="button" data-mode="script">
-            <div class="presales-icon script-icon"></div>
-            <h2>话术脚本</h2>
-            <p>生成开场白、价值主张、异议处理和案例引入话术，让销售与售前沟通更一致。</p>
-          </button>
-          <button class="presales-card" type="button" data-mode="action">
-            <div class="presales-icon checklist-icon"></div>
-            <h2>行动清单</h2>
-            <p>输出拜访前准备、现场追问、会后跟进和资料发送建议，帮助机会推进不断档。</p>
-          </button>
-        </section>
-
-        <section class="research-panel" id="presales-workspace">
+        <section class="research-panel presales-briefing" id="presales-workspace">
           <div class="research-input">
             <div class="input-head">
-              <span id="mode-kicker">深度调研任务</span>
-              <strong id="mode-title">客户拜访准备</strong>
+              <span>客户调研输入</span>
+              <strong>客户拜访准备</strong>
             </div>
             <label>
               目标客户
@@ -858,155 +977,173 @@ body{overflow:hidden;background:var(--bg)}
             </label>
             <label>
               拜访目标
-              <input id="mode-goal" type="text" value="识别研发情报分析痛点，准备产品价值沟通">
+              <textarea id="mode-goal" class="short-textarea">识别研发情报分析痛点，准备 Analytics AI Mode 的产品价值沟通</textarea>
             </label>
             <label>
               关注方向
               <textarea id="mode-focus">公司背景、新闻动态、专利布局、技术方向、现有流程痛点、潜在决策人关注点</textarea>
             </label>
-            <div class="research-actions">
-              <button class="research-button" id="mode-action" onclick="runPresales()">生成调研结果</button>
-              <button class="research-secondary" id="mode-full-action" onclick="runPresales('full')">完整报告</button>
-            </div>
+            <button class="research-button" id="mode-action" onclick="runPresales()">生成拜访方案</button>
           </div>
 
-          <div class="research-preview">
-            <div class="preview-top">
-              <span id="preview-kicker">Research Preview</span>
+          <article class="briefing-board" id="presalesReport">
+            <div class="briefing-head">
+              <div>
+                <span class="status done">已完成</span>
+                <h2>Engineering 客户拜访简报</h2>
+              </div>
               <button onclick="exportReport('presalesReport','销售与售前拜访报告')">导出方案</button>
             </div>
-            <div class="research-summary-card">
-              <span>已完成</span>
-              <h2 id="preview-title">Engineering 客户拜访简报</h2>
-              <p id="preview-copy">系统已整合公司背景、公开新闻、专利动态、内部客户案例和销售知识库，形成可用于售前沟通的调研摘要。</p>
-            </div>
-            <div class="preview-grid">
-              <div>
-                <strong id="metric-one">4 类</strong>
-                <span id="metric-one-label">输出材料</span>
-              </div>
-              <div>
-                <strong id="metric-two">8 条</strong>
-                <span id="metric-two-label">潜在痛点</span>
-              </div>
-              <div>
-                <strong id="metric-three">3 组</strong>
-                <span id="metric-three-label">推荐话术</span>
-              </div>
-            </div>
-          </div>
-        </section>
 
-        <article class="research-report" id="presalesReport">
-          <div class="report-toolbar">
-            <div>
-              <span class="status done">调研报告</span>
-              <span class="report-date">客户拜访前 30 分钟简报</span>
+            <div class="briefing-source-note">本次已调用：公开客户信息、研发知识库、销售知识库，共引用 6 条信息</div>
+
+            <div class="briefing-sections">
+              <section>
+                <h3>客户背景摘要</h3>
+                <p>客户团队关注研发效率、技术路线判断和创新情报获取，持续投入工程研发与专利布局。</p>
+              </section>
+              <section>
+                <h3>潜在痛点</h3>
+                <p>研发情报收集耗时；专利信息理解门槛高；洞察难以及时进入业务决策。</p>
+              </section>
+              <section>
+                <h3>推荐沟通路径</h3>
+                <div class="briefing-path">
+                  <span><b>开场</b>确认研发情报获取方式</span>
+                  <span><b>价值展开</b>展示 Analytics AI Mode 落地案例</span>
+                  <span><b>会后跟进</b>发送方案摘要并安排演示</span>
+                </div>
+              </section>
+              <section>
+                <h3>沟通话术与行动清单</h3>
+                <ul>
+                  <li>贵团队在专利布局上持续投入，是否希望更快获得可行动的技术洞察？</li>
+                  <li>Analytics AI Mode 可以把分散情报转化为可验证、可复用的研发决策依据。</li>
+                  <li>行动建议：安排产品演示，收集当前情报流程细节，确认试点场景与成功标准。</li>
+                </ul>
+              </section>
             </div>
-            <div class="toolbar-actions">
-              <button onclick="copyReport('presalesReport')">复制</button>
-              <button onclick="exportReport('presalesReport','销售与售前拜访报告')">导出</button>
+
+            <div class="briefing-sources">
+              <div class="briefing-sources-head">
+                <h3>知识来源与引用追溯</h3>
+                <span>来源可查</span>
+              </div>
+              <div class="source-list-compact">
+                <div><span>公开信息</span><strong>客户官网与专利动态</strong><button>查看引用</button></div>
+                <div><span>企业知识</span><strong>研发知识库：Analytics AI Mode 产品能力说明</strong><button>查看引用</button></div>
+                <div><span>企业知识</span><strong>销售知识库：制造业客户成功案例</strong><button>查看引用</button></div>
+                <div><span>AI 推断</span><strong>研发情报流程可能存在重复收集</strong><button>查看依据</button></div>
+              </div>
             </div>
-          </div>
-          <div class="presales-module-status" id="presalesModuleStatus">
-            <span class="done">深度调研</span>
-            <span>痛点分析</span>
-            <span>话术脚本</span>
-            <span>行动清单</span>
-          </div>
-          <section class="report-section">
-            <h3>一、客户背景摘要</h3>
-            <p>客户所在团队关注研发效率、技术路线判断和创新情报获取，公开信息显示其持续投入工程研发与专利布局。建议从“减少研发情报收集时间”和“让技术洞察更快进入决策”切入。</p>
           </section>
-          <section class="report-section">
-            <h3>二、推荐沟通路径</h3>
-            <table class="rich-table clean-table">
-              <thead>
-                <tr>
-                  <th>阶段</th>
-                  <th>销售动作</th>
-                  <th>可调用资料</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>开场</td>
-                  <td>确认当前研发情报收集方式和跨团队协作成本</td>
-                  <td>行业痛点摘要、客户案例</td>
-                </tr>
-                <tr>
-                  <td>价值展开</td>
-                  <td>说明 Analytics / Engineering 场景下的分析效率提升</td>
-                  <td>产品能力卡、竞品差异点</td>
-                </tr>
-                <tr>
-                  <td>会后跟进</td>
-                  <td>发送定制化方案、案例摘要和下一步演示计划</td>
-                  <td>方案模板、FAQ、话术脚本</td>
-                </tr>
-              </tbody>
-            </table>
-          </section>
-        </article>
+        </section>
       </main>
     </div>
 
-    <!-- VIEW: 营销与传播（左多轮对话 + 右内容预览） -->
+    <!-- VIEW: 营销与传播 -->
     <div class="view" id="splitPromo">
-      <div class="chattop">
-        <div><div class="ttl">把知识变成可发布内容</div><div class="sub">用对话方式生成传播文案或 30 秒短视频方案，并保留可追溯的知识来源。</div></div>
-        <button class="pill" onclick="resetPromoStudio()"><span class="dot"></span> <span>新建内容</span></button>
-      </div>
-      <div class="split">
-        <div class="split-left promo-left">
-          <div class="modeswitch" id="promoModeSwitch">
-            <button class="on" onclick="setPromoSub(this,'传播文案')">传播文案</button>
-            <button onclick="setPromoSub(this,'短视频')">短视频</button>
+      <main class="workspace page-workspace compact-page">
+        <section class="page-header compact-header">
+          <div>
+            <p class="eyebrow">营销与传播</p>
+            <h1>把企业知识变成可发布的内容</h1>
+            <p class="page-subtitle">从创作设定到内容预览，一站生成可追溯的传播文案和短视频成品。</p>
           </div>
-          <div class="cfgcard promo-source-card">
-            <p class="split-copy">你想生成什么内容？可以告诉我目标受众、发布渠道和希望强调的产品能力。</p>
-            <div class="source-list">
-              <span>运营素材库</span>
-              <span>销售知识库</span>
-              <span>Analytics AI</span>
+        </section>
+
+        <section class="marketing-taskbar">
+          <div class="marketing-tabs" id="promoModeSwitch">
+            <button class="active on" data-tab="copy" onclick="setPromoSub(this,'传播文案')">传播文案</button>
+            <button data-tab="video" onclick="setPromoSub(this,'短视频')">短视频</button>
+          </div>
+          <div class="task-title">
+            <span>项目名称</span>
+            <strong>Analytics AI Mode｜产品发布素材</strong>
+          </div>
+          <span class="status editable">可编辑</span>
+          <div class="task-actions">
+            <button onclick="resetPromoStudio()">重新生成</button>
+            <button class="solid" onclick="exportReport('promoReport','营销与传播结果')">导出方案</button>
+          </div>
+        </section>
+
+        <section class="marketing-studio">
+          <aside class="campaign-settings">
+            <h2>创作设定</h2>
+            <label>
+              <span>传播任务</span>
+              <textarea id="promoInput">为 Analytics AI Mode 生成面向企业 IP 负责人的发布内容，突出专利检索、专利解读和竞争情报分析能力。</textarea>
+            </label>
+            <div class="setting-row"><span>目标受众</span><strong>企业 IP 负责人</strong></div>
+            <div class="setting-row"><span>发布渠道</span><strong>官网活动页 / 公众号</strong></div>
+            <div class="tag-set">
+              <span>专利检索</span>
+              <span>专利解读</span>
+              <span>竞争情报</span>
             </div>
-          </div>
-          <div class="mini-thread" id="promoThread"></div>
-          <div class="promo-input-row">
-            <textarea id="promoInput" placeholder="例如：写一条 Analytics AI Mode 的推文"></textarea>
-            <button class="go" id="promoGo" onclick="runPromo()">生成 ↑</button>
-          </div>
-        </div>
-        <div class="split-right">
-          <div class="reportcard" id="promoReport">
-            <div class="report-toolbar">
-              <div><span class="status">生成结果</span><span class="rmeta">30 秒视频方案 · 可生成示例镜头</span></div>
-              <div class="toolbar-actions"><button onclick="copyReport('promoReport')">复制</button><button onclick="exportReport('promoReport','营销与传播结果')">下载</button></div>
-            </div>
-            <div class="video-output">
-              <div class="video-screen"><button class="play-button" onclick="setPromoSub(document.querySelector('#promoModeSwitch button:nth-child(2)'),'短视频')">▶</button><div class="video-caption">让专利分析进入 AI Mode</div></div>
-              <div class="video-meta-row"><span>脚本预览</span><b>30s</b></div>
-              <div class="storyboard">
-                <div><span>01</span><p>痛点开场</p></div>
-                <div><span>02</span><p>AI Mode 提问</p></div>
-                <div><span>03</span><p>检索与解读</p></div>
-                <div><span>04</span><p>竞争情报报告</p></div>
+            <button class="generate-explain" id="promoGo" onclick="runPromo()">✦ 生成内容</button>
+          </aside>
+
+          <section class="campaign-preview" id="promoReport">
+            <article class="copy-preview-card marketing-panel active" data-panel="copy">
+              <div class="preview-head">
+                <div>
+                  <span class="status done">已生成</span>
+                  <h2>让专利分析进入 AI Mode</h2>
+                </div>
+                <button onclick="copyReport('promoReport')">复制文案</button>
               </div>
-            </div>
-            <article class="draft-card">
-              <h2>视频配套文案</h2>
-              <p>面对海量专利数据，企业 IP 团队需要的不只是找到结果，而是快速理解技术方向、竞争格局和布局机会。</p>
-              <p>Analytics AI Mode 让专利检索、专利解读和竞争情报分析进入自然语言交互流程，把复杂专利信息转化为可复核、可交付的业务材料。</p>
-              <h3>自动生成字幕</h3>
-              <ul><li>专利数据太多，洞察太慢？</li><li>用 Analytics AI Mode，直接提问并获得可追溯分析。</li><li>从检索结果，到竞争洞察，到报告交付。</li></ul>
+              <p>面对海量专利数据，企业 IP 团队需要的不只是找到结果，更需要快速理解技术方向、竞争格局和布局机会。</p>
+              <h3>从检索结果到可行动洞察</h3>
+              <p>Analytics AI Mode 通过自然语言检索、专利解读与竞争情报分析，帮助团队更快获得可验证、可复用的决策依据。</p>
+              <blockquote>所有分析结果均基于权威数据与可溯源引用，确保结论可靠、可验证、可复用。</blockquote>
+              <footer><span>字数统计：312 字</span><span>参考引用：3 处</span><span>已自动保存</span></footer>
             </article>
-            <section class="video-card">
-              <h3>视频资产</h3>
-              <p>当前能力：可提交一个示例镜头视频任务；完整 30 秒成片、字幕烧录和旁白合成需要后续接入视频编排链路。</p>
-            </section>
-          </div>
-        </div>
-      </div>
+
+            <article class="video-preview-card marketing-panel" data-panel="video">
+              <div class="video-stage">
+                <div class="video-brand">YADO</div>
+                <button class="play-button" id="videoGenTrigger" onclick="startVideoGeneration()">▶</button>
+                <h3>让专利分析进入 <span>AI Mode</span></h3>
+                <b>00:30</b>
+              </div>
+              <div class="storyboard">
+                <div><span>00-05</span><p>痛点开场</p></div>
+                <div><span>05-12</span><p>AI Mode 提问</p></div>
+                <div class="active"><span>12-22</span><p>检索与解读</p></div>
+                <div><span>22-30</span><p>洞察收尾</p></div>
+              </div>
+              <div class="video-script-card">
+                <h3>发布配文</h3>
+                <p>一句话提问，快速获得专利检索与解读结果，并生成竞争情报洞察。</p>
+                <h3>画面文案</h3>
+                <p>AI 快速理解你的需求，专利检索、解读、关键信息一目了然。</p>
+              </div>
+              <div class="video-genrow" id="videoGenRow">
+                <button class="video-genbtn" id="videoGenBtn" onclick="startVideoGeneration()">生成示例镜头</button>
+                <span class="video-genstatus" id="videoGenStatus"></span>
+              </div>
+            </article>
+          </section>
+
+          <aside class="publish-panel">
+            <h2 data-label="copy">发布素材</h2>
+            <h2 class="hidden" data-label="video">配套素材</h2>
+            <article data-publish="copy"><div><strong>标题备选</strong><span class="status done">完成</span></div><p>让专利分析进入 AI Mode</p></article>
+            <article data-publish="copy"><div><strong>摘要</strong><span class="status done">完成</span></div><p>用自然语言快速获得专利检索、解读和竞争情报洞察。</p></article>
+            <article data-publish="copy"><div><strong>话题标签</strong><span class="status done">完成</span></div><div class="tag-set small"><span>#专利分析</span><span>#AI Mode</span><span>#竞争情报</span></div></article>
+            <article class="hidden" data-publish="video"><div><strong>视频脚本</strong><span class="status done">完成</span></div><p>30 秒结构：痛点开场、AI Mode 提问、检索解读、洞察收尾。</p></article>
+            <article class="hidden" data-publish="video"><div><strong>自动字幕</strong><span class="status done">完成</span></div><p>已生成中英文字幕，可用于官网活动页和销售转发。</p></article>
+            <article class="hidden" data-publish="video"><div><strong>发布配文</strong><span class="status done">完成</span></div><p>一句话提问，让专利检索、解读和竞争情报进入 AI Mode。</p></article>
+            <div class="source-trace-card">
+              <h3>当前依据</h3>
+              <p>已调用研发知识库、运营素材库和销售知识库。</p>
+              <button>查看引用</button>
+            </div>
+          </aside>
+        </section>
+      </main>
     </div>
 
     <!-- VIEW: 销售知识库 -->
@@ -1230,21 +1367,14 @@ function setPresalesMode(mode, activeCard){
   currentPresalesMode = mode;
   document.querySelectorAll(".presales-card").forEach(item => item.classList.remove("active-card"));
   activeCard?.classList.add("active-card");
-  document.getElementById("mode-kicker").textContent = data.kicker;
-  document.getElementById("mode-title").textContent = data.title;
-  document.getElementById("mode-customer").value = data.customer;
-  document.getElementById("mode-goal").value = data.goal;
-  document.getElementById("mode-focus").value = data.focus;
-  document.getElementById("mode-action").textContent = data.action;
-  document.getElementById("preview-kicker").textContent = data.previewKicker;
-  document.getElementById("preview-title").textContent = data.previewTitle;
-  document.getElementById("preview-copy").textContent = data.previewCopy;
-  document.getElementById("metric-one").textContent = data.metrics[0];
-  document.getElementById("metric-one-label").textContent = data.metrics[1];
-  document.getElementById("metric-two").textContent = data.metrics[2];
-  document.getElementById("metric-two-label").textContent = data.metrics[3];
-  document.getElementById("metric-three").textContent = data.metrics[4];
-  document.getElementById("metric-three-label").textContent = data.metrics[5];
+  const customer = document.getElementById("mode-customer");
+  const goal = document.getElementById("mode-goal");
+  const focus = document.getElementById("mode-focus");
+  const action = document.getElementById("mode-action");
+  if (customer) customer.value = data.customer;
+  if (goal) goal.value = data.goal;
+  if (focus) focus.value = data.focus;
+  if (action) action.textContent = "生成拜访方案";
 }
 
 function updatePresalesStatus(activeMode){
@@ -1490,31 +1620,24 @@ function renderText(text){
   }).join("");
 }
 
-// —— 销售与售前：4 个模块可单独生成，也可汇总成一份完整拜访报告 ——
+// —— 销售与售前：按原型生成一份客户拜访简报 ——
 async function runPresales(forceMode){
-  const taskMode = forceMode || currentPresalesMode;
   const customer = document.getElementById("mode-customer").value.trim();
   const goal = document.getElementById("mode-goal").value.trim();
   const focus = document.getElementById("mode-focus").value.trim();
   if (!customer || !goal) return;
 
-  const moduleName = presalesModeName(taskMode);
   const message = [
-    `任务模块：${moduleName}`,
     `目标客户：${customer}`,
     `拜访目标：${goal}`,
     `关注方向：${focus}`,
-    taskMode === "full"
-      ? "请生成完整客户拜访售前报告，包含深度调研、痛点分析、话术脚本和行动清单。"
-      : `请先生成「${moduleName}」模块，同时保留事实来源和资料缺口。`
+    "请生成完整客户拜访售前报告，包含客户背景摘要、潜在痛点、推荐沟通路径、沟通话术与行动清单，并保留事实来源和资料缺口。"
   ].join("；");
 
   const primaryBtn = document.getElementById("mode-action");
-  const fullBtn = document.getElementById("mode-full-action");
   const report = document.getElementById("presalesReport");
   primaryBtn.disabled = true;
-  fullBtn.disabled = true;
-  report.innerHTML = `<div class="empty-hint"><span class="typing"><i></i><i></i><i></i></span> 正在整合内部知识、live 资料与外部情报缺口…</div>`;
+  report.innerHTML = `<div class="empty-hint"><span class="typing"><i></i><i></i><i></i></span> 正在整合内部知识、live 资料与外部情报缺口，生成拜访简报…</div>`;
 
   try {
     const r = await fetch("/api/chat", {
@@ -1524,51 +1647,52 @@ async function runPresales(forceMode){
     const data = await r.json();
     if (data.error){ report.innerHTML = "⚠ " + esc(data.error); return; }
 
-    if (taskMode === "full"){
-      Object.keys(presalesDone).forEach(k => presalesDone[k] = true);
-    } else {
-      presalesDone[taskMode] = true;
-    }
-    const { head, lead } = splitHeadAndBody(data.text);
-    document.getElementById("preview-title").textContent = head || `${customer} ${moduleName}`;
-    document.getElementById("preview-copy").textContent = data.degraded
-      ? "当前结果包含降级或资料缺口提示，请优先补充客户外部情报后再用于正式拜访。"
-      : "已根据内部知识、上传资料和可用外部情报生成，可继续切换模块补齐完整售前报告。";
-    document.getElementById("metric-one").textContent = taskMode === "full" ? "4 类" : "1 类";
-    document.getElementById("metric-one-label").textContent = "已生成模块";
-    document.getElementById("metric-two").textContent = String(data.structured?.missing_items?.length || 0);
-    document.getElementById("metric-two-label").textContent = "待核实项";
-    document.getElementById("metric-three").textContent = String(data.structured?.citations?.length || 0);
-    document.getElementById("metric-three-label").textContent = "引用来源";
+    const { head } = splitHeadAndBody(data.text);
+    let rest = data.text;
+    const bg = extractSection(rest, "客户背景摘要"); rest = bg.rest;
+    const pain = extractSection(rest, "潜在痛点"); rest = pain.rest;
+    const path = extractSection(rest, "推荐沟通路径"); rest = path.rest;
+    const action = extractSection(rest, "沟通话术与行动清单"); rest = action.rest;
+    const fallbackBody = [bg.content, pain.content, path.content, action.content].some(Boolean) ? "" : renderText(data.text);
+    const section = (title, body) => body ? `<section><h3>${esc(title)}</h3><div>${renderText(body)}</div></section>` : "";
+    const titles = data.retrieval?.titles || [];
+    const sourceRows = titles.slice(0, 4).map((title, i) => {
+      const kind = i === 0 ? "公开信息" : "企业知识";
+      return `<div><span>${esc(kind)}</span><strong>${esc(title)}</strong><button>查看引用</button></div>`;
+    }).join("") || `<div><span>企业知识</span><strong>研发知识库与销售知识库</strong><button>查看引用</button></div>`;
 
-    let html = `<div class="report-toolbar">
-        <div><span class="status done">${esc(moduleName)}</span><span class="report-date">${esc(customer)} · ${esc(goal)}</span></div>
-        <div class="toolbar-actions"><button onclick="copyReport('presalesReport')">复制</button><button onclick="exportReport('presalesReport','销售与售前拜访报告')">导出</button></div>
+    let html = `<div class="briefing-head">
+        <div><span class="status done">已完成</span><h2>${esc(head || `${customer} 拜访简报`)}</h2></div>
+        <button onclick="exportReport('presalesReport','销售与售前拜访报告')">导出方案</button>
       </div>
-      <div class="presales-module-status" id="presalesModuleStatus"></div>
+      <div class="briefing-source-note">本次已调用：公开客户信息、研发知识库、销售知识库，共引用 ${esc(String(data.retrieval?.count || titles.length || 0))} 条信息</div>
       ${data.degraded ? `<div class="degraded-note">当前为降级结果：${esc(data.degraded_reason || "未能完成检索/生成链路，展示兜底内容。")}</div>` : ""}
-      <div class="presales-report-body">
-        ${lead ? `<div class="report-header"><h2>${esc(head || moduleName)}</h2><p>${esc(lead)}</p></div>` : ""}
-        <div class="report-body">${renderText(data.text)}</div>
+      <div class="briefing-sections">
+        ${section("客户背景摘要", bg.content)}
+        ${section("潜在痛点", pain.content)}
+        ${section("推荐沟通路径", path.content)}
+        ${section("沟通话术与行动清单", action.content)}
+        ${fallbackBody ? `<section><h3>拜访方案</h3><div>${fallbackBody}</div></section>` : ""}
+      </div>
+      <div class="briefing-sources">
+        <div class="briefing-sources-head"><h3>知识来源与引用追溯</h3><span>来源可查</span></div>
+        <div class="source-list-compact">${sourceRows}</div>
       </div>`;
 
     if (data.retrieval){
-      const titles = (data.retrieval.titles || []).map(x => `<span>${esc(x)}</span>`).join("");
       const external = data.retrieval.external && !data.retrieval.external.available
         ? `<div class="todo">外部搜索状态：${esc(data.retrieval.external.reason || "未接入外部搜索")}</div>` : "";
-      html += `<details class="trace" open><summary>🔎 已检索资料（${esc(data.retrieval.source || "unknown")} · 召回 ${esc(data.retrieval.count || 0)} 条）</summary><div class="source-list" style="margin-top:8px">${titles}</div>${external}</details>`;
+      html += external;
     }
     if (data.trace && data.trace.length){
       const steps = data.trace.map(t => `<code>${esc(t.tool)}</code>`).join(" → ");
       html += `<details class="trace"><summary>🔎 执行轨迹（${data.trace.length} 步工具调用）</summary><div style="margin-top:6px">${steps}</div></details>`;
     }
     report.innerHTML = html;
-    updatePresalesStatus(taskMode);
   } catch (e) {
     report.innerHTML = "请求失败：" + esc(String(e));
   } finally {
     primaryBtn.disabled = false;
-    fullBtn.disabled = false;
   }
 }
 
@@ -1640,7 +1764,7 @@ function splitHeadAndBody(text){
 // 从正文里摘出一个 "## 标题" 到下一个 "## " 之前的整段内容（含标题行本身一起去掉），
 // 返回 {content, rest}；rest = 去掉这段之后剩下的正文（用于正文区不重复渲染）。
 function extractSection(text, heading){
-  const re = new RegExp(`^##\\s*${heading}\\s*$`, "m");
+  const re = new RegExp(`^##\\s*(?:[一二三四五六七八九十0-9]+[、.．]\\s*)?${heading}\\s*$`, "m");
   const m = text.match(re);
   if (!m) return { content: "", rest: text };
   const start = m.index;
@@ -1665,13 +1789,13 @@ function renderInsightRow(content){
 
 // —— 产品与技术解释（明确工作台：硬编码调用 tech_explain skill）——
 async function runTechExplain(){
-  const topic = document.getElementById("tech-topic").value.trim();
+  const task = document.getElementById("tech-task").value.trim();
   const audience = document.getElementById("tech-audience").value;
   const scenario = document.getElementById("tech-scenario").value;
   const depth = document.getElementById("tech-depth").value;
-  if (!topic) return;
+  if (!task) return;
 
-  const message = `解释主题：${topic}；目标受众：${audience}；使用场景：${scenario}；解释深度：${depth}；知识来源：研发知识库、销售知识库。请输出一句话解释、通俗解释、核心原理、业务价值、适用场景、能力边界、FAQ 和知识来源。`;
+  const message = `解释任务：${task}；目标受众：${audience}；使用场景：${scenario}；解释深度：${depth}；知识来源：研发知识库、销售知识库。请输出一句话解释、通俗解释、核心原理、业务价值、适用场景、能力边界、FAQ 和知识来源。`;
   const btn = document.getElementById("techExplainGo");
   const report = document.getElementById("techExplainReport");
   btn.disabled = true;
@@ -1685,16 +1809,43 @@ async function runTechExplain(){
     const data = await r.json();
     if (data.error){ report.innerHTML = "⚠ " + esc(data.error); return; }
 
-    let html = `<div class="report-toolbar">
-        <div><span class="status done">产品与技术解释</span><span class="report-date">${esc(audience)} · ${esc(scenario)} · ${esc(depth)}</span></div>
-        <div class="toolbar-actions"><button onclick="copyReport('techExplainReport')">复制</button><button onclick="exportReport('techExplainReport','产品与技术解释')">导出</button></div>
+    const { head } = splitHeadAndBody(data.text);
+    let rest = data.text;
+    const one = extractSection(rest, "一句话解释"); rest = one.rest;
+    const principle = extractSection(rest, "核心原理"); rest = principle.rest;
+    const value = extractSection(rest, "业务价值"); rest = value.rest;
+    const scene = extractSection(rest, "适用场景"); rest = scene.rest;
+    const boundary = extractSection(rest, "能力边界"); rest = boundary.rest;
+    const row = (label, title, body, orange=false) => body ? `<section class="tech-row">
+        <span class="tech-label ${orange ? "orange" : ""}">${esc(label)}</span>
+        <div><h3>${esc(title)}</h3>${renderText(body)}</div>
+      </section>` : "";
+    const rows = [
+      row("产品事实", "一句话解释", one.content),
+      row("技术原理", "核心原理", principle.content),
+      row("业务价值", "业务价值与适用场景", [value.content, scene.content].filter(Boolean).join("\n\n")),
+      row("AI 类比", "能力边界", boundary.content, true)
+    ].join("") || `<section class="tech-row"><span class="tech-label">解释结果</span><div>${renderText(data.text)}</div></section>`;
+    const titles = data.retrieval?.titles || [];
+    const sourceRows = titles.slice(0, 3).map((title, i) =>
+      `<div class="source-row"><span>${i === 2 ? "销售知识库" : "研发知识库"}</span><strong>${esc(title)}</strong><em>支持本次解释</em><button>查看引用</button></div>`
+    ).join("") || `<div class="source-row"><span>企业知识</span><strong>研发知识库、销售知识库</strong><em>支持本次解释</em><button>查看引用</button></div>`;
+
+    let html = `<header class="tech-report-head">
+        <span class="status done">已生成</span>
+        <h2>${esc(head || "产品与技术解释")}</h2>
+      </header>
+      <div class="tech-source-note">
+        <span>ⓘ</span>
+        <strong>本次已调用：研发知识库、销售知识库｜共引用 ${esc(String(data.retrieval?.count || titles.length || 0))} 条知识</strong>
       </div>
       ${data.degraded ? `<div class="degraded-note">当前为降级结果：${esc(data.degraded_reason || "未能完成检索/生成链路，展示兜底内容。")}</div>` : ""}
-      <div class="report-body">${renderText(data.text)}</div>`;
-    if (data.retrieval){
-      const titles = (data.retrieval.titles || []).map(x => `<span>${esc(x)}</span>`).join("");
-      html += `<details class="trace" open><summary>🔎 已检索资料（${esc(data.retrieval.source || "unknown")} · 召回 ${esc(data.retrieval.count || 0)} 条）</summary><div class="source-list" style="margin-top:8px">${titles}</div></details>`;
-    }
+      <div class="tech-explain-sections">${rows}</div>
+      <div class="tech-source-table">
+        <div class="tech-source-title"><h3>知识来源与引用追溯</h3><span>来源可查</span></div>
+        ${sourceRows}
+      </div>
+      <div class="toolbar-actions tech-actions"><button onclick="copyReport('techExplainReport')">复制</button><button onclick="exportReport('techExplainReport','产品与技术解释')">导出</button></div>`;
     if (data.trace && data.trace.length){
       const steps = data.trace.map(t => `<code>${esc(t.tool)}</code>`).join(" → ");
       html += `<details class="trace"><summary>🔎 执行轨迹（${data.trace.length} 步工具调用）</summary><div style="margin-top:6px">${steps}</div></details>`;
@@ -1753,7 +1904,7 @@ async function runComparison(){
     }
     if (data.retrieval){
       const titles = (data.retrieval.titles || []).map(x => `<span>${esc(x)}</span>`).join("");
-      html += `<details class="trace" open><summary>🔎 已检索资料（${esc(data.retrieval.source || "unknown")} · 召回 ${esc(data.retrieval.count || 0)} 条）</summary><div class="source-list" style="margin-top:8px">${titles}</div></details>`;
+      html += `<details class="trace" open><summary>🔎 已检索资料（${esc(data.retrieval.source || "unknown")} · 召回 ${esc(String(data.retrieval.count || 0))} 条）</summary><div class="source-list" style="margin-top:8px">${titles}</div></details>`;
     }
     if (data.trace && data.trace.length){
       const steps = data.trace.map(t => `<code>${esc(t.tool)}</code>`).join(" → ");
@@ -2005,23 +2156,33 @@ let promoSub = "传播文案";
 let promoThread = [];   // [{role:"me"|"ai", text}] 仅存在于本次页面会话内，切走即清空
 function setPromoSub(btn, sub){
   promoSub = sub;
-  document.querySelectorAll("#promoModeSwitch button").forEach(b => b.classList.toggle("on", b === btn));
+  const tab = sub === "短视频" ? "video" : "copy";
+  document.querySelectorAll("#promoModeSwitch button").forEach(b => {
+    const isActive = b === btn || b.dataset.tab === tab;
+    b.classList.toggle("on", isActive);
+    b.classList.toggle("active", isActive);
+  });
+  document.querySelectorAll(".marketing-panel").forEach(panel => panel.classList.toggle("active", panel.dataset.panel === tab));
+  document.querySelectorAll("[data-publish]").forEach(item => item.classList.toggle("hidden", item.dataset.publish !== tab));
+  document.querySelectorAll("[data-label]").forEach(item => item.classList.toggle("hidden", item.dataset.label !== tab));
   const input = document.getElementById("promoInput");
+  if (!input) return;
   if (sub === "短视频") input.placeholder = "例如：生成一条 30 秒活动预热视频方案，面向企业 IP 负责人";
   else input.placeholder = "例如：写一条 Analytics AI Mode 的推文";
 }
 
 function resetPromoStudio(){
   promoSub = "传播文案";
-  document.querySelectorAll("#promoModeSwitch button").forEach((b, i) => b.classList.toggle("on", i === 0));
+  setPromoSub(document.querySelector('#promoModeSwitch button[data-tab="copy"]'), "传播文案");
   promoThread = [];
   renderPromoThread();
-  document.getElementById("promoInput").value = "";
+  document.getElementById("promoInput").value = "为 Analytics AI Mode 生成面向企业 IP 负责人的发布内容，突出专利检索、专利解读和竞争情报分析能力。";
   document.getElementById("promoInput").placeholder = "例如：写一条 Analytics AI Mode 的推文";
   document.getElementById("promoReport").innerHTML = defaultPromoPreview();
 }
 function renderPromoThread(){
   const el = document.getElementById("promoThread");
+  if (!el) return;
   if (!promoThread.length){
     el.innerHTML = `
       <div class="mini-q assistant"><b>芽懂：</b>你想生成传播文案还是 30 秒短视频方案？可以告诉我目标受众、发布渠道和希望强调的产品能力。</div>
@@ -2043,66 +2204,84 @@ let lastPromoVideoText = "";     // 供 startVideoGeneration 读取 Agent 产物
 let videoPollTimer = null;
 
 function defaultPromoPreview(){
-  return `<div class="report-toolbar">
-      <div><span class="status">生成结果</span><span class="rmeta">30 秒视频方案 · 可生成示例镜头</span></div>
-      <div class="toolbar-actions"><button onclick="copyReport('promoReport')">复制</button><button onclick="exportReport('promoReport','营销与传播结果')">下载</button></div>
-    </div>
-    <div class="video-output">
-      <div class="video-screen"><button class="play-button">▶</button><div class="video-caption">让专利分析进入 AI Mode</div></div>
-      <div class="video-meta-row"><span>脚本预览</span><b>30s</b></div>
-      <div class="storyboard">
-        <div><span>01</span><p>痛点开场</p></div>
-        <div><span>02</span><p>AI Mode 提问</p></div>
-        <div><span>03</span><p>检索与解读</p></div>
-        <div><span>04</span><p>竞争情报报告</p></div>
+  return `<article class="copy-preview-card marketing-panel active" data-panel="copy">
+      <div class="preview-head">
+        <div><span class="status done">已生成</span><h2>让专利分析进入 AI Mode</h2></div>
+        <button onclick="copyReport('promoReport')">复制文案</button>
       </div>
-    </div>
-    <article class="draft-card">
-      <h2>视频配套文案</h2>
-      <p>面对海量专利数据，企业 IP 团队需要的不只是找到结果，而是快速理解技术方向、竞争格局和布局机会。</p>
-      <p>Analytics AI Mode 让专利检索、专利解读和竞争情报分析进入自然语言交互流程，把复杂专利信息转化为可复核、可交付的业务材料。</p>
-      <h3>自动生成字幕</h3>
-      <ul><li>专利数据太多，洞察太慢？</li><li>用 Analytics AI Mode，直接提问并获得可追溯分析。</li><li>从检索结果，到竞争洞察，到报告交付。</li></ul>
+      <p>面对海量专利数据，企业 IP 团队需要的不只是找到结果，更需要快速理解技术方向、竞争格局和布局机会。</p>
+      <h3>从检索结果到可行动洞察</h3>
+      <p>Analytics AI Mode 通过自然语言检索、专利解读与竞争情报分析，帮助团队更快获得可验证、可复用的决策依据。</p>
+      <blockquote>所有分析结果均基于权威数据与可溯源引用，确保结论可靠、可验证、可复用。</blockquote>
+      <footer><span>字数统计：312 字</span><span>参考引用：3 处</span><span>已自动保存</span></footer>
     </article>
-    <section class="video-card">
-      <h3>视频资产</h3>
-      <p>当前能力：可提交一个示例镜头视频任务；完整 30 秒成片、字幕烧录和旁白合成需要后续接入视频编排链路。</p>
-    </section>`;
+    <article class="video-preview-card marketing-panel" data-panel="video">
+      <div class="video-stage" id="videoScreen">
+        <div class="video-brand">YADO</div>
+        <button class="play-button" id="videoGenTrigger" onclick="startVideoGeneration()">▶</button>
+        <h3>让专利分析进入 <span>AI Mode</span></h3>
+        <b>00:30</b>
+      </div>
+      <div class="storyboard">
+        <div><span>00-05</span><p>痛点开场</p></div>
+        <div><span>05-12</span><p>AI Mode 提问</p></div>
+        <div class="active"><span>12-22</span><p>检索与解读</p></div>
+        <div><span>22-30</span><p>洞察收尾</p></div>
+      </div>
+      <div class="video-script-card">
+        <h3>发布配文</h3>
+        <p>一句话提问，快速获得专利检索与解读结果，并生成竞争情报洞察。</p>
+        <h3>画面文案</h3>
+        <p>AI 快速理解你的需求，专利检索、解读、关键信息一目了然。</p>
+      </div>
+      <div class="video-genrow" id="videoGenRow">
+        <button class="video-genbtn" id="videoGenBtn" onclick="startVideoGeneration()">生成示例镜头</button>
+        <span class="video-genstatus" id="videoGenStatus"></span>
+      </div>
+    </article>`;
 }
 
 function renderPromoOutput(text, sub){
   lastPromoText = text;
-  let html = `<div class="report-toolbar">
-      <div><span class="status">生成结果</span><span class="rmeta">${esc(sub)}${sub === "短视频" ? " · 30 秒方案 + 示例镜头" : ""}</span></div>
-      <div class="toolbar-actions"><button onclick="copyReport('promoReport')">复制</button><button onclick="exportReport('promoReport','营销与传播结果')">下载</button></div>
-    </div>`;
+  const { head, lead } = splitHeadAndBody(text);
 
   if (sub === "短视频"){
     lastPromoVideoText = text;
     const outline = [...text.matchAll(/^\d+\.\s*\*\*(.+?)\*\*[:：]?\s*(.*)$/gm)].slice(0, 4);
-    html += `<div class="video-output" id="videoOutput">
-        <div class="video-screen" id="videoScreen"><button class="play-button" id="videoGenTrigger" onclick="startVideoGeneration()">▶</button><div class="video-caption">${esc(outline[0]?.[1] || "视频脚本预览")}</div></div>
-        <div class="video-meta-row"><span>30 秒方案已生成</span><b>30s</b></div>
-        <div class="video-genrow" id="videoGenRow">
-          <button class="video-genbtn" id="videoGenBtn" onclick="startVideoGeneration()">生成示例镜头</button>
-          <span class="video-genstatus" id="videoGenStatus"></span>
+    return `<article class="copy-preview-card marketing-panel" data-panel="copy">
+        <div class="preview-head"><div><span class="status done">已生成</span><h2>${esc(head || "传播文案")}</h2></div><button onclick="copyReport('promoReport')">复制文案</button></div>
+        ${lead ? `<p>${esc(lead)}</p>` : ""}
+        <div>${renderText(text)}</div>
+        <footer><span>字数统计：${esc(String(text.length))} 字</span><span>参考引用：自动追溯</span><span>已自动保存</span></footer>
+      </article>
+      <article class="video-preview-card marketing-panel active" data-panel="video">
+        <div class="video-stage" id="videoScreen">
+          <div class="video-brand">YADO</div>
+          <button class="play-button" id="videoGenTrigger" onclick="startVideoGeneration()">▶</button>
+          <h3>${esc(outline[0]?.[1] || head || "30 秒短视频方案")}</h3>
+          <b>00:30</b>
         </div>
-        <div class="video-badge">⚠️ 当前仅生成一个示例镜头，不含多镜头拼接/字幕烧录/旁白合成；以下为 30 秒完整方案，供后续编排成片。</div>
         <div class="storyboard">${
-          (outline.length ? outline : [["", "开场", ""]]).map((o, i) =>
-            `<div><span>${String(i + 1).padStart(2, "0")}</span><p>${esc(o[1] || "")}</p></div>`
+          (outline.length ? outline : [["", "痛点开场"], ["", "能力展示"], ["", "价值证明"], ["", "行动收尾"]]).slice(0,4).map((o, i) =>
+            `<div class="${i === 2 ? "active" : ""}"><span>${String(i * 7).padStart(2, "0")}-${String(Math.min(30, i * 7 + 7)).padStart(2, "0")}</span><p>${esc(o[1] || "")}</p></div>`
           ).join("")
         }</div>
-      </div>
-      <div class="draft-card">${renderText(text)}</div>
-      <section class="video-card">
-        <h3>视频资产</h3>
-        <p>当前后端会从「视频生成提示词」中提取一个英文镜头描述，提交给已配置的视频模型并轮询状态。</p>
-      </section>`;
-  } else {
-    html += `<div class="draft-card">${renderText(text)}</div>${renderPosterCard(sub)}`;
+        <div class="video-script-card">${renderText(text)}</div>
+        <div class="video-badge">当前可生成一个示例镜头；完整 30 秒成片以本方案作为后续视频编排输入。</div>
+        <div class="video-genrow" id="videoGenRow"><button class="video-genbtn" id="videoGenBtn" onclick="startVideoGeneration()">生成示例镜头</button><span class="video-genstatus" id="videoGenStatus"></span></div>
+      </article>`;
   }
-  return html;
+  return `<article class="copy-preview-card marketing-panel active" data-panel="copy">
+      <div class="preview-head"><div><span class="status done">已生成</span><h2>${esc(head || "传播文案")}</h2></div><button onclick="copyReport('promoReport')">复制文案</button></div>
+      ${lead ? `<p>${esc(lead)}</p>` : ""}
+      <div>${renderText(text)}</div>
+      <footer><span>字数统计：${esc(String(text.length))} 字</span><span>参考引用：自动追溯</span><span>已自动保存</span></footer>
+    </article>
+    <article class="video-preview-card marketing-panel" data-panel="video">
+      <div class="video-stage" id="videoScreen"><div class="video-brand">YADO</div><button class="play-button" id="videoGenTrigger" onclick="setPromoSub(document.querySelector('#promoModeSwitch button[data-tab=video]'),'短视频')">▶</button><h3>让专利分析进入 <span>AI Mode</span></h3><b>00:30</b></div>
+      <div class="storyboard"><div><span>00-05</span><p>痛点开场</p></div><div><span>05-12</span><p>AI Mode 提问</p></div><div class="active"><span>12-22</span><p>检索与解读</p></div><div><span>22-30</span><p>洞察收尾</p></div></div>
+      <div class="video-script-card"><h3>发布配文</h3><p>可切换短视频模式继续生成完整脚本和示例镜头。</p></div>
+    </article>`;
 }
 
 function renderPosterCard(sub){
@@ -2249,7 +2428,7 @@ async function runPromo(){
     let html = (data.degraded ? `<div class="degraded-note">当前为降级结果：${esc(data.degraded_reason || "未能完成检索/生成链路，展示预置兜底内容。")}</div>` : "") + renderPromoOutput(data.text, promoSub);
     if (data.retrieval){
       const titles = (data.retrieval.titles || []).map(x => `<span>${esc(x)}</span>`).join("");
-      html += `<details class="trace" open><summary>🔎 已检索知识库（召回 ${esc(data.retrieval.count || 0)} 条资料）</summary><div class="source-list" style="margin-top:8px">${titles}</div></details>`;
+      html += `<details class="trace" open><summary>🔎 已检索知识库（召回 ${esc(String(data.retrieval.count || 0))} 条资料）</summary><div class="source-list" style="margin-top:8px">${titles}</div></details>`;
     }
     if (data.trace && data.trace.length){
       const steps = data.trace.map(t => `<code>${esc(t.tool)}</code>`).join(" → ");

@@ -37,7 +37,7 @@
 - 运营素材库
 - 销售知识库
 
-注意：`code/sample_retrieval/live/` 是黑盒检索系统的固定输出目录。普通上传和 E2E fixture 不应写入 `live/`，避免污染实时检索结果。
+注意：`code/sample_retrieval/live/` 是黑盒检索系统的固定输出目录。仓库内只白名单提交少量 demo 召回资料，用于本地打开页面时也能生成完整示例；普通上传、真实临时召回和 E2E fixture 不应随意写入并提交 `live/`，避免污染实时检索结果。
 
 ---
 
@@ -78,6 +78,7 @@
 测试和演示 case：
 
 - `code/sample_retrieval/live/`：只给黑盒检索实时写入使用。
+- `code/sample_retrieval/live/analytics-ai-mode-product.md`、`triz-method-sales-explain.md`、`engineering-customer-brief.md`：提交入库的 demo 召回资料，用于本地页面默认任务的可运行演示。
 - `code/sample_retrieval/mock_external/`：外部公开信息检索的可提交模拟 fixture。
 - `code/fixtures/retrieval_cases/`：基础 demo/单测 fixture。
 - `code/e2e/fixtures/`：端到端测试 fixture。

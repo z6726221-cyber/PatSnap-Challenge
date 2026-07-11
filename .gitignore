@@ -33,10 +33,13 @@ code/sample_retrieval/2.md
 code/sample_retrieval/2026*.md
 
 # live/ 是真实检索的实时落盘目录，每次覆盖且可能含内部真实数据；
-# 只提交目录说明和占位文件，不提交真实召回 md。
+# 只提交目录说明、占位文件和白名单 demo 召回资料，不提交真实临时召回 md。
 code/sample_retrieval/live/*
 !code/sample_retrieval/live/.gitkeep
 !code/sample_retrieval/live/README.md
+!code/sample_retrieval/live/analytics-ai-mode-product.md
+!code/sample_retrieval/live/triz-method-sales-explain.md
+!code/sample_retrieval/live/engineering-customer-brief.md
 
 # 例外：前端运行必需的静态资源（logo 等）要入库
 !code/web/assets/
