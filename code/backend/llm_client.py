@@ -39,7 +39,7 @@ class LLMClient:
         # urllib 默认 opener 会读 https_proxy 环境变量；显式构造以确保走代理
         self._opener = urllib.request.build_opener()
 
-    def chat(self, messages, tools=None, tool_choice=None, temperature=None, timeout=90):
+    def chat(self, messages, tools=None, tool_choice=None, temperature=None, timeout=90, max_tokens=None):
         """发一次 chat.completions 请求，返回原始 message dict（含可能的 tool_calls）。"""
         payload = {"model": self.model, "messages": messages}
         if tools:
@@ -48,6 +48,12 @@ class LLMClient:
             payload["tool_choice"] = tool_choice
         if temperature is not None:
             payload["temperature"] = temperature
+        if max_tokens is None:
+            try:
+                max_tokens = int(os.environ.get("LLM_MAX_TOKENS", "6000"))
+            except ValueError:
+                max_tokens = 6000
+        payload["max_tokens"] = max_tokens
 
         req = urllib.request.Request(
             self.base_url + "/chat/completions",

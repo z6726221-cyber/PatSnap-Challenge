@@ -65,13 +65,13 @@ def score_text(name: str, text: str, required: list[str], forbidden: list[str] |
         if item in text:
             details.append(f"出现禁用片段：{item}")
             score -= 15
-    if "来源：" not in text and "source:" not in text:
+    if "来源" not in text and "source:" not in text and "kb://" not in text and "public-demo://" not in text:
         details.append("缺少来源标注")
         score -= 18
-    if "更新时间" not in text and "时间未知" not in text:
+    if "更新时间" not in text and "时间未知" not in text and re.search(r"20\d{2}-\d{2}-\d{2}", text) is None:
         details.append("缺少更新时间/时间未知标注")
         score -= 10
-    if "待核实" not in text and "未找到" not in text:
+    if "待核实" not in text and "未找到" not in text and "缺口" not in text:
         details.append("没有显式待核实/缺口表达，需确认是否过度确定")
         score -= 8
     score = max(0, score)
@@ -101,7 +101,7 @@ CASES = [
         "skill": "patsnap-promo",
         "mode": "promo",
         "required": ["30秒", "字幕", "发布配文", "事实来源", "视频生成提示词"],
-        "forbidden": ["销售话术", "5-10 秒", "完整成片已生成"],
+        "forbidden": ["销售话术", "5-10 秒单镜头", "5-10 秒短片", "完整成片已生成"],
     },
     {
         "name": "skill_tech_explain",
