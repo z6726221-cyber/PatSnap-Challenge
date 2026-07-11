@@ -79,6 +79,7 @@
 
 - `code/sample_retrieval/case-*`：基础样例。
 - `code/sample_retrieval/e2e-*`：端到端测试 fixture。
+- `code/sample_retrieval/mock_external/`：外部公开信息检索的可提交模拟 fixture。
 - `code/sample_retrieval/live/`：只给黑盒检索实时写入使用。
 
 资料格式说明见：
@@ -112,6 +113,7 @@
 │   ├── sample_retrieval/
 │   │   ├── case-*               # 基础样例
 │   │   ├── e2e-*                # E2E fixture
+│   │   ├── mock_external/       # 外部公开信息模拟 fixture
 │   │   └── live/                # 黑盒检索实时输出目录
 │   ├── skills/
 │   │   ├── patsnap-tech-qa/
@@ -259,7 +261,7 @@ code/e2e/reports/<timestamp>/
 ## 开发约定
 
 1. 改页面、skill、后端 API 后，同步更新 README。
-2. 不要把测试 fixture 写进 `code/sample_retrieval/live/`。
+2. 不要把测试 fixture 写进 `code/sample_retrieval/live/`；外部公开信息模拟资料放进 `code/sample_retrieval/mock_external/` 或 `e2e-*` case。
 3. 新增工作台时，需要同时补：
    - 前端页面入口。
    - 后端 `mode -> skill` 映射。

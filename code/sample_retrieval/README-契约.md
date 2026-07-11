@@ -53,11 +53,32 @@ sample_retrieval/
   做不到这一步，直接写 `live/` 也可以，靠我们这边的重试兜底。
 - **`live/` 里没有 `.md` 文件时**（检索还没跑过、或者本轮没召回到任何资料）：
   后端直接给用户降级提示，不会退回假样例演示数据。
-- `live/` 目录不进 git（每次覆盖、且可能含内部真实数据），已加进
-  `.gitignore`。
+- `live/` 目录结构进 git，但真实召回 `.md` 不进 git：仓库只提交
+  `live/.gitkeep` 和 `live/README.md`，用于保留目录和说明；检索系统运行时
+  生成的 `.md` 仍被 `.gitignore` 排除。
 
 以下的 `case-xxx/` 假样例目录结构和 `question.txt`，只用于本地测试/回归
 （`run_all.py`、单测），跟 live 真实链路无关，检索侧不需要管这部分。
+
+## 外部公开信息模拟：mock_external 目录
+
+销售与售前会尝试合并三类资料：`live/` 黑盒召回、内部知识库、外部公开信息。
+真实外部搜索由 `backend/external_search.py` 通过 `EXTERNAL_SEARCH_ENDPOINT`
+接入；未配置时会返回 `external-intel/gap`，要求报告把外部客户事实标为待核实。
+
+为了让仓库里能看见“外部检索模拟资料”的形态，`sample_retrieval/mock_external/`
+提交了可公开的 demo fixture：
+
+```
+sample_retrieval/
+└── mock_external/
+    ├── README.md
+    ├── engineering-public-intel.md
+    └── clarivate-like-ip-intel.md
+```
+
+这些资料使用 `public-demo://...` source，用于 Demo、E2E 和评审说明；不要把真实
+客户外部搜索结果直接提交到这里。
 
 ## 假样例回归目录结构（仅供本地测试，非生产链路）
 
