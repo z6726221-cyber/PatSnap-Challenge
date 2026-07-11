@@ -2057,6 +2057,11 @@ function renderKbGrid(id, items){
 let kbCache = { sales: [], promo: [] };
 let projectCache = [];
 let uploadCache = [];
+const researchPrototypeUploads = [
+  { filename: "TRIZ 技术矛盾分析说明.pdf", category: "技术文档", status: "解析中", statusClass: "parsing", updated_at: "今天 11:32" },
+  { filename: "AI 辅助创新方法研究.md", category: "论文", status: "待审核", statusClass: "pending", updated_at: "昨天 18:06" },
+  { filename: "竞品技术路线调研.pptx", category: "项目材料", status: "已入库", statusClass: "done", updated_at: "昨天 15:24" }
+];
 
 async function loadKb(){
   try {
@@ -2072,28 +2077,59 @@ async function loadKb(){
   } catch(e) {}
 }
 
+function researchUploadRows(items){
+  return (items || []).length ? items : researchPrototypeUploads;
+}
+
+function researchStatusClass(status){
+  if (status === "解析中") return "parsing";
+  if (status === "待审核") return "pending";
+  return "done";
+}
+
+function formatResearchUpdatedAt(value){
+  if (!value) return "今天";
+  if (/^(今天|昨天)/.test(value)) return value;
+  const dateText = String(value).slice(0, 10);
+  const timeText = String(value).match(/\b(\d{2}:\d{2})/)?.[1] || "";
+  const date = new Date(`${dateText}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return value;
+  const today = new Date();
+  const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const targetStart = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const diffDays = Math.round((todayStart - targetStart) / 86400000);
+  if (diffDays === 0) return timeText ? `今天 ${timeText}` : "今天";
+  if (diffDays === 1) return timeText ? `昨天 ${timeText}` : "昨天";
+  return dateText;
+}
+
 function renderResearchUploads(items){
   const el = document.getElementById("researchUploadRows");
   if (!el) return;
-  if (!(items || []).length) return;
-  el.innerHTML = items.slice(0, 8).map(x =>
+  const rows = researchUploadRows(items);
+  if (!rows.length) {
+    el.innerHTML = `<div class="empty-list">没有找到匹配内容。</div>`;
+    return;
+  }
+  el.innerHTML = rows.slice(0, 8).map(x =>
     `<div class="table-row">
       <span>${esc(x.filename || "未命名文件")}</span>
-      <span>${esc(x.category || x.description || "上传资料")}</span>
-      <span><b class="status done">${esc(x.status || "已入库")}</b></span>
-      <span>${esc(x.updated_at || "今天")}</span>
+      <span>${esc(x.category || "上传资料")}</span>
+      <span><b class="status ${esc(x.statusClass || researchStatusClass(x.status))}">${esc(x.status || "已入库")}</b></span>
+      <span>${esc(formatResearchUpdatedAt(x.updated_at))}</span>
     </div>`
   ).join("");
 }
 
 function searchResearchUploads(){
   const q = (document.getElementById("researchSearch")?.value || "").trim();
+  const sourceRows = researchUploadRows(uploadCache);
   if (!q){
-    renderResearchUploads(uploadCache);
+    renderResearchUploads(sourceRows);
     return;
   }
-  const filtered = (uploadCache || []).filter(x =>
-    [x.filename, x.category, x.description, x.owner, x.visibility, x.status].join(" ").includes(q)
+  const filtered = sourceRows.filter(x =>
+    [x.filename, x.category, x.description, x.owner, x.visibility, x.status, x.updated_at].join(" ").includes(q)
   );
   renderResearchUploads(filtered);
 }
