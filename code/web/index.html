@@ -450,7 +450,8 @@ body{overflow:hidden;background:var(--bg)}
 .marketing-tabs button{min-width:98px;height:36px;border:0;border-radius:9px;color:var(--green-dark);background:transparent;font-weight:760;cursor:pointer}
 .marketing-tabs button.active,.marketing-tabs button.on{color:#fffdf9;background:var(--green)}
 .task-title{display:flex;gap:16px;align-items:center;min-width:0;color:var(--muted);font-weight:650}
-.task-title strong{color:var(--green-dark);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.task-title span{white-space:nowrap}
+.task-title strong{min-width:0;color:var(--green-dark);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .status.editable{color:var(--green);background:#e7efe5;font-weight:760}
 .task-actions{display:flex;gap:10px}
 .task-actions button{min-height:38px;padding:0 16px;border:1px solid var(--line);border-radius:10px;color:var(--green-dark);background:#fffdf9;font-weight:760;cursor:pointer}
@@ -495,6 +496,23 @@ body{overflow:hidden;background:var(--bg)}
 .tag-set.small span{padding:5px 8px}
 .source-trace-card{display:grid;gap:10px;padding:14px;border:1px solid rgba(31,111,73,.18);border-radius:16px;background:#f6fbf3}
 .source-trace-card h3{margin:0;color:var(--green-dark);font-size:17px}
+#splitPromo .page-workspace{align-items:stretch}
+#splitPromo .page-header,#splitPromo .marketing-taskbar,#splitPromo .marketing-studio{max-width:1480px}
+@media(max-width:1500px){
+  #splitPromo .page-workspace{padding-left:40px;padding-right:40px}
+  #splitPromo .marketing-taskbar{grid-template-columns:auto minmax(240px,1fr) auto auto;gap:12px}
+  #splitPromo .marketing-tabs button{min-width:92px;padding:0 18px}
+  #splitPromo .marketing-studio{grid-template-columns:minmax(250px,.82fr) minmax(300px,1fr) minmax(250px,.82fr);gap:16px}
+  #splitPromo .campaign-settings,#splitPromo .publish-panel,#splitPromo .copy-preview-card,#splitPromo .video-preview-card{padding:18px}
+  #splitPromo .preview-head h2{font-size:26px}
+}
+@media(max-width:1180px){
+  #splitPromo .marketing-taskbar{grid-template-columns:1fr auto auto}
+  #splitPromo .marketing-tabs{grid-column:1/-1;width:max-content}
+  #splitPromo .marketing-studio{grid-template-columns:1fr}
+  #splitPromo .campaign-preview{order:2}
+  #splitPromo .publish-panel{order:3}
+}
 .presales-briefing{grid-template-columns:360px minmax(0,1fr);align-items:start}
 .presales-briefing .research-input{position:sticky;top:24px}
 .short-textarea{min-height:112px}
@@ -1036,7 +1054,7 @@ body{overflow:hidden;background:var(--bg)}
                 <div><span>AI 推断</span><strong>研发情报流程可能存在重复收集</strong><button>查看依据</button></div>
               </div>
             </div>
-          </section>
+          </article>
         </section>
       </main>
     </div>
