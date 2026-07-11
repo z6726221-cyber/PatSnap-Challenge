@@ -1,211 +1,279 @@
-# 芽懂 · 智慧芽私域技术知识库（Plan A）
+# 芽懂 YADO · 智慧芽私域知识协作空间
 
-面向**销售 / 售前 / 运营 / 市场**的 AI 协作空间：上传研发资料和业务素材后，用自然语言拿到**有来源、有时效、口径统一**的技术问答、销售话术、市场与产品洞察、营销传播内容、图片海报和视频生成入口。
+芽懂是面向智慧芽内部 **销售、售前、营销、运营、研发知识维护者** 的 AI 协作 Demo。它把企业私域知识、黑盒检索召回结果和场景化 skill 连接起来，让用户从一个入口完成可信问答、客户拜访方案、营销传播内容、产品与技术解释等工作。
 
-> 本仓库聚焦 **Plan A** 的可运行 Demo。产品定位、选型论证等完整方案见 [`planA/技术方案-OpenViking.md`](planA/技术方案-OpenViking.md)。
+当前仓库聚焦可运行 Demo：前端是单文件 Web 页面，后端是标准库 HTTP 服务，Agent 通过 OpenAI-compatible LLM API 调用 skill，并通过工具读取已召回资料。
 
 ---
 
-## 当前能力
+## 当前产品形态
 
-### 1. 首页对话
+### 首页
 
-- 支持直接输入问题，后端读取检索侧写入的资料并由 Agent 自主选择 skill。
-- 首页保留快捷任务条框，当前包括「生成销售话术」「写运营推文」「解释 TRIZ 概念」「进行竞品分析」。点击条框会把文字填入输入框并追加空格，方便用户继续补充问题。
-- 回答会被结构化渲染：结论、依据、冲突提示、待核实项和引用来源尽量分开展示，避免整段文字堆在一起。
-- 检索资料不足或模型失败时会降级，并在前端明确提示「降级演示 / 资料不足」。
+首页是通用 Agent 入口。
 
-### 2. 业务工作台
+- 用户直接输入任务或问题。
+- 后端读取 `code/sample_retrieval/live/` 中由黑盒检索系统写入的资料。
+- Agent 自主选择 skill，不由首页硬编码固定能力。
+- 如果 `live/` 没有资料，首页不会退回假样例硬答，而是明确降级或提示检索资料缺失。
 
-当前侧边栏的业务入口包括：
+### 业务工作台
 
-- **销售与售前**：使用 `patsnap-presales` skill，面向客户拜访和售前推进，提供深度调研、痛点分析、话术脚本和行动清单四类任务。4 个模块可单独生成，也可汇总成一份完整客户拜访售前报告。
-- **营销与传播**：原「内容生成」，使用 `patsnap-promo` skill，支持宣传稿、运营文案、销售话术、视频脚本 / 视频提示词等生成。
-- **市场与产品洞察**：原「竞品分析」，使用 `patsnap-compare` skill，按维度组织我方与竞品差异，强调可追溯来源、攻防口径和销售可用表达。
+业务工作台是具体场景入口，会硬编码调用对应 skill。
 
-销售与售前会合并读取 `sample_retrieval/live/`、本地销售 / 运营知识库和外部情报适配层。外部搜索服务未配置时，报告会明确标注 `external-intel/gap` 和待核实项，不会假装已经联网。营销与传播、市场与产品洞察会优先读取 `sample_retrieval/live/`；如果 live 资料不存在，会使用本地 KB 做轻量召回兜底，并在响应里标注检索来源。
+| 页面 | 后端 mode | skill | 定位 |
+|---|---|---|---|
+| 销售与售前 | `presales` | `patsnap-presales` | 把客户背景、公开信息、企业知识和 AI 推断整理成可执行拜访方案 |
+| 营销与传播 | `promo` | `patsnap-promo` | 生成传播文案或 30 秒短视频方案 |
+| 产品与技术解释 | `tech_explain` | `patsnap-tech-explain` | 把产品能力、技术概念、方法论解释成业务听得懂、来源可查的标准口径 |
 
-### 3. 知识空间
+`patsnap-compare` 不在主导航里展示，但仍保留给首页通用 Agent 自主调用，用于市场/竞品/产品洞察类问题。
 
-- 支持查看「研发工作台」「运营素材库」和「销售知识库」。
-- 支持新增知识项目、新增知识条目。
-- 支持上传销售资料 / 运营素材，文件会同时写入本地知识库和 `sample_retrieval/live/`，模拟上游检索模块产出的资料目录。
-- 支持导出生成结果为 Markdown 下载。
+### 知识空间
 
-### 4. 图片与视频增强
+知识空间用于查看和沉淀内部资料。
 
-- 可选图片增强：调用图片模型生成配套海报，并把图片直接展示在前端。
-- 可选视频增强：从营销与传播结果里提取视频提示词，提交给视频模型生成任务；是否能返回可播放视频 URL 取决于上游网关和账号能力。
+- 研发知识库
+- 运营素材库
+- 销售知识库
 
-## 核心原则
+注意：`code/sample_retrieval/live/` 是黑盒检索系统的固定输出目录。普通上传和 E2E fixture 不应写入 `live/`，避免污染实时检索结果。
 
-- **不编造**：事实只来自召回资料；没有支撑的点标为「待核实」。
-- **可溯源**：事实性陈述需要绑定来源和更新时间。
-- **冲突曝光**：同一话题多来源不一致时，按权威性和时效裁决主答案，同时展示另一说法。
-- **销售友好**：技术问答要清晰、通俗、专业，避免只给研发能看懂的术语堆叠。
+---
 
-## 系统链路
+## Skill 体系
 
-检索模块本身不在本仓库内。比赛 Demo 中，检索模块的输出被模拟为 Markdown 文件目录：
+| Skill | 状态 | 说明 |
+|---|---|---|
+| `patsnap-tech-qa` | 保留 | 首页通用技术问答、统一口径回答 |
+| `patsnap-presales` | 已强化 | 销售与售前工作台专用，强制区分公开信息、企业知识、AI 推断待验证 |
+| `patsnap-promo` | 已重构 | 营销与传播专用，只保留传播文案和短视频；销售话术移交售前 skill |
+| `patsnap-tech-explain` | 新增 | 产品与技术解释专用，输出一句话解释、通俗解释、核心原理、业务价值、能力边界、FAQ 等 |
+| `patsnap-compare` | 保留并强化 | 首页自动路由使用；强制输出核心结论、对比表、建议话术、资料缺口/待核实项 |
 
-- 静态样例：`planA/code/sample_retrieval/case-*`
-- 实时资料：`planA/code/sample_retrieval/live/`
-- 上传文件：后端会把上传资料同步写入 `live/`
+共享资源：
+
+- `code/skills/SOUL.md`：统一术语和表达风格。
+- `code/skills/references/资料使用SOP.md`：资料读取、来源、时效、冲突裁决规则。
+- `code/skills/scripts/check_sources.py`：来源检查脚本。
+
+---
+
+## 检索与资料契约
+
+检索模块本身是外部黑盒，不在本仓库内。
+
+真实链路约定：
 
 ```text
 用户问题
-  -> 前端 planA/code/web/index.html
-  -> 后端 planA/code/backend/server.py
-  -> 读取 sample_retrieval/live/ 或样例 case
-  -> Agent 自主选择 skill，或由业务页显式指定 skill
-  -> skill 按资料使用 SOP 挑料、裁决冲突、组织答案
-  -> 前端结构化展示回答 / 售前报告 / 销售话术 / 洞察报告 / 营销文案 / 图片 / 视频任务状态
+  -> 外部黑盒检索
+  -> 黑盒把召回结果写入 code/sample_retrieval/live/*.md
+  -> 芽懂后端读取 live/
+  -> Agent 选择或使用指定 skill
+  -> skill 通过 list_materials / read_material / check_conflicts 读资料、裁决冲突、生成产物
+  -> 前端结构化展示
 ```
 
-资料契约见 [`planA/code/sample_retrieval/README-契约.md`](planA/code/sample_retrieval/README-契约.md)。
+测试和演示 case：
 
-## Skill 设计
+- `code/sample_retrieval/case-*`：基础样例。
+- `code/sample_retrieval/e2e-*`：端到端测试 fixture。
+- `code/sample_retrieval/live/`：只给黑盒检索实时写入使用。
 
-能力选择由 Agent 自主判断，不是后端关键词硬路由。后端把 skill 的 `name + description` 交给模型，模型先选择能力，再读取完整 skill 指令执行。
+资料格式说明见：
 
-| Skill | 场景 | 产物 |
-|---|---|---|
-| `patsnap-tech-qa` | 产品 / 项目 / 技术概念问答 | 面向销售的清晰解释、标准口径、来源和待核实项 |
-| `patsnap-compare` | 市场与产品洞察、竞品对比、攻防话术 | 维度化对比、我方优势 / 风险、证据和销售话术 |
-| `patsnap-promo` | 营销与传播、宣传稿、运营文案、销售话术、视频脚本 | 带来源的内容初稿、视频提示词、可选图片海报 |
-| `patsnap-presales` | 销售与售前、客户拜访准备、机会推进 | 客户调研、痛点分析、话术脚本、行动清单和完整拜访报告 |
+- `code/sample_retrieval/README-契约.md`
 
-共享规则：
-
-- [`planA/code/skills/SOUL.md`](planA/code/skills/SOUL.md)：统一表达原则。
-- [`planA/code/skills/references/资料使用SOP.md`](planA/code/skills/references/资料使用SOP.md)：来源、时效、冲突和边界规则。
-- [`planA/code/skills/scripts/check_sources.py`](planA/code/skills/scripts/check_sources.py)：来源校验脚本。
+---
 
 ## 目录结构
 
 ```text
-planA/code/
-├── backend/
-│   ├── server.py              # HTTP 服务和 API 编排
-│   ├── agent_runtime.py       # Agent 工具调用循环和 skill 选择
-│   ├── case_tools.py          # list_materials/read_material/check_conflicts
-│   ├── loader.py              # 读取检索输出 Markdown
-│   ├── conflict.py            # 权威 + 时效裁决
-│   ├── llm_client.py          # OpenAI-compatible LLM 客户端
-│   ├── video_client.py        # 视频生成客户端，支持任务持久化
-│   ├── image_client.py        # 图片生成客户端，保存并回显图片
-│   ├── external_search.py     # 外部情报检索适配器，未配置时显式返回检索缺口
-│   ├── local_store.py         # 本地知识库、上传、导出
-│   ├── fallback.json          # 降级演示结果
-│   └── tests/
-├── sample_retrieval/
-│   ├── case-*                 # 静态样例 case
-│   └── live/                  # 模拟检索黑盒实时产出的 Markdown 资料
-├── skills/
-│   ├── patsnap-tech-qa/
-│   ├── patsnap-compare/
-│   ├── patsnap-promo/
-│   ├── patsnap-presales/
-│   ├── SOUL.md
-│   └── references/资料使用SOP.md
-└── web/
-    ├── index.html             # 单文件前端 Demo
-    └── assets/                # YADO logo、芽仔头像等静态资源
+.
+├── PRD/                         # 当前需求文档
+├── demo原型/                    # 原型页面和参考图
+├── code/
+│   ├── backend/
+│   │   ├── server.py            # HTTP 服务与 API 编排
+│   │   ├── agent_runtime.py     # Agent 工具调用循环与 skill 选择
+│   │   ├── case_tools.py        # list_materials/read_material/check_conflicts
+│   │   ├── loader.py            # Markdown 检索资料解析
+│   │   ├── conflict.py          # 权威性 + 时效冲突裁决
+│   │   ├── llm_client.py        # OpenAI-compatible LLM 客户端
+│   │   ├── external_search.py   # 外部情报适配层；未配置时显式返回缺口
+│   │   ├── local_store.py       # 本地知识库、上传、导出
+│   │   ├── image_client.py      # 图片生成客户端
+│   │   ├── video_client.py      # 视频生成客户端
+│   │   ├── fallback.json        # 降级结果
+│   │   └── tests/               # 单元测试
+│   ├── e2e/
+│   │   └── run_e2e.py           # 真实 API 端到端测试 runner
+│   ├── sample_retrieval/
+│   │   ├── case-*               # 基础样例
+│   │   ├── e2e-*                # E2E fixture
+│   │   └── live/                # 黑盒检索实时输出目录
+│   ├── skills/
+│   │   ├── patsnap-tech-qa/
+│   │   ├── patsnap-presales/
+│   │   ├── patsnap-promo/
+│   │   ├── patsnap-tech-explain/
+│   │   ├── patsnap-compare/
+│   │   ├── SOUL.md
+│   │   └── references/
+│   └── web/
+│       ├── index.html           # 单文件前端
+│       └── assets/
+└── README.md
 ```
+
+---
 
 ## 环境变量
 
-后端从 `planA/code/backend/.env` 读取配置。可以复制 `.env.example` 后填写真实值：
+后端从 `code/backend/.env` 读取配置。可以复制示例文件：
 
 ```bash
-cd planA/code/backend
+cd code/backend
 cp .env.example .env
 ```
 
+常用配置：
+
 ```bash
-# LLM：用于对话、skill 选择和最终生成
-LLM_BASE_URL=https://llm-api.patsnap.info/v1
-LLM_MODEL=claude-opus-4-6
-LLM_API_KEY=replace-with-your-backend-llm-key
+# LLM：Agent、skill 选择和最终生成
+LLM_BASE_URL=https://example-compatible-endpoint/v1
+LLM_MODEL=replace-with-model
+LLM_API_KEY=replace-with-key
+LLM_MAX_TOKENS=6000
 
-# 视频：默认走 OpenAI-compatible 网关的 doubao-seedance-2.0
-VIDEO_BASE_URL=https://llm-api.patsnap.info/v1
-VIDEO_MODEL=doubao-seedance-2.0
-VIDEO_API_KEY=replace-with-your-video-key
+# 图片生成：可选
+IMAGE_BASE_URL=https://example-compatible-endpoint/v1
+IMAGE_MODEL=replace-with-image-model
+IMAGE_API_KEY=replace-with-key
 
-# 图片：默认 doubao-seedream-5.0-lite；不可用时可回退 doubao-seedream-4.5
-IMAGE_BASE_URL=https://llm-api.patsnap.info/v1
-IMAGE_MODEL=doubao-seedream-5.0-lite
-IMAGE_FALLBACK_MODEL=doubao-seedream-4.5
-IMAGE_API_KEY=replace-with-your-image-key-or-video-key
+# 视频生成：可选
+VIDEO_BASE_URL=https://example-compatible-endpoint/v1
+VIDEO_MODEL=replace-with-video-model
+VIDEO_API_KEY=replace-with-key
 
-# 销售与售前外部情报搜索：可选
-# 未配置时仍可生成报告，但外部客户事实会被标为待核实 / 需补充搜索。
+# 外部公开信息搜索：可选
+# 未配置时，销售与售前会把外部信息标为缺口/待核实，不假装联网。
 EXTERNAL_SEARCH_ENDPOINT=
 EXTERNAL_SEARCH_API_KEY=
 ```
 
-注意：
+不要提交真实 `.env` 或 API key。
 
-- `.env` 已被 gitignore，不要提交真实 key。
-- 前端不保存 key，只请求本地后端。
-- `doubao-seedream-*` 要求图片至少 `1920x1920`，后端会自动调整过小尺寸。
-- 视频模型如果只返回文本、不返回 URL，前端会展示错误或任务信息；这通常是网关能力或账号权限问题，不是前端渲染问题。
+---
 
-## 运行
+## 本地运行
 
-默认端口是 `8000`，也可以传端口，例如当前调试常用 `8001`：
+从仓库根目录启动：
 
 ```bash
-cd planA/code/backend
-python3 server.py 8001
+python3 code/backend/server.py 8000
 ```
 
 浏览器打开：
 
 ```text
-http://localhost:8001/
+http://localhost:8000/
 ```
 
-该服务默认监听 `0.0.0.0` 且无鉴权，仅用于本地 Demo 或受控网络环境。对外暴露前需要补访问控制。
+服务仅用于本地 Demo 或受控网络环境。对外暴露前需要补鉴权、权限控制和审计。
+
+---
 
 ## 常用 API
 
 | Method | Path | 说明 |
 |---|---|---|
 | `GET` | `/` | 前端页面 |
-| `GET` | `/api/cases` | 列出静态样例 case |
-| `POST` | `/api/chat` | 首页对话 / 销售与售前 / 市场与产品洞察 / 营销与传播主入口 |
-| `GET` | `/api/kb` | 读取知识库、知识项目、上传列表 |
+| `GET` | `/api/cases` | 列出样例 case |
+| `POST` | `/api/chat` | 首页对话与各工作台主入口 |
+| `GET` | `/api/kb` | 读取知识库、项目、上传列表 |
 | `POST` | `/api/kb` | 新增知识项目或知识条目 |
-| `POST` | `/api/upload` | 上传资料，并同步到本地 KB 与 `sample_retrieval/live/` |
-| `POST` | `/api/image/generate` | 基于生成文案创建海报图片 |
-| `GET` | `/api/image/file/<name>` | 读取后端保存的生成图片 |
-| `POST` | `/api/video/start` | 从营销与传播结果中提取视频提示词并提交任务 |
-| `GET` | `/api/video/status/<task_id>` | 查询视频任务状态 |
+| `POST` | `/api/upload` | 上传资料并写入本地知识库 |
+| `POST` | `/api/image/generate` | 基于生成内容创建配图 |
+| `GET` | `/api/image/file/<name>` | 读取生成图片 |
+| `POST` | `/api/video/start` | 提交示例镜头视频任务 |
+| `GET` | `/api/video/status/<task_id>` | 查询视频任务 |
 | `POST` | `/api/export` | 导出 Markdown |
 | `GET` | `/api/download/<path>` | 下载导出文件 |
 
+---
+
 ## 测试
 
-```bash
-cd planA/code/backend
-python3 -m unittest discover -s tests
-
-cd ../skills/scripts
-python3 -m unittest discover
-```
-
-也可以从仓库根目录运行：
+### 单元测试
 
 ```bash
-PYTHONPYCACHEPREFIX=/private/tmp/codex_pycache python3 -m unittest discover -s planA/code/backend/tests
-PYTHONPYCACHEPREFIX=/private/tmp/codex_pycache python3 -m unittest discover -s planA/code/skills/scripts
+python3 -m unittest discover code/backend/tests
 ```
+
+### 静态/契约 E2E
+
+不调用真实 LLM，只检查前端导航、页面契约和 E2E runner 基础逻辑：
+
+```bash
+python3 code/e2e/run_e2e.py --skip-real-api
+```
+
+### 真实 API 全链路 E2E
+
+会调用真实 LLM API，耗时较长，用于验证 skill、后端 HTTP、前端契约是否整体跑通：
+
+```bash
+python3 code/e2e/run_e2e.py
+```
+
+测试报告输出到：
+
+```text
+code/e2e/reports/<timestamp>/
+```
+
+报告目录已被 `.gitignore` 忽略，不提交。
+
+当前 E2E 覆盖：
+
+- `patsnap-presales`：销售与售前拜访方案。
+- `patsnap-promo`：30 秒短视频方案。
+- `patsnap-tech-explain`：产品与技术解释。
+- `patsnap-compare`：首页自动路由到竞品对比。
+- 后端 `handle_chat` contract。
+- HTTP `/api/cases`、`/api/chat`、`/api/export`。
+- 前端静态契约：主导航、知识空间、30 秒视频口径、上传不污染 `live/`。
+
+---
+
+## 视频能力边界
+
+营销与传播 skill 会生成完整 `30 秒短视频方案`，包括分镜、字幕、发布配文和事实来源。
+
+当前真实视频按钮只提交一个**示例镜头任务**，用于预览画面风格。它不等于完整 30 秒成片，也不自动完成多镜头剪辑、字幕烧录或旁白合成。
+
+---
+
+## 开发约定
+
+1. 改页面、skill、后端 API 后，同步更新 README。
+2. 不要把测试 fixture 写进 `code/sample_retrieval/live/`。
+3. 新增工作台时，需要同时补：
+   - 前端页面入口。
+   - 后端 `mode -> skill` 映射。
+   - skill `SKILL.md`。
+   - E2E fixture。
+   - `code/e2e/run_e2e.py` 验收项。
+4. 首页是通用入口，由 Agent 自主选择 skill；业务工作台是具体场景，直接调用对应 skill。
+5. 事实性输出必须有来源和更新时间；没有资料支撑的内容标 `待核实` 或 `资料缺口`。
+
+---
 
 ## 已知边界
 
-- 上游真实检索服务未在仓库内实现；本 Demo 通过 `sample_retrieval/live/` 文件夹承接检索结果。
-- 上传文件当前做轻量文本解码，PDF / Word / PPT 的专用解析器还未接入。
-- 视频生成依赖外部模型网关；当前后端已做任务持久化和可灵配置兜底，但最终是否产出视频 URL 由上游决定。
-- 本地知识库适合 Demo 和轻量验证，生产环境应替换为带权限、审计和索引能力的存储服务。
+- 真实检索系统是外部黑盒，本仓库只消费其写入的 `code/sample_retrieval/live/`。
+- 本地知识库适合 Demo，不是生产级权限/审计/索引系统。
+- 外部公开信息搜索未配置时，系统会显式输出缺口，不会假装已经联网。
+- 浏览器像素级 E2E 依赖本机 Playwright 浏览器或 Chrome 自动化权限；当前稳定验收以真实 API E2E + HTTP + 前端静态契约为主。
