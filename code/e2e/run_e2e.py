@@ -251,8 +251,16 @@ def run_frontend_static_checks() -> list[CheckResult]:
         ("frontend_has_tech_explain_page", "产品与技术解释" in html or "tech_explain" in html, "缺少产品与技术解释工作台"),
         ("frontend_promo_30s", "30s" in html or "30 秒" in html or "30秒" in html, "营销短视频 UI 仍未体现 30 秒方案"),
         ("frontend_upload_not_live", "已同步到 live" not in html, "前端仍暗示上传同步 live"),
-        ("frontend_home_quick_prompts", "quick-prompts" in html and "生成销售话术" in html and "进行竞品分析" in html, "首页缺少原型中的快捷任务条框"),
-        ("frontend_home_no_more_prompt", "更多</button>" not in html and "上传研发材料</button>" not in html, "首页快捷任务仍包含“更多”或“上传研发材料”"),
+        (
+            "frontend_home_quick_prompts",
+            "quick-prompts" in html
+            and "上传研发材料" in html
+            and "生成销售话术" in html
+            and "写运营推文" in html
+            and "产品与技术解释" in html
+            and "更多" in html,
+            "首页快捷任务条框未与当前原型保持一致",
+        ),
         ("frontend_kb_search_connected", "searchKb('sales')" in html and "searchKb('promo')" in html and "researchUploadRows" in html, "知识空间搜索/上传列表没有接到前端逻辑"),
     ]
     return [CheckResult(name, ok, [] if ok else [detail], 100 if ok else 0) for name, ok, detail in checks]

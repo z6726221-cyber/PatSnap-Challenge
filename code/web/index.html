@@ -331,13 +331,13 @@ body{margin:0;display:flex;background:var(--bg);color:var(--text);font-family:"P
 #splitComparison .cfgcard .go{min-width:126px;margin:0}
 #splitComparison .split-right{max-width:1180px;width:100%;margin:0 auto}
 #splitComparison .reportcard{min-height:auto}
-#home .hero{margin-top:104px}
-#home .hero h1{font-size:clamp(30px,3.5vw,46px);font-weight:540}
-#home .hero .sub{margin:10px auto 26px;font-size:15px}
-#home .bigbox{min-height:126px;padding:20px 22px;border-radius:24px}
-#home .bigbox textarea{height:48px;font-size:15px}
-#home .bigbox .bar{margin-top:12px}
-#home .collab{margin-top:56px}
+#home .hero{margin-top:168px}
+#home .hero h1{font-size:clamp(34px,4.2vw,54px);font-weight:520}
+#home .hero .sub{margin:16px auto 42px;font-size:16px}
+#home .bigbox{display:flex;flex-direction:column;justify-content:space-between;min-height:156px;padding:24px;border-radius:28px}
+#home .bigbox textarea{height:64px;font-size:16px}
+#home .bigbox .bar{margin-top:0}
+#home .collab{margin-top:96px}
 #splitPromo .split{grid-template-columns:minmax(360px,.92fr) minmax(0,1.08fr)}
 #splitPromo .promo-left{gap:12px;padding:18px;border:1px solid var(--line);border-radius:22px;background:var(--card);box-shadow:0 14px 30px rgba(7,53,31,.04)}
 #splitPromo .promo-source-card{order:3;position:static;padding:14px 16px;border-radius:16px;box-shadow:none}
@@ -436,11 +436,11 @@ body{overflow:hidden;background:var(--bg)}
 .brand{padding:0;margin-bottom:18px;border-bottom:0}
 .brand-logo{width:168px;max-height:64px}
 .nav{padding:0;gap:8px;margin-bottom:22px}
-.nav a{min-height:42px;padding:0 10px;border-radius:8px;color:var(--sidebar-text);font-size:17px;font-weight:650;box-shadow:none}
+.nav a{min-height:42px;padding:0 10px;border-radius:8px;color:var(--sidebar-text);font-size:16px;font-weight:650;box-shadow:none}
 .nav a.on,.nav a:hover{background:var(--sidebar-active);border-color:transparent;box-shadow:none}
 .nav a .ni{width:24px;color:var(--green)}
-.subttl{padding:18px 8px 8px;color:var(--sidebar-muted);font-size:14px;font-weight:750;letter-spacing:0;text-transform:none}
-.side-title{padding:18px 8px 8px;color:var(--sidebar-muted);font-size:14px;font-weight:750}
+.subttl{padding:0 8px 2px;margin:0 0 8px;color:var(--sidebar-muted);font-size:14px;font-weight:750;letter-spacing:0;text-transform:none}
+.side-title{padding:0 8px 2px;margin:0 0 8px;color:var(--sidebar-muted);font-size:14px;font-weight:750}
 .hist{padding:0;gap:8px}
 .hist a{min-height:38px;padding:0 10px;border-radius:8px;font-size:15px;font-weight:600}
 .profile{padding:14px 4px 0}
@@ -638,10 +638,10 @@ body{overflow:hidden;background:var(--bg)}
       <div class="home-scroll state-welcome active" id="stateWelcome">
         <div class="hero">
           <h1>今天想提升哪项工作效率？</h1>
-          <p class="sub">基于企业私域知识，快速完成内容创作、销售支持和可信知识问答。</p>
+          <p class="sub">上传研发资料，快速生成销售话术、运营文案和可信知识回答。</p>
 
           <div class="bigbox">
-            <textarea id="homeInput" placeholder="输入你想完成的工作，例如：根据产品资料生成一版客户沟通话术，并保留引用来源"></textarea>
+            <textarea id="homeInput" placeholder="输入任务，例如：把研发资料转成销售话术，并保留引用来源"></textarea>
             <div class="bar">
               <button class="home-upload" aria-label="上传文件" title="上传文件" onclick="document.getElementById('uploadFile').click()">+</button>
               <button class="go" id="homeGo" onclick="startFromHome()">发送 ↑</button>
@@ -649,17 +649,18 @@ body{overflow:hidden;background:var(--bg)}
           </div>
 
           <div class="quick-prompts" aria-label="快捷任务">
+            <button class="quick-prompt" onclick="fillHomePrompt('上传研发材料')">上传研发材料</button>
             <button class="quick-prompt" onclick="fillHomePrompt('生成销售话术')">生成销售话术</button>
             <button class="quick-prompt" onclick="fillHomePrompt('写运营推文')">写运营推文</button>
-            <button class="quick-prompt" onclick="fillHomePrompt('解释 TRIZ 概念')">解释 TRIZ 概念</button>
-            <button class="quick-prompt" onclick="fillHomePrompt('进行竞品分析')">进行竞品分析</button>
+            <button class="quick-prompt" onclick="fillHomePrompt('产品与技术解释')">产品与技术解释</button>
+            <button class="quick-prompt" onclick="fillHomePrompt('更多')">更多</button>
           </div>
 
           <div class="collab">
             <div class="txt">
               <div class="kicker">为智慧芽团队定制 AI 协作空间</div>
               <h4>减少重复沟通，让知识在团队间流动</h4>
-              <p>团队共同建设和调用可信知识，让知识持续流动与复用，减少重复查找和沟通误差。</p>
+              <p>研发负责人上传与审核知识，销售和运营直接调用可信内容，减少反复确认与信息误差。</p>
             </div>
             <div class="mini-preview">
               <div class="preview-card main-card">
