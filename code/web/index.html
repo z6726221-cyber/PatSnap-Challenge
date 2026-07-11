@@ -456,14 +456,14 @@ body{overflow:hidden;background:var(--bg)}
 .empty-list{grid-column:1/-1;min-height:120px;display:grid;place-items:center;padding:24px;border:1px dashed var(--line);border-radius:18px;color:var(--muted);background:var(--panel);font-size:14px}
 .marketing-taskbar{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:18px;align-items:center;max-width:1180px;width:100%;margin:0 auto 18px;padding:12px;border:1px solid var(--line);border-radius:18px;background:#fffdf9;box-shadow:0 14px 34px rgba(34,58,43,.045)}
 .marketing-tabs{display:flex;gap:8px;padding:4px;border:1px solid var(--line);border-radius:12px;background:#fffefb}
-.marketing-tabs button{min-width:98px;height:36px;border:0;border-radius:9px;color:var(--green-dark);background:transparent;font-weight:760;cursor:pointer}
+.marketing-tabs button{min-width:98px;height:36px;border:0;border-radius:9px;color:var(--green-dark);background:transparent;font-size:16px;font-weight:760;cursor:pointer}
 .marketing-tabs button.active,.marketing-tabs button.on{color:#fffdf9;background:var(--green)}
 .task-title{display:flex;gap:16px;align-items:center;min-width:0;color:var(--muted);font-weight:650}
 .task-title span{white-space:nowrap}
 .task-title strong{min-width:0;color:var(--green-dark);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .status.editable{color:var(--green);background:#e7efe5;font-weight:760}
 .task-actions{display:flex;gap:10px}
-.task-actions button{min-height:38px;padding:0 16px;border:1px solid var(--line);border-radius:10px;color:var(--green-dark);background:#fffdf9;font-weight:760;cursor:pointer}
+.task-actions button{min-height:38px;padding:0 16px;border:1px solid var(--line);border-radius:10px;color:var(--green-dark);background:#fffdf9;font-size:16px;font-weight:760;cursor:pointer}
 .task-actions button.solid{color:#fffdf9;background:var(--green)}
 .marketing-studio{display:grid;grid-template-columns:300px minmax(0,1fr) 300px;gap:18px;max-width:1180px;width:100%;margin:0 auto;align-items:start}
 .campaign-settings,.copy-preview-card,.video-preview-card,.publish-panel{border:1px solid var(--line);border-radius:20px;background:#fffdf9;box-shadow:0 16px 38px rgba(34,58,43,.045)}
@@ -471,7 +471,7 @@ body{overflow:hidden;background:var(--bg)}
 .campaign-settings h2,.publish-panel h2{margin:0;color:var(--green-dark);font-size:20px}
 .campaign-settings label{display:grid;gap:8px}
 .campaign-settings label span,.setting-row span{color:var(--green-dark);font-size:13px;font-weight:760}
-.campaign-settings textarea{min-height:136px;padding:14px;border:1px solid var(--line);border-radius:13px;color:var(--sidebar-text);background:#fffefb;line-height:1.75;font-weight:560}
+.campaign-settings textarea{min-height:136px;padding:14px;border:1px solid var(--line);border-radius:13px;color:var(--sidebar-text);background:#fffefb;font-size:14px;line-height:1.75;font-weight:560}
 .setting-row{display:grid;gap:8px;padding-bottom:12px;border-bottom:1px solid var(--line)}
 .setting-row strong{color:var(--sidebar-text);font-size:15px;line-height:1.45}
 .tag-set{display:flex;flex-wrap:wrap;gap:8px}
@@ -486,7 +486,7 @@ body{overflow:hidden;background:var(--bg)}
 .preview-head button,.source-trace-card button{min-height:36px;padding:0 14px;border:1px solid var(--line);border-radius:999px;color:var(--green);background:#fffdf9;font-weight:760;cursor:pointer}
 .copy-preview-card h3{margin:8px 0 0;color:var(--green);font-size:22px}
 .copy-preview-card p,.copy-preview-card blockquote{margin:0;color:var(--muted);line-height:1.82;font-weight:560}
-.copy-preview-card blockquote{padding:12px 14px;border-left:3px solid var(--green);border-radius:10px;background:#f6fbf3}
+.copy-preview-card blockquote{padding:12px 14px;border-left:3px solid var(--green);border-radius:10px;background:#f6fbf3;font-size:14px}
 .copy-preview-card footer{display:flex;flex-wrap:wrap;gap:18px;padding-top:12px;border-top:1px solid var(--line);color:var(--muted);font-size:13px;font-weight:650}
 .video-preview-card{gap:14px;padding:18px}
 .video-stage{position:relative;min-height:300px;display:grid;place-items:center;overflow:hidden;border-radius:18px;color:#fffdf9;background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.13),transparent 28%),linear-gradient(135deg,rgba(7,53,31,.98),rgba(31,111,73,.9))}
@@ -506,14 +506,18 @@ body{overflow:hidden;background:var(--bg)}
 .source-trace-card{display:grid;gap:10px;padding:14px;border:1px solid rgba(31,111,73,.18);border-radius:16px;background:#f6fbf3}
 .source-trace-card h3{margin:0;color:var(--green-dark);font-size:17px}
 #splitPromo .page-workspace{align-items:stretch}
-#splitPromo .page-header,#splitPromo .marketing-taskbar,#splitPromo .marketing-studio{max-width:1480px}
+#splitPromo .page-header,#splitPromo .marketing-taskbar,#splitPromo .marketing-studio{max-width:1180px}
+#splitPromo .page-header{margin-bottom:20px}
+#splitPromo .marketing-taskbar{margin-bottom:0}
 @media(max-width:1500px){
-  #splitPromo .page-workspace{padding-left:40px;padding-right:40px}
-  #splitPromo .marketing-taskbar{grid-template-columns:auto minmax(240px,1fr) auto auto;gap:12px}
-  #splitPromo .marketing-tabs button{min-width:92px;padding:0 18px}
-  #splitPromo .marketing-studio{grid-template-columns:minmax(250px,.82fr) minmax(300px,1fr) minmax(250px,.82fr);gap:16px}
-  #splitPromo .campaign-settings,#splitPromo .publish-panel,#splitPromo .copy-preview-card,#splitPromo .video-preview-card{padding:18px}
-  #splitPromo .preview-head h2{font-size:26px}
+  #splitPromo .page-workspace{padding-left:64px;padding-right:64px}
+  #splitPromo .marketing-taskbar{grid-template-columns:214px minmax(0,1fr) 56px auto;gap:18px}
+  #splitPromo .marketing-tabs button{min-width:98px;padding:0 18px}
+  #splitPromo .marketing-studio{grid-template-columns:300px minmax(0,1fr) 300px;gap:18px}
+  #splitPromo .campaign-settings,#splitPromo .publish-panel{padding:18px}
+  #splitPromo .copy-preview-card{padding:24px}
+  #splitPromo .video-preview-card{padding:18px}
+  #splitPromo .preview-head h2{font-size:30px}
 }
 @media(max-width:1180px){
   #splitPromo .marketing-taskbar{grid-template-columns:1fr auto auto}
